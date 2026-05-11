@@ -1,0 +1,1969 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>Mocktail Guide — Step by Step</title>  
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">  
+<style>  
+:root {  
+  --bg: #0e0c09;  
+  --surface: #181410;  
+  --surface2: #201c17;  
+  --gold: #c9a96e;  
+  --gold2: #e8d5a3;  
+  --text: #ede8df;  
+  --muted: #7a7060;  
+  --border: rgba(201,169,110,0.15);  
+  --accent-green: #6dab8a;  
+  --accent-coral: #d4795a;  
+  --accent-blue: #5a8ec9;  
+  --accent-pink: #c96d9a;  
+  --r: 4px;  
+}  
+  
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }  
+  
+html { scroll-behavior: smooth; }  
+  
+body {  
+  background: var(--bg);  
+  color: var(--text);  
+  font-family: 'DM Sans', sans-serif;  
+  font-weight: 300;  
+  min-height: 100vh;  
+  overflow-x: hidden;  
+}  
+  
+/* **═══════════** LAYOUT **═══════════** */  
+.shell {  
+  display: grid;  
+  grid-template-columns: 280px 1fr;  
+  min-height: 100vh;  
+}  
+  
+/* **═══════════** SIDEBAR **═══════════** */  
+.sidebar {  
+  position: sticky;  
+  top: 0;  
+  height: 100vh;  
+  overflow-y: auto;  
+  background: var(--surface);  
+  border-right: 1px solid var(--border);  
+  display: flex;  
+  flex-direction: column;  
+  scrollbar-width: thin;  
+  scrollbar-color: var(--gold) transparent;  
+}  
+  
+.sidebar-header {  
+  padding: 32px 24px 20px;  
+  border-bottom: 1px solid var(--border);  
+  flex-shrink: 0;  
+}  
+  
+.sidebar-logo {  
+  font-family: 'Italiana', serif;  
+  font-size: 1.7rem;  
+  color: var(--gold);  
+  line-height: 1;  
+  letter-spacing: 1px;  
+}  
+  
+.sidebar-logo span { color: var(--gold2); font-style: italic; }  
+  
+.sidebar-sub {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 9px;  
+  letter-spacing: 3px;  
+  text-transform: uppercase;  
+  color: var(--muted);  
+  margin-top: 6px;  
+}  
+  
+.search-wrap {  
+  padding: 14px 20px;  
+  border-bottom: 1px solid var(--border);  
+  flex-shrink: 0;  
+}  
+  
+.search-wrap input {  
+  width: 100%;  
+  background: var(--surface2);  
+  border: 1px solid var(--border);  
+  border-radius: var(--r);  
+  padding: 8px 12px;  
+  color: var(--text);  
+  font-family: 'DM Sans', sans-serif;  
+  font-size: .82rem;  
+  outline: none;  
+  transition: border-color .2s;  
+}  
+  
+.search-wrap input::placeholder { color: var(--muted); }  
+.search-wrap input:focus { border-color: var(--gold); }  
+  
+.cat-group { flex-shrink: 0; }  
+  
+.cat-title {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 8px;  
+  letter-spacing: 3.5px;  
+  text-transform: uppercase;  
+  color: var(--muted);  
+  padding: 18px 24px 6px;  
+}  
+  
+.nav-item {  
+  display: flex;  
+  align-items: center;  
+  gap: 10px;  
+  padding: 9px 24px;  
+  cursor: pointer;  
+  transition: background .15s, color .15s;  
+  border-left: 2px solid transparent;  
+}  
+  
+.nav-item:hover { background: var(--surface2); color: var(--gold2); }  
+.nav-item.active {  
+  background: var(--surface2);  
+  border-left-color: var(--gold);  
+  color: var(--gold);  
+}  
+  
+.nav-dot {  
+  width: 6px; height: 6px;  
+  border-radius: 50%;  
+  flex-shrink: 0;  
+}  
+  
+.nav-name {  
+  font-size: .85rem;  
+  line-height: 1;  
+}  
+  
+.nav-glass {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 8px;  
+  color: var(--muted);  
+  margin-left: auto;  
+  white-space: nowrap;  
+}  
+  
+/* **═══════════** MAIN **═══════════** */  
+.main {  
+  padding: 0;  
+  overflow-y: auto;  
+}  
+  
+/* HERO */  
+.hero {  
+  padding: 72px 64px 56px;  
+  border-bottom: 1px solid var(--border);  
+  position: relative;  
+  overflow: hidden;  
+}  
+  
+.hero::before {  
+  content: 'GUIDE';  
+  position: absolute;  
+  right: 48px;  
+  top: 24px;  
+  font-family: 'Italiana', serif;  
+  font-size: 9rem;  
+  color: rgba(201,169,110,0.04);  
+  pointer-events: none;  
+  line-height: 1;  
+  user-select: none;  
+}  
+  
+.hero-eyebrow {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 9px;  
+  letter-spacing: 4px;  
+  text-transform: uppercase;  
+  color: var(--gold);  
+  margin-bottom: 16px;  
+}  
+  
+.hero h1 {  
+  font-family: 'Italiana', serif;  
+  font-size: clamp(2.5rem, 4vw, 4rem);  
+  font-weight: 400;  
+  line-height: 1.05;  
+  color: var(--text);  
+  margin-bottom: 16px;  
+}  
+  
+.hero h1 em { color: var(--gold); font-style: italic; }  
+  
+.hero-desc {  
+  font-size: 1rem;  
+  color: var(--muted);  
+  max-width: 480px;  
+  line-height: 1.7;  
+}  
+  
+.stats-row {  
+  display: flex;  
+  gap: 36px;  
+  margin-top: 36px;  
+  flex-wrap: wrap;  
+}  
+  
+.stat { display: flex; flex-direction: column; gap: 3px; }  
+.stat-num {  
+  font-family: 'Italiana', serif;  
+  font-size: 2rem;  
+  color: var(--gold);  
+  line-height: 1;  
+}  
+.stat-label {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 8px;  
+  letter-spacing: 3px;  
+  text-transform: uppercase;  
+  color: var(--muted);  
+}  
+  
+/* RECIPE SECTION */  
+.recipe-section {  
+  padding: 56px 64px;  
+  border-bottom: 1px solid var(--border);  
+  transition: background .2s;  
+}  
+  
+.recipe-section:target { animation: highlightSection .6s ease; }  
+@keyframes highlightSection {  
+  from { background: rgba(201,169,110,0.06); }  
+  to   { background: transparent; }  
+}  
+  
+/* Recipe Header */  
+.recipe-header {  
+  display: grid;  
+  grid-template-columns: 1fr auto;  
+  gap: 24px;  
+  align-items: start;  
+  margin-bottom: 28px;  
+}  
+  
+.recipe-number {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 10px;  
+  letter-spacing: 3px;  
+  color: var(--muted);  
+  margin-bottom: 6px;  
+}  
+  
+.recipe-name {  
+  font-family: 'Italiana', serif;  
+  font-size: 2.4rem;  
+  font-weight: 400;  
+  color: var(--text);  
+  line-height: 1;  
+  margin-bottom: 6px;  
+}  
+  
+.recipe-subtitle {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 9px;  
+  letter-spacing: 3px;  
+  text-transform: uppercase;  
+  margin-bottom: 10px;  
+}  
+  
+.recipe-desc {  
+  font-size: .92rem;  
+  color: var(--muted);  
+  line-height: 1.65;  
+  max-width: 520px;  
+  font-style: italic;  
+}  
+  
+/* Glass visual */  
+.glass-badge {  
+  display: flex;  
+  flex-direction: column;  
+  align-items: center;  
+  gap: 8px;  
+  padding: 16px 20px;  
+  background: var(--surface2);  
+  border: 1px solid var(--border);  
+  border-radius: var(--r);  
+  min-width: 90px;  
+}  
+  
+.glass-badge svg { opacity: .85; }  
+  
+.glass-badge-name {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 7.5px;  
+  letter-spacing: 2px;  
+  text-transform: uppercase;  
+  color: var(--gold);  
+  text-align: center;  
+}  
+  
+/* Info pills */  
+.info-pills {  
+  display: flex;  
+  flex-wrap: wrap;  
+  gap: 8px;  
+  margin-bottom: 28px;  
+}  
+  
+.pill {  
+  display: flex;  
+  align-items: center;  
+  gap: 6px;  
+  padding: 5px 12px;  
+  border-radius: 20px;  
+  border: 1px solid var(--border);  
+  font-family: 'DM Mono', monospace;  
+  font-size: 9px;  
+  letter-spacing: 1.5px;  
+  text-transform: uppercase;  
+  color: var(--muted);  
+  background: var(--surface2);  
+}  
+  
+.pill-icon { font-size: .85rem; }  
+  
+/* Two-col layout */  
+.recipe-body {  
+  display: grid;  
+  grid-template-columns: 1fr 1fr;  
+  gap: 32px;  
+}  
+  
+/* Ingredients */  
+.block-title {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 9px;  
+  letter-spacing: 3.5px;  
+  text-transform: uppercase;  
+  color: var(--gold);  
+  margin-bottom: 14px;  
+  display: flex;  
+  align-items: center;  
+  gap: 8px;  
+}  
+  
+.block-title::after { content:''; flex:1; height:1px; background:var(--border); }  
+  
+.ingredients-list {  
+  display: flex;  
+  flex-direction: column;  
+  gap: 0;  
+}  
+  
+.ing-row {  
+  display: flex;  
+  align-items: center;  
+  gap: 12px;  
+  padding: 9px 0;  
+  border-bottom: 1px solid rgba(201,169,110,0.07);  
+}  
+  
+.ing-row:last-child { border-bottom: none; }  
+  
+.ing-dot {  
+  width: 5px; height: 5px;  
+  border-radius: 50%;  
+  flex-shrink: 0;  
+}  
+  
+.ing-amount {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 11px;  
+  color: var(--gold);  
+  min-width: 42px;  
+  text-align: right;  
+  flex-shrink: 0;  
+}  
+  
+.ing-name {  
+  font-size: .88rem;  
+  color: var(--text);  
+  flex: 1;  
+}  
+  
+.ing-type {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 8px;  
+  letter-spacing: 1.5px;  
+  text-transform: uppercase;  
+  color: var(--muted);  
+  flex-shrink: 0;  
+}  
+  
+/* Steps */  
+.steps-list {  
+  display: flex;  
+  flex-direction: column;  
+  gap: 0;  
+  position: relative;  
+}  
+  
+.steps-list::before {  
+  content: '';  
+  position: absolute;  
+  left: 15px;  
+  top: 20px;  
+  bottom: 20px;  
+  width: 1px;  
+  background: linear-gradient(to bottom, var(--gold), transparent);  
+  opacity: .2;  
+}  
+  
+.step {  
+  display: flex;  
+  gap: 16px;  
+  padding: 10px 0;  
+  position: relative;  
+}  
+  
+.step-num {  
+  width: 30px; height: 30px;  
+  border-radius: 50%;  
+  border: 1px solid var(--border);  
+  background: var(--surface);  
+  display: flex;  
+  align-items: center;  
+  justify-content: center;  
+  font-family: 'DM Mono', monospace;  
+  font-size: 10px;  
+  color: var(--gold);  
+  flex-shrink: 0;  
+  z-index: 1;  
+}  
+  
+.step-content {  
+  padding-top: 5px;  
+  flex: 1;  
+}  
+  
+.step-action {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 8.5px;  
+  letter-spacing: 2.5px;  
+  text-transform: uppercase;  
+  color: var(--gold);  
+  margin-bottom: 3px;  
+}  
+  
+.step-text {  
+  font-size: .88rem;  
+  color: var(--text);  
+  line-height: 1.6;  
+  opacity: .85;  
+}  
+  
+/* Garnish block */  
+.garnish-block {  
+  margin-top: 24px;  
+  padding: 16px 18px;  
+  background: var(--surface2);  
+  border: 1px solid var(--border);  
+  border-radius: var(--r);  
+  border-left: 3px solid var(--gold);  
+}  
+  
+.garnish-label {  
+  font-family: 'DM Mono', monospace;  
+  font-size: 8px;  
+  letter-spacing: 3px;  
+  text-transform: uppercase;  
+  color: var(--gold);  
+  margin-bottom: 6px;  
+}  
+  
+.garnish-text {  
+  font-size: .88rem;  
+  color: var(--text);  
+  opacity: .8;  
+  line-height: 1.5;  
+}  
+  
+/* pro tip */  
+.tip-block {  
+  margin-top: 14px;  
+  padding: 12px 16px;  
+  background: rgba(201,169,110,0.05);  
+  border-radius: var(--r);  
+  border: 1px dashed rgba(201,169,110,0.2);  
+  font-size: .83rem;  
+  color: var(--muted);  
+  line-height: 1.55;  
+}  
+  
+.tip-block strong { color: var(--gold2); font-weight: 500; }  
+  
+/* Mobile toggle */  
+.mob-toggle {  
+  display: none;  
+  position: fixed;  
+  bottom: 20px;  
+  right: 20px;  
+  width: 48px; height: 48px;  
+  border-radius: 50%;  
+  background: var(--gold);  
+  color: var(--bg);  
+  font-size: 1.2rem;  
+  border: none;  
+  cursor: pointer;  
+  z-index: 100;  
+  align-items: center;  
+  justify-content: center;  
+  box-shadow: 0 4px 20px rgba(201,169,110,0.4);  
+}  
+  
+/* Scrollbar */  
+::-webkit-scrollbar { width: 4px; }  
+::-webkit-scrollbar-track { background: transparent; }  
+::-webkit-scrollbar-thumb { background: rgba(201,169,110,0.25); border-radius:4px; }  
+  
+@media(max-width: 900px) {  
+  .shell { grid-template-columns: 1fr; }  
+  .sidebar { position: fixed; left: -280px; top:0; z-index:50; height:100vh; transition: left .3s; }  
+  .sidebar.open { left: 0; }  
+  .mob-toggle { display:flex; }  
+  .hero, .recipe-section { padding: 36px 24px; }  
+  .recipe-body { grid-template-columns: 1fr; }  
+  .recipe-header { grid-template-columns: 1fr; }  
+  .glass-badge { flex-direction: row; width:fit-content; }  
+}  
+</style>  
+</head>  
+<body>  
+  
+<div class="shell">  
+  
+<!-- **══════════** SIDEBAR **══════════** -->  
+<aside class="sidebar" id="sidebar">  
+  <div class="sidebar-header">  
+    <div class="sidebar-logo">Sans <span>Alcool</span></div>  
+    <div class="sidebar-sub">Step-by-step guide</div>  
+  </div>  
+  
+  <div class="search-wrap">  
+    <input type="text" id="searchInput" placeholder="Search mocktails…" oninput="filterNav(this.value)">  
+  </div>  
+  
+  <div id="navList">  
+    <div class="cat-group">  
+      <div class="cat-title">Fruity &amp; Tropical</div>  
+      <div class="nav-item active" onclick="goTo('r1',this)" data-name="Sunset Lagoon">  
+        <div class="nav-dot" style="background:#c9a96e"></div>  
+        <span class="nav-name">Sunset Lagoon</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r2',this)" data-name="Passion Storm">  
+        <div class="nav-dot" style="background:#d4795a"></div>  
+        <span class="nav-name">Passion Storm</span>  
+        <span class="nav-glass">Hurricane</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r3',this)" data-name="Kiwi Verde">  
+        <div class="nav-dot" style="background:#6dab8a"></div>  
+        <span class="nav-name">Kiwi Verde</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r4',this)" data-name="Pineapple Paradise">  
+        <div class="nav-dot" style="background:#e8d5a3"></div>  
+        <span class="nav-name">Pineapple Paradise</span>  
+        <span class="nav-glass">Mason Jar</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r5',this)" data-name="Mango Tango">  
+        <div class="nav-dot" style="background:#d4a05a"></div>  
+        <span class="nav-name">Mango Tango</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+    </div>  
+  
+    <div class="cat-group">  
+      <div class="cat-title">Berry &amp; Floral</div>  
+      <div class="nav-item" onclick="goTo('r6',this)" data-name="Berry Velvet">  
+        <div class="nav-dot" style="background:#9b6dc9"></div>  
+        <span class="nav-name">Berry Velvet</span>  
+        <span class="nav-glass">Coupe</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r7',this)" data-name="Strawberry Fields">  
+        <div class="nav-dot" style="background:#c96d9a"></div>  
+        <span class="nav-name">Strawberry Fields</span>  
+        <span class="nav-glass">Wine</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r8',this)" data-name="Blueberry Haze">  
+        <div class="nav-dot" style="background:#5a8ec9"></div>  
+        <span class="nav-name">Blueberry Haze</span>  
+        <span class="nav-glass">Rocks</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r9',this)" data-name="Raspberry Reverie">  
+        <div class="nav-dot" style="background:#c95a7a"></div>  
+        <span class="nav-name">Raspberry Reverie</span>  
+        <span class="nav-glass">Coupe</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r10',this)" data-name="Cherry Blossom">  
+        <div class="nav-dot" style="background:#e8a0b0"></div>  
+        <span class="nav-name">Cherry Blossom</span>  
+        <span class="nav-glass">Wine</span>  
+      </div>  
+    </div>  
+  
+    <div class="cat-group">  
+      <div class="cat-title">Citrus &amp; Refreshing</div>  
+      <div class="nav-item" onclick="goTo('r11',this)" data-name="Citrus Spark">  
+        <div class="nav-dot" style="background:#e8c56d"></div>  
+        <span class="nav-name">Citrus Spark</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r12',this)" data-name="Aqua Marina">  
+        <div class="nav-dot" style="background:#5aaec9"></div>  
+        <span class="nav-name">Aqua Marina</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r13',this)" data-name="Tonic Garden">  
+        <div class="nav-dot" style="background:#6dab8a"></div>  
+        <span class="nav-name">Tonic Garden</span>  
+        <span class="nav-glass">Wine</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r14',this)" data-name="Watermelon Freeze">  
+        <div class="nav-dot" style="background:#d45a6d"></div>  
+        <span class="nav-name">Watermelon Freeze</span>  
+        <span class="nav-glass">Mason Jar</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r15',this)" data-name="Mint Glacier">  
+        <div class="nav-dot" style="background:#6dc9ab"></div>  
+        <span class="nav-name">Mint Glacier</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+    </div>  
+  
+    <div class="cat-group">  
+      <div class="cat-title">Creamy &amp; Indulgent</div>  
+      <div class="nav-item" onclick="goTo('r16',this)" data-name="Coco Velvet">  
+        <div class="nav-dot" style="background:#e8d5a3"></div>  
+        <span class="nav-name">Coco Velvet</span>  
+        <span class="nav-glass">Rocks</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r17',this)" data-name="Peach Cloud">  
+        <div class="nav-dot" style="background:#e8a87a"></div>  
+        <span class="nav-name">Peach Cloud</span>  
+        <span class="nav-glass">Wine</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r18',this)" data-name="Strawberry Milk Bar">  
+        <div class="nav-dot" style="background:#e87aab"></div>  
+        <span class="nav-name">Strawberry Milk Bar</span>  
+        <span class="nav-glass">Mason Jar</span>  
+      </div>  
+    </div>  
+  
+    <div class="cat-group">  
+      <div class="cat-title">Elevated &amp; Complex</div>  
+      <div class="nav-item" onclick="goTo('r19',this)" data-name="Apricot Dusk">  
+        <div class="nav-dot" style="background:#d4875a"></div>  
+        <span class="nav-name">Apricot Dusk</span>  
+        <span class="nav-glass">Hurricane</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r20',this)" data-name="Electric Blue Coral">  
+        <div class="nav-dot" style="background:#5a8ec9"></div>  
+        <span class="nav-name">Electric Blue Coral</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r21',this)" data-name="Tropical Energy">  
+        <div class="nav-dot" style="background:#d4c05a"></div>  
+        <span class="nav-name">Tropical Energy</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r22',this)" data-name="Cranberry Rose">  
+        <div class="nav-dot" style="background:#c95a6d"></div>  
+        <span class="nav-name">Cranberry Rose</span>  
+        <span class="nav-glass">Coupe</span>  
+      </div>  
+      <div class="nav-item" onclick="goTo('r23',this)" data-name="Golden Hour">  
+        <div class="nav-dot" style="background:#c9a96e"></div>  
+        <span class="nav-name">Golden Hour</span>  
+        <span class="nav-glass">Highball</span>  
+      </div>  
+    </div>  
+  </div>  
+</aside>  
+  
+<!-- **══════════** MAIN **══════════** -->  
+<main class="main" id="mainContent">  
+  
+  <!-- HERO -->  
+  <div class="hero">  
+    <div class="hero-eyebrow">Bartender's Reference</div>  
+    <h1>Step-by-Step<br><em>Mocktail Guide</em></h1>  
+    <p class="hero-desc">Every recipe broken down into clear, actionable steps. From ice to garnish — nothing is left to guesswork.</p>  
+    <div class="stats-row">  
+      <div class="stat"><span class="stat-num">23</span><span class="stat-label">Recipes</span></div>  
+      <div class="stat"><span class="stat-num">6</span><span class="stat-label">Glass Types</span></div>  
+      <div class="stat"><span class="stat-num">5</span><span class="stat-label">Categories</span></div>  
+      <div class="stat"><span class="stat-num">0</span><span class="stat-label">Alcohol</span></div>  
+    </div>  
+  </div>  
+  
+<!-- **══════════════════════════════════════════**  
+     RECIPES  
+**══════════════════════════════════════════** -->  
+  
+<!-- R1 — SUNSET LAGOON -->  
+<div class="recipe-section" id="r1">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">01 · Fruity &amp; Tropical</div>  
+      <div class="recipe-name">Sunset Lagoon</div>  
+      <div class="recipe-subtitle" style="color:var(--gold)">Tropical Bliss</div>  
+      <div class="recipe-desc">Golden blend of mango and pineapple brightened by lemon, finished with coconut cream for a dreamy island escape.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">40ml</span><span class="ing-name">Mango mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">40ml</span><span class="ing-name">Pineapple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">20ml</span><span class="ing-name">Coconut mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Vanilla syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🍍 Garnish</div>  
+        <div class="garnish-text">Pineapple wedge on rim · toasted coconut rim · paper umbrella</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Rim the glass</div><div class="step-text">Run a pineapple wedge around the rim of a highball glass, then dip into toasted coconut flakes. Set aside.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Fill glass with ice</div><div class="step-text">Add a generous amount of cubed ice to your prepared highball glass.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Build the shaker</div><div class="step-text">Add mango mix, pineapple juice, lemon juice, coconut mix, and vanilla syrup into your cocktail shaker.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Add ice &amp; shake</div><div class="step-text">Fill shaker with cubed ice. Close and shake vigorously for 12–15 seconds until the outside feels frosty cold.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Strain &amp; pour</div><div class="step-text">Strain through a Hawthorne strainer into your prepared glass over the ice.</div></div></div>  
+        <div class="step"><div class="step-num">6</div><div class="step-content"><div class="step-action">Garnish &amp; serve</div><div class="step-text">Add a pineapple wedge on the rim and a paper umbrella. Serve immediately.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> For extra creaminess, add an extra 10ml of coconut mix. Shake harder — the aeration makes it silkier.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R2 — PASSION STORM -->  
+<div class="recipe-section" id="r2">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">02 · Fruity &amp; Tropical</div>  
+      <div class="recipe-name">Passion Storm</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-coral)">Exotic Intensity</div>  
+      <div class="recipe-desc">Passion fruit meets orange in a vibrant encounter lifted by grenadine sinking like a tropical sunset.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M15 6 C8 18,6 30,10 40 C12 46,12 52,12 54 L38 54 C38 52,38 46,40 40 C44 30,42 18,35 6 Z" stroke="#c9a96e" stroke-width="1.5" opacity=".8" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Hurricane<br>crushed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Crushed Ice</div>  
+    <div class="pill"><span class="pill-icon">🌀</span>Hurricane Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Passion fruit mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">40ml</span><span class="ing-name">Orange juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Grenadine</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Lemon syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🍊 Garnish</div>  
+        <div class="garnish-text">Orange half-wheel · maraschino cherry on pick · mint sprig</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Fill glass</div><div class="step-text">Pack a hurricane glass tightly with crushed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Add passion fruit mix, orange juice, and lemon syrup into the shaker with ice. Shake hard for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain</div><div class="step-text">Strain the mixture directly over the crushed ice in the hurricane glass.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Sink the grenadine</div><div class="step-text">Pour grenadine slowly over the back of a bar spoon so it sinks to the bottom, creating a sunset layer. Do not stir.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish &amp; serve</div><div class="step-text">Add an orange half-wheel, cherry on a pick, and a fresh mint sprig. Serve immediately before layers blend.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The grenadine sink only works if you pour it very slowly and the drink is cold. For a more dramatic effect, chill the glass in the freezer first.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R3 — KIWI VERDE -->  
+<div class="recipe-section" id="r3">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">03 · Fruity &amp; Tropical</div>  
+      <div class="recipe-name">Kiwi Verde</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-green)">Zesty &amp; Vibrant</div>  
+      <div class="recipe-desc">Kiwi mix and apple juice with green apple syrup — bright, crisp, impossibly refreshing.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Kiwi mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">40ml</span><span class="ing-name">Apple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Green apple syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Lemon syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🥝 Garnish</div>  
+        <div class="garnish-text">Kiwi slice on rim · cucumber ribbon · green sugar rim</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Rim the glass</div><div class="step-text">Rub a lime wedge around the rim, then dip into green-coloured sugar. Fill with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Build shaker</div><div class="step-text">Combine kiwi mix, apple juice, green apple syrup, and lemon syrup in the shaker.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Add ice and shake hard for 12–15 seconds until thoroughly chilled.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Strain &amp; serve</div><div class="step-text">Strain over ice in the prepared glass. Thread a thin cucumber ribbon inside the glass for visual effect.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Place a kiwi slice on the rim. Serve immediately.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The cucumber ribbon inside the glass infuses a subtle freshness as the guest drinks. Use a vegetable peeler for an even, thin strip.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R4 — PINEAPPLE PARADISE -->  
+<div class="recipe-section" id="r4">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">04 · Fruity &amp; Tropical</div>  
+      <div class="recipe-name">Pineapple Paradise</div>  
+      <div class="recipe-subtitle" style="color:var(--gold)">Sweet Tropics</div>  
+      <div class="recipe-desc">Double pineapple amplified by coconut and vanilla — silky and sun-drenched.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="9" y="12" width="32" height="46" rx="2" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="7" y="8" width="36" height="7" rx="1" stroke="#c9a96e" stroke-width="1" opacity=".5"/>  
+        <rect x="11" y="14" width="28" height="42" rx="1" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Mason Jar<br>crushed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Crushed Ice</div>  
+    <div class="pill"><span class="pill-icon">🫙</span>Mason Jar</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">40ml</span><span class="ing-name">Pineapple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">30ml</span><span class="ing-name">Pineapple mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">25ml</span><span class="ing-name">Coconut mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Vanilla syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Pineapple syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🌴 Garnish</div>  
+        <div class="garnish-text">Toasted coconut rim · pineapple leaf · edible flower</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Rim the jar</div><div class="step-text">Wet the rim with pineapple juice, then press into toasted coconut flakes. Fill the mason jar with crushed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Combine in shaker</div><div class="step-text">Add pineapple juice, pineapple mix, coconut mix, vanilla syrup, and pineapple syrup into the shaker.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Shake hard</div><div class="step-text">Add ice and shake very vigorously for 15 seconds — the hard shake aeration creates the silky texture.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Strain &amp; pour</div><div class="step-text">Strain into the mason jar over crushed ice.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Tuck in a pineapple leaf and a single edible flower. Add a paper or bamboo straw.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Toast coconut flakes in a dry pan for 2 minutes until golden before using for the rim — it adds an incredible aroma.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R5 — MANGO TANGO -->  
+<div class="recipe-section" id="r5">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">05 · Fruity &amp; Tropical</div>  
+      <div class="recipe-name">Mango Tango</div>  
+      <div class="recipe-subtitle" style="color:var(--gold)">Bold &amp; Juicy</div>  
+      <div class="recipe-desc">Mango double and peach with lemon — a dance of sweetness and citrus.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">45ml</span><span class="ing-name">Mango mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">30ml</span><span class="ing-name">Mango juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">20ml</span><span class="ing-name">Peach juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Lemon syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🥭 Garnish</div>  
+        <div class="garnish-text">Mango fan · chilli salt rim · dried lime wheel</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Chilli salt rim</div><div class="step-text">Mix fine salt with a pinch of chilli powder on a flat plate. Wet the rim of a highball glass with mango juice, then dip into the chilli salt mix.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Ice the glass</div><div class="step-text">Fill the prepared highball glass with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Add mango mix, mango juice, peach juice, and lemon syrup to the shaker. Add ice and shake for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Strain &amp; pour</div><div class="step-text">Strain into the prepared glass over ice.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Cut a thin mango slice into a fan shape and place on rim. Add a dried lime wheel.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The chilli salt rim gives each sip a surprising sweet-heat contrast. Adjust the chilli ratio to your guests' tolerance.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R6 — BERRY VELVET -->  
+<div class="recipe-section" id="r6">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">06 · Berry &amp; Floral</div>  
+      <div class="recipe-name">Berry Velvet</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-pink)">Deep &amp; Lush</div>  
+      <div class="recipe-desc">Raspberry and blackberry syrups meld with cranberry in a jewel-toned shake finished with vanilla.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M5 8 L25 38 L25 52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M45 8 L25 38" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="5" y1="8" x2="45" y2="8" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="16" y1="52" x2="34" y2="52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M7 10 L25 36 L43 10 Z" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Coupe<br>no ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">❌</span>No Ice — Chilled</div>  
+    <div class="pill"><span class="pill-icon">🍸</span>Coupe Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">20ml</span><span class="ing-name">Raspberry syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Blackberry syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Cranberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Vanilla syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🫐 Garnish</div>  
+        <div class="garnish-text">3 blackberries on pick · sugared rim · micro mint leaf</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Chill the coupe</div><div class="step-text">Place the coupe glass in the freezer for at least 5 minutes, or fill it with ice water while you prepare the drink.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Sugar rim</div><div class="step-text">Discard ice water from the glass. Wet the rim with lemon juice and dip into fine white sugar.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Build shaker</div><div class="step-text">Add all ingredients — raspberry syrup, blackberry syrup, cranberry mix, vanilla syrup, and lemon juice — into the shaker.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Fill shaker with ice and shake hard for 15 seconds. The goal is maximum chill.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Double strain</div><div class="step-text">Strain through both a Hawthorne strainer AND a fine mesh strainer into the chilled coupe. This creates a perfectly smooth, seed-free result.</div></div></div>  
+        <div class="step"><div class="step-num">6</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Skewer 3 blackberries on a cocktail pick and lay across the coupe. Add a single micro mint leaf.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Double straining is essential here — it gives the drink its velvety, ultra-smooth texture that earns the name.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R7 — STRAWBERRY FIELDS -->  
+<div class="recipe-section" id="r7">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">07 · Berry &amp; Floral</div>  
+      <div class="recipe-name">Strawberry Fields</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-pink)">Classic Sweetness</div>  
+      <div class="recipe-desc">Strawberry double with apple and grenadine — a rosy, timeless summer concoction.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M10 6 C10 26,18 32,25 34 L25 52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M40 6 C40 26,32 32,25 34" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="10" y1="6" x2="40" y2="6" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="16" y1="52" x2="34" y2="52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M12 8 C12 26,19 31,25 33 C31 31,38 26,38 8 Z" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Wine Glass<br>large cube</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Large Ice Cube</div>  
+    <div class="pill"><span class="pill-icon">🍷</span>Wine Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Strawberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Strawberry syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">30ml</span><span class="ing-name">Apple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Grenadine</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">10ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🍓 Garnish</div>  
+        <div class="garnish-text">Fresh strawberry on rim · basil leaf · pink sugar rim</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Pink sugar rim</div><div class="step-text">Wet the rim of a wine glass with strawberry juice. Dip into pink sugar (mix white sugar with a drop of red food colouring). Place a large ice cube inside.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake the base</div><div class="step-text">Combine strawberry mix, strawberry syrup, apple juice, and lemon juice in the shaker with ice. Shake for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain over ice</div><div class="step-text">Strain into the wine glass over the large ice cube.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Float grenadine</div><div class="step-text">Pour grenadine gently over the back of a bar spoon to float it on top without mixing. This creates a beautiful layered look.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Slit a fresh strawberry and place on the rim. Add a fresh basil leaf for aroma.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> A wine glass showcases the grenadine float beautifully. Tell the guest to stir before drinking to mix the layers.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R8 — BLUEBERRY HAZE -->  
+<div class="recipe-section" id="r8">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">08 · Berry &amp; Floral</div>  
+      <div class="recipe-name">Blueberry Haze</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-blue)">Mellow &amp; Sweet</div>  
+      <div class="recipe-desc">Blueberry swirled into cranberry and apple — hazy, subtly sweet, beautifully hued.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="7" y="16" width="36" height="40" rx="4" stroke="#c9a96e" stroke-width="1.5" opacity=".8" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Rocks Glass<br>crushed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Crushed Ice</div>  
+    <div class="pill"><span class="pill-icon">🥃</span>Rocks Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">25ml</span><span class="ing-name">Blueberry syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">40ml</span><span class="ing-name">Raspberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">30ml</span><span class="ing-name">Apple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">5ml</span><span class="ing-name">Sugar syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🫐 Garnish</div>  
+        <div class="garnish-text">Blueberry skewer · lemon twist · edible viola flower</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Pack with crushed ice</div><div class="step-text">Fill a rocks glass tightly with crushed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Combine blueberry syrup, raspberry mix, apple juice, lemon juice, and sugar syrup in the shaker with ice. Shake hard for 12–15 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Double strain</div><div class="step-text">Strain through Hawthorne and fine mesh strainers over the crushed ice to create the characteristic hazy texture.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Lemon twist</div><div class="step-text">Cut a wide strip of lemon peel, express (squeeze peel face-down) over the drink to release oils, then rub around the rim and drop in.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Thread fresh blueberries onto a pick and rest on top. Place an edible viola flower for colour contrast.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The crushed ice with double strain creates a beautiful "hazy" effect in the glass. Don't skip either step.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R9 — RASPBERRY REVERIE -->  
+<div class="recipe-section" id="r9">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">09 · Berry &amp; Floral</div>  
+      <div class="recipe-name">Raspberry Reverie</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-pink)">Tart &amp; Dreamy</div>  
+      <div class="recipe-desc">Raspberry double and cranberry with lemon — tart enough to wake you, sweet enough to dream.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M5 8 L25 38 L25 52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M45 8 L25 38" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="5" y1="8" x2="45" y2="8" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="16" y1="52" x2="34" y2="52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M7 10 L25 36 L43 10 Z" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Coupe<br>no ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">❄️</span>Chilled Coupe</div>  
+    <div class="pill"><span class="pill-icon">🍸</span>Coupe Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Raspberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">20ml</span><span class="ing-name">Raspberry syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">30ml</span><span class="ing-name">Cranberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🌷 Garnish</div>  
+        <div class="garnish-text">Dehydrated raspberry · rose petal · lemon zest spiral</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Chill the coupe</div><div class="step-text">Fill coupe with ice water for 3–5 minutes while preparing the drink. Discard when ready to pour.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Add raspberry mix, raspberry syrup, cranberry mix, and lemon juice to the shaker. Fill with ice and shake vigorously for 15 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Double strain</div><div class="step-text">Strain through both strainers into the chilled coupe glass. The surface should be perfectly smooth.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Lemon spiral</div><div class="step-text">Use a channel knife or peeler to make a long lemon spiral. Drape it inside the coupe so it curls elegantly.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Place one dehydrated raspberry and a single rose petal on the surface. Serve immediately.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The balance between raspberry's tartness and the cranberry's body is key. Taste before serving and adjust lemon to preference.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R10 — CHERRY BLOSSOM -->  
+<div class="recipe-section" id="r10">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">10 · Berry &amp; Floral</div>  
+      <div class="recipe-name">Cherry Blossom</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-pink)">Soft &amp; Romantic</div>  
+      <div class="recipe-desc">Cherry and peach with vanilla — a delicate, perfumed April afternoon in a glass.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M10 6 C10 26,18 32,25 34 L25 52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M40 6 C40 26,32 32,25 34" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="10" y1="6" x2="40" y2="6" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="16" y1="52" x2="34" y2="52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M12 8 C12 26,19 31,25 33 C31 31,38 26,38 8 Z" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Wine Glass<br>large cube</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Large Ice Cube</div>  
+    <div class="pill"><span class="pill-icon">🍷</span>Wine Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">25ml</span><span class="ing-name">Cherry syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">45ml</span><span class="ing-name">Peach mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Vanilla syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">5ml</span><span class="ing-name">Grenadine (float)</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🌸 Garnish</div>  
+        <div class="garnish-text">Maraschino cherry · edible blossom · grenadine float</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Prepare glass</div><div class="step-text">Place a large ice cube in a wine glass.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Combine cherry syrup, peach mix, vanilla syrup, and lemon juice in the shaker with ice. Shake for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain</div><div class="step-text">Strain into the wine glass over the large ice cube.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Grenadine float</div><div class="step-text">Gently pour 5ml of grenadine over the back of a spoon so it floats on the surface, creating a blossom-like bloom.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Add a maraschino cherry and a single edible flower on top. The red and pink tones create a truly romantic presentation.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Vanilla syrup is the secret ingredient here — it rounds out the cherry and peach into something that smells as good as it tastes.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R11 — CITRUS SPARK -->  
+<div class="recipe-section" id="r11">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">11 · Citrus &amp; Refreshing</div>  
+      <div class="recipe-name">Citrus Spark</div>  
+      <div class="recipe-subtitle" style="color:var(--gold2)">Bright &amp; Energising</div>  
+      <div class="recipe-desc">Orange and lemon shaken with sugar and lemonade — sharp, golden, electric.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">50ml</span><span class="ing-name">Orange juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">20ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Sugar syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">40ml</span><span class="ing-name">Lemonade (top)</span><span class="ing-type">Soda</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🍋 Garnish</div>  
+        <div class="garnish-text">Lemon half-wheel · orange twist · optional salted rim</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Rim (optional)</div><div class="step-text">For a salted rim: rub lemon around the rim and dip into flaked sea salt. Fill glass with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake base</div><div class="step-text">Add orange juice, lemon juice, and sugar syrup to shaker with ice. Shake well for 10–12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain over ice</div><div class="step-text">Strain into the highball glass over cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Top with lemonade</div><div class="step-text">Gently pour lemonade down the inside of the glass to preserve the fizz. Do not stir.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Add a lemon half-wheel on the rim and express an orange twist over the drink.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Always add carbonated ingredients last and pour them gently down the side of the glass — never shake sodas!</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R12 — AQUA MARINA -->  
+<div class="recipe-section" id="r12">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">12 · Citrus &amp; Refreshing</div>  
+      <div class="recipe-name">Aqua Marina</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-blue)">Cool &amp; Oceanic</div>  
+      <div class="recipe-desc">Blue curaçao and pineapple with lemon and sparkling water — vivid blue and impossibly cool.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">25ml</span><span class="ing-name">Blue curaçao syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">50ml</span><span class="ing-name">Pineapple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Sugar syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">top</span><span class="ing-name">Sparkling water</span><span class="ing-type">Soda</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🌊 Garnish</div>  
+        <div class="garnish-text">Blue sugar rim · pineapple leaf · lemon zest curl</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Blue sugar rim</div><div class="step-text">Mix white sugar with blue food colouring on a plate. Wet the rim with lemon and dip in. Fill glass with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Add blue curaçao syrup, pineapple juice, lemon juice, and sugar syrup to the shaker with ice. Shake for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain</div><div class="step-text">Strain into the highball glass over ice — the vivid blue colour will be striking.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Top with sparkling water</div><div class="step-text">Add a gentle pour of sparkling water down the side of the glass.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Add a pineapple leaf and curl a long lemon zest strip around a cocktail stick, then rest on the rim.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The blue colour is most vivid with clear ice — if you have access to slow-frozen or filtered ice, use it for maximum visual impact.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R13–R23: abbreviated but complete recipes -->  
+  
+<!-- R13 — TONIC GARDEN -->  
+<div class="recipe-section" id="r13">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">13 · Citrus &amp; Refreshing</div>  
+      <div class="recipe-name">Tonic Garden</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-green)">Elegant &amp; Herbaceous</div>  
+      <div class="recipe-desc">Green apple and lemon syrups shaken smooth, lifted by tonic water — sophisticated and beautifully bitter.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M10 6 C10 26,18 32,25 34 L25 52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M40 6 C40 26,32 32,25 34" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="10" y1="6" x2="40" y2="6" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="16" y1="52" x2="34" y2="52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M12 8 C12 26,19 31,25 33 C31 31,38 26,38 8 Z" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Wine Glass<br>ice sphere</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🔮</span>Ice Sphere</div>  
+    <div class="pill"><span class="pill-icon">🍷</span>Wine Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">20ml</span><span class="ing-name">Green apple syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">40ml</span><span class="ing-name">Apple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">50ml</span><span class="ing-name">Tonic water (top)</span><span class="ing-type">Soda</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🌿 Garnish</div>  
+        <div class="garnish-text">Thin apple slice · fresh mint sprig · cucumber wheel</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Ice sphere in glass</div><div class="step-text">Place a large ice sphere (or large cube) into a wine glass — this minimises dilution while keeping the drink cold.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake the base</div><div class="step-text">Add green apple syrup, lemon syrup, and apple juice to shaker with ice. Shake for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain into glass</div><div class="step-text">Strain over the ice sphere in the wine glass.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Top with tonic</div><div class="step-text">Slowly pour chilled tonic water down the inside of the glass. The bitter quinine note elevates the whole drink.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Add a paper-thin apple slice, a sprig of mint, and a cucumber wheel for an elegant, garden-inspired look.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Use premium tonic water — its bitterness and effervescence make or break this drink. Fever-Tree or similar works beautifully.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R14 — WATERMELON FREEZE -->  
+<div class="recipe-section" id="r14">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">14 · Citrus &amp; Refreshing</div>  
+      <div class="recipe-name">Watermelon Freeze</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-coral)">Summer Essential</div>  
+      <div class="recipe-desc">Watermelon and cranberry with lemon over crushed ice — sweet, cold, unapologetically summer.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="9" y="12" width="32" height="46" rx="2" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="7" y="8" width="36" height="7" rx="1" stroke="#c9a96e" stroke-width="1" opacity=".5"/>  
+        <rect x="11" y="14" width="28" height="42" rx="1" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Mason Jar<br>crushed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Packed Crushed Ice</div>  
+    <div class="pill"><span class="pill-icon">🫙</span>Mason Jar</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">30ml</span><span class="ing-name">Watermelon syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Cranberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">20ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Sugar syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🍉 Garnish</div>  
+        <div class="garnish-text">Mini watermelon wedge on rim · chilli flake edge · mint tip</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Chilli-salt edge</div><div class="step-text">Mix chilli flakes with a little salt. Wet the rim of the mason jar and press into the chilli-salt mix for a spicy edge.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Pack with ice</div><div class="step-text">Fill the mason jar tightly with crushed ice — pack it in.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Add watermelon syrup, cranberry mix, lemon juice, and sugar syrup to shaker with ice. Shake 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Strain over crushed ice</div><div class="step-text">Strain directly over the crushed ice in the mason jar. The vivid red colour against white ice is stunning.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Cut a small triangular watermelon wedge and perch on the rim. Add a mint sprig. Add a paper straw.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The chilli rim is optional but highly recommended — the sweet-spicy contrast is exactly what makes this a conversation starter.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R15 — MINT GLACIER -->  
+<div class="recipe-section" id="r15">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">15 · Citrus &amp; Refreshing</div>  
+      <div class="recipe-name">Mint Glacier</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-green)">Arctic Freshness</div>  
+      <div class="recipe-desc">Mint syrup and apple shaken cold, extended with sparkling water — clean, icy, bracingly aromatic.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>crushed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Crushed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">20ml</span><span class="ing-name">Mint syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">50ml</span><span class="ing-name">Apple juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">top</span><span class="ing-name">Sparkling water</span><span class="ing-type">Soda</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">❄️ Garnish</div>  
+        <div class="garnish-text">Large mint bouquet · lemon slice · powdered sugar dusting</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Pack with crushed ice</div><div class="step-text">Fill a highball glass to the top with crushed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Combine mint syrup, apple juice, and lemon juice in the shaker with ice. Shake hard for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain</div><div class="step-text">Strain over the crushed ice. The green-tinted liquid over white ice creates the "glacier" effect.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Top with sparkling water</div><div class="step-text">Add a gentle pour of sparkling water to fill the glass.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Push a generous bouquet of fresh mint into the ice — the guest should smell it before they even sip. Dust with powdered sugar. Add lemon slice.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Slap the mint bouquet gently on your palm before inserting it — this releases the aromatic oils for maximum fragrance.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R16 — COCO VELVET -->  
+<div class="recipe-section" id="r16">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">16 · Creamy &amp; Indulgent</div>  
+      <div class="recipe-name">Coco Velvet</div>  
+      <div class="recipe-subtitle" style="color:var(--gold2)">Silky &amp; Rich</div>  
+      <div class="recipe-desc">Coconut mix and milk shaken hard with vanilla — smooth, opaque, a tropical dessert in a glass.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="7" y="16" width="36" height="40" rx="4" stroke="#c9a96e" stroke-width="1.5" opacity=".8" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Rocks Glass<br>ice sphere</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🔮</span>Ice Sphere</div>  
+    <div class="pill"><span class="pill-icon">🥃</span>Rocks Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Coconut mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">40ml</span><span class="ing-name">Milk</span><span class="ing-type">Dairy</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Vanilla syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Pineapple syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🥥 Garnish</div>  
+        <div class="garnish-text">Toasted coconut flakes on top · vanilla pod swizzle · pineapple chip</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Place ice sphere</div><div class="step-text">Set a large ice sphere or cube in a rocks glass.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake very hard</div><div class="step-text">Add coconut mix, milk, vanilla syrup, and pineapple syrup to the shaker. Add ice and shake VERY hard for 18–20 seconds — the aeration is what makes it silky.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Fine strain</div><div class="step-text">Strain through a fine mesh strainer over the ice sphere. The result should be creamy and opaque.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Scatter toasted coconut flakes on top. Add a vanilla pod as a swizzle stick. Lean a dehydrated pineapple chip against the ice.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Milk-based drinks must be shaken harder and longer than others. The vigorous shake creates a micro-foam that gives Coco Velvet its characteristic smooth body.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R17 — PEACH CLOUD -->  
+<div class="recipe-section" id="r17">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">17 · Creamy &amp; Indulgent</div>  
+      <div class="recipe-name">Peach Cloud</div>  
+      <div class="recipe-subtitle" style="color:var(--gold)">Soft &amp; Velvety</div>  
+      <div class="recipe-desc">Peach double with milk and apricot — soft, pastel-golden, light as a cloud.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M10 6 C10 26,18 32,25 34 L25 52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M40 6 C40 26,32 32,25 34" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="10" y1="6" x2="40" y2="6" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="16" y1="52" x2="34" y2="52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M12 8 C12 26,19 31,25 33 C31 31,38 26,38 8 Z" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Wine Glass<br>no ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">❌</span>No Ice — Chilled</div>  
+    <div class="pill"><span class="pill-icon">🍷</span>Wine Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">40ml</span><span class="ing-name">Peach mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">30ml</span><span class="ing-name">Peach juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">20ml</span><span class="ing-name">Apricot syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">40ml</span><span class="ing-name">Milk</span><span class="ing-type">Dairy</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🍑 Garnish</div>  
+        <div class="garnish-text">Dehydrated peach slice · gold sugar rim · micro basil sprig</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Chill the glass</div><div class="step-text">Chill a wine glass in the freezer for 5 minutes or fill with ice water while you work.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Gold sugar rim</div><div class="step-text">Discard ice water. Mix gold (yellow) sugar or white sugar with gold edible dust. Wet rim and dip.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Shake hard</div><div class="step-text">Add peach mix, peach juice, apricot syrup, and milk to the shaker with ice. Shake very hard for 18 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Fine strain</div><div class="step-text">Fine-strain into the chilled wine glass without ice. The pale golden colour is beautifully cloud-like.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Float a dehydrated peach slice on the surface and add a micro basil sprig for a delicate aroma.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Serving without ice preserves the silky texture — the micro-foam from the hard shake keeps the drink cold enough.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R18 — STRAWBERRY MILK BAR -->  
+<div class="recipe-section" id="r18">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">18 · Creamy &amp; Indulgent</div>  
+      <div class="recipe-name">Strawberry Milk Bar</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-pink)">Nostalgic Sweetness</div>  
+      <div class="recipe-desc">Strawberry syrup and cranberry into cold milk — retro candy-pink joy in a mason jar.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="9" y="12" width="32" height="46" rx="2" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="7" y="8" width="36" height="7" rx="1" stroke="#c9a96e" stroke-width="1" opacity=".5"/>  
+        <rect x="11" y="14" width="28" height="42" rx="1" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Mason Jar<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🫙</span>Mason Jar</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">25ml</span><span class="ing-name">Strawberry syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">30ml</span><span class="ing-name">Strawberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">60ml</span><span class="ing-name">Milk</span><span class="ing-type">Dairy</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Vanilla syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🍓 Garnish</div>  
+        <div class="garnish-text">Strawberry fan on rim · pink sugar rim · paper straw</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Pink sugar rim</div><div class="step-text">Wet rim of mason jar with strawberry syrup and dip into pink sugar. Fill with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake hard</div><div class="step-text">Combine strawberry syrup, strawberry mix, milk, and vanilla syrup in the shaker with ice. Shake hard for 15 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain over ice</div><div class="step-text">Strain into the mason jar over ice. The colour should be a vivid candy pink.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Slit a strawberry to the centre and fan it onto the rim. Add a colourful paper straw. Pure retro nostalgia.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> For a thicker, creamier version substitute the milk with oat milk or coconut milk — both work beautifully with strawberry.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R19 — APRICOT DUSK -->  
+<div class="recipe-section" id="r19">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">19 · Elevated &amp; Complex</div>  
+      <div class="recipe-name">Apricot Dusk</div>  
+      <div class="recipe-subtitle" style="color:var(--gold)">Warm &amp; Layered</div>  
+      <div class="recipe-desc">Apricot and peach with orange and grenadine — warmly amber with a sunset gradient in every glass.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M15 6 C8 18,6 30,10 40 C12 46,12 52,12 54 L38 54 C38 52,38 46,40 40 C44 30,42 18,35 6 Z" stroke="#c9a96e" stroke-width="1.5" opacity=".8" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Hurricane<br>crushed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Crushed Ice</div>  
+    <div class="pill"><span class="pill-icon">🌀</span>Hurricane Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~3 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">25ml</span><span class="ing-name">Apricot syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">40ml</span><span class="ing-name">Peach mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">30ml</span><span class="ing-name">Orange juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Grenadine (sink)</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">10ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🌇 Garnish</div>  
+        <div class="garnish-text">Orange half-wheel · apricot slice · cinnamon stick swizzle</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Fill hurricane glass</div><div class="step-text">Pack a hurricane glass with crushed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake the base</div><div class="step-text">Add apricot syrup, peach mix, orange juice, and lemon juice to the shaker with ice. Shake 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain over ice</div><div class="step-text">Strain into the hurricane glass over crushed ice.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Sink grenadine</div><div class="step-text">Pour grenadine very slowly over the back of a spoon so it sinks to the bottom — creating a warm amber-to-deep red gradient, like a dusk sky.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Add orange half-wheel, a fresh or dried apricot slice, and a cinnamon stick as a swizzle for aroma.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> Present this before the guest stirs — the three-layer sunset gradient is the showstopper. Instruct them to stir with the cinnamon stick before tasting.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R20 — ELECTRIC BLUE CORAL -->  
+<div class="recipe-section" id="r20">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">20 · Elevated &amp; Complex</div>  
+      <div class="recipe-name">Electric Blue Coral</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-blue)">Striking &amp; Playful</div>  
+      <div class="recipe-desc">Blue curaçao and pineapple with raspberry float — an electric clash of cerulean and coral.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~4 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">20ml</span><span class="ing-name">Blue curaçao syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">40ml</span><span class="ing-name">Pineapple mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Raspberry syrup (float)</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">top</span><span class="ing-name">Sparkling water</span><span class="ing-type">Soda</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">⚡ Garnish</div>  
+        <div class="garnish-text">Blue + red ombré sugar rim · pineapple wedge · edible glitter</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Ombré rim</div><div class="step-text">Create an ombré effect: dip half the rim in blue sugar, the other half in red sugar. Fill with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake the blue base</div><div class="step-text">Add blue curaçao syrup, pineapple mix, and lemon juice to the shaker with ice. Shake for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain</div><div class="step-text">Strain into the highball glass over ice. Top gently with sparkling water.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Float raspberry syrup</div><div class="step-text">Slowly drizzle raspberry syrup over the back of a bar spoon so it floats on top, creating a vivid coral red layer over the electric blue.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Add pineapple wedge on rim and a pinch of edible glitter dusted on the float for maximum drama.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> This is a show drink — present it before stirring. The colour contrast between blue and coral is one of the most visually striking mocktails on the menu.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R21 — TROPICAL ENERGY -->  
+<div class="recipe-section" id="r21">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">21 · Elevated &amp; Complex</div>  
+      <div class="recipe-name">Tropical Energy</div>  
+      <div class="recipe-subtitle" style="color:var(--gold2)">Power &amp; Zest</div>  
+      <div class="recipe-desc">Passion fruit and mango with lemon poured over energy drink — bold, effervescent, unstoppable.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">40ml</span><span class="ing-name">Passion fruit mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">30ml</span><span class="ing-name">Mango mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">10ml</span><span class="ing-name">Sugar syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">60ml</span><span class="ing-name">Energy drink (top)</span><span class="ing-type">Soda</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🔥 Garnish</div>  
+        <div class="garnish-text">Mango slice · lime wedge · chilli salt rim</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Chilli salt rim</div><div class="step-text">Mix fleur de sel with chilli powder. Wet the highball rim and dip in. Fill with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Add passion fruit mix, mango mix, lemon juice, and sugar syrup to shaker with ice. Shake vigorously for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain over ice</div><div class="step-text">Strain into the highball glass over cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Top with energy drink</div><div class="step-text">Gently pour the energy drink down the side of the glass. Never pour from height — this kills the fizz.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Add a mango slice and a lime wedge on the rim. Serve immediately at full fizz.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The energy drink should be ice-cold from the fridge. A warm energy drink poured over ice loses carbonation rapidly and the drink becomes flat.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R22 — CRANBERRY ROSE -->  
+<div class="recipe-section" id="r22">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">22 · Elevated &amp; Complex</div>  
+      <div class="recipe-name">Cranberry Rose</div>  
+      <div class="recipe-subtitle" style="color:var(--accent-pink)">Elegant &amp; Tart</div>  
+      <div class="recipe-desc">Cranberry and raspberry with grenadine — deep ruby with a gorgeous bittersweet finish.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <path d="M5 8 L25 38 L25 52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M45 8 L25 38" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="5" y1="8" x2="45" y2="8" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <line x1="16" y1="52" x2="34" y2="52" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <path d="M7 10 L25 36 L43 10 Z" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Coupe<br>no ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">❄️</span>Chilled Coupe</div>  
+    <div class="pill"><span class="pill-icon">🍸</span>Coupe Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~4 min</div>  
+    <div class="pill"><span class="pill-icon">⭐</span>Intermediate</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">50ml</span><span class="ing-name">Cranberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">30ml</span><span class="ing-name">Raspberry mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Grenadine</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">15ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">5ml</span><span class="ing-name">Sugar syrup</span><span class="ing-type">Syrup</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">🌹 Garnish</div>  
+        <div class="garnish-text">Dried rose petals · raspberry on pick · gold dust rim</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Chill the coupe</div><div class="step-text">Fill coupe with ice water for 5 minutes. Discard when ready to pour.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Gold dust rim</div><div class="step-text">Mix white sugar with edible gold dust. Wet the rim with grenadine, then dip. The red-gold rim is spectacular.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Shake</div><div class="step-text">Combine cranberry mix, raspberry mix, grenadine, lemon juice, and sugar syrup in the shaker with ice. Shake hard for 15 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Double strain</div><div class="step-text">Strain through both Hawthorne and fine mesh strainers into the chilled coupe. The deep ruby surface should be perfectly clear and smooth.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Scatter 2–3 dried rose petals on the surface. Thread a fresh raspberry on a pick and lay it across the coupe.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> This is the most "cocktail-bar" drink on the menu. The gold rim + rose petals + ruby colour makes it the most photogenic. Perfect for special occasions.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+<!-- R23 — GOLDEN HOUR -->  
+<div class="recipe-section" id="r23">  
+  <div class="recipe-header">  
+    <div>  
+      <div class="recipe-number">23 · Elevated &amp; Complex</div>  
+      <div class="recipe-name">Golden Hour</div>  
+      <div class="recipe-subtitle" style="color:var(--gold)">Warm &amp; Radiant</div>  
+      <div class="recipe-desc">Orange and mango with apricot and energy drink — liquid gold that glows from within.</div>  
+    </div>  
+    <div class="glass-badge">  
+      <svg width="40" height="52" viewBox="0 0 50 62" fill="none">  
+        <rect x="10" y="6" width="30" height="52" rx="3" stroke="#c9a96e" stroke-width="1.5" opacity=".8"/>  
+        <rect x="12" y="8" width="26" height="48" rx="2" fill="rgba(201,169,110,0.08)"/>  
+      </svg>  
+      <span class="glass-badge-name">Highball<br>cubed ice</span>  
+    </div>  
+  </div>  
+  <div class="info-pills">  
+    <div class="pill"><span class="pill-icon">🧊</span>Cubed Ice</div>  
+    <div class="pill"><span class="pill-icon">🍹</span>Highball Glass</div>  
+    <div class="pill"><span class="pill-icon">⏱</span>~2 min</div>  
+    <div class="pill"><span class="pill-icon">💪</span>Easy</div>  
+  </div>  
+  <div class="recipe-body">  
+    <div>  
+      <div class="block-title">Ingredients</div>  
+      <div class="ingredients-list">  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">50ml</span><span class="ing-name">Orange juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-green)"></div><span class="ing-amount">30ml</span><span class="ing-name">Mango mix</span><span class="ing-type">Mix</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-coral)"></div><span class="ing-amount">15ml</span><span class="ing-name">Apricot syrup</span><span class="ing-type">Syrup</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--gold)"></div><span class="ing-amount">10ml</span><span class="ing-name">Lemon juice</span><span class="ing-type">Juice</span></div>  
+        <div class="ing-row"><div class="ing-dot" style="background:var(--accent-blue)"></div><span class="ing-amount">50ml</span><span class="ing-name">Energy drink (top)</span><span class="ing-type">Soda</span></div>  
+      </div>  
+      <div class="garnish-block">  
+        <div class="garnish-label">✨ Garnish</div>  
+        <div class="garnish-text">Gold sugar rim · orange twist · dehydrated mango chip</div>  
+      </div>  
+    </div>  
+    <div>  
+      <div class="block-title">Method</div>  
+      <div class="steps-list">  
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-action">Gold sugar rim</div><div class="step-text">Wet the rim with orange juice and dip into gold sugar. Fill highball with cubed ice.</div></div></div>  
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-action">Shake the base</div><div class="step-text">Add orange juice, mango mix, apricot syrup, and lemon juice to the shaker with ice. Shake for 12 seconds.</div></div></div>  
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-action">Strain over ice</div><div class="step-text">Strain into the prepared highball glass over ice. The warm amber-gold colour is beautiful at this stage.</div></div></div>  
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-action">Top with energy drink</div><div class="step-text">Gently pour chilled energy drink down the inside of the glass to preserve fizz.</div></div></div>  
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-action">Garnish</div><div class="step-text">Express and twist a wide strip of orange peel over the drink, then perch on the rim. Add a dehydrated mango chip for texture and colour.</div></div></div>  
+      </div>  
+      <div class="tip-block"><strong>Pro tip:</strong> The apricot syrup is the secret depth here — it adds a warm stone-fruit note that makes the golden colour feel edible. Don't skip it.</div>  
+    </div>  
+  </div>  
+</div>  
+  
+</main>  
+</div>  
+  
+<button class="mob-toggle" id="mobToggle" onclick="toggleSidebar()">☰</button>  
+  
+<script>  
+function goTo(id, el) {  
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));  
+  el.classList.add('active');  
+  const target = document.getElementById(id);  
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });  
+  if (window.innerWidth < 900) document.getElementById('sidebar').classList.remove('open');  
+}  
+  
+function toggleSidebar() {  
+  document.getElementById('sidebar').classList.toggle('open');  
+}  
+  
+function filterNav(val) {  
+  const q = val.toLowerCase();  
+  document.querySelectorAll('.nav-item').forEach(item => {  
+    const name = item.dataset.name?.toLowerCase() || '';  
+    item.style.display = name.includes(q) ? '' : 'none';  
+  });  
+  document.querySelectorAll('.cat-title').forEach(ct => {  
+    const group = ct.parentElement;  
+    const visible = [...group.querySelectorAll('.nav-item')].some(i => i.style.display !== 'none');  
+    ct.style.display = visible ? '' : 'none';  
+  });  
+}  
+  
+// Highlight active nav on scroll  
+const sections = document.querySelectorAll('.recipe-section[id]');  
+const navItems = document.querySelectorAll('.nav-item[onclick]');  
+  
+const obs = new IntersectionObserver(entries => {  
+  entries.forEach(e => {  
+    if (e.isIntersecting) {  
+      const id = e.target.id;  
+      navItems.forEach(n => {  
+        const onclickStr = n.getAttribute('onclick') || '';  
+        n.classList.toggle('active', onclickStr.includes("'"+id+"'"));  
+      });  
+    }  
+  });  
+}, { rootMargin: '-40% 0px -55% 0px' });  
+  
+sections.forEach(s => obs.observe(s));  
+</script>  
+</body>  
+</html>  
