@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Portfolio">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Portfolio Empire</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ececec;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        h1 { font-size: 24px; }
+        h2 { font-size: 16px; }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: env(safe-area-inset-top);
+            background: #0a0a0a;
+        }
+
+        .header {
+            padding: 45px 20px 20px;
+            border-bottom: 1px solid #1a1a1a;
+            background: #0a0a0a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-icon {
+            width: 24px;
+            height: 24px;
+            color: #ff6b35;
+            stroke-width: 2;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            color: #888888;
+        }
+
+        .stat-value {
+            color: #ff6b35;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .content {
+            flex: 1;
+            padding: 16px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+        }
+
+        /* ============================================
+           METRIC CARDS
+           ============================================ */
+        .card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .card:active {
+            border-color: #404040;
+        }
+
+        /* Streak Card */
+        .streak-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .streak-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .streak-flame {
+            font-size: 32px;
+            animation: flame-pulse 2s infinite;
+        }
+
+        .streak-info h3 {
+            margin: 0 0 2px 0;
+            font-size: 14px;
+        }
+
+        .streak-days {
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .streak-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b35;
+            font-family: 'Courier New', monospace;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* Rank Card */
+        .rank-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank-icon {
+            font-size: 28px;
+        }
+
+        .rank-info {
+            flex: 1;
+        }
+
+        .rank-name {
+            margin: 0;
+            font-size: 13px;
+            color: #ff6b35;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .rank-progress-label {
+            font-size: 11px;
+            color: #666666;
+            margin-top: 2px;
+        }
+
+        .rank-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #242424;
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .rank-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #ff8a5a);
+            transition: width 0.3s ease;
+        }
+
+        /* XP Card */
+        .xp-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .xp-left {
+            flex: 1;
+        }
+
+        .xp-label {
+            font-size: 11px;
+            color: #888888;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .xp-bar {
+            width: 100%;
+            height: 6px;
+            background: #242424;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: #ff6b35;
+            transition: width 0.3s ease;
+        }
+
+        .xp-right {
+            text-align: right;
+            margin-left: 12px;
+        }
+
+        .xp-amount {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ff6b35;
+            font-family: 'Courier New', monospace;
+        }
+
+        .xp-next {
+            font-size: 10px;
+            color: #666666;
+            margin-top: 2px;
+        }
+
+        /* ============================================
+           DEPOSIT SECTION
+           ============================================ */
+        .deposit-card {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 107, 53, 0.05));
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .deposit-label {
+            font-size: 11px;
+            color: #888888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #242424;
+            background: #0a0a0a;
+            color: #ececec;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]::placeholder {
+            color: #666666;
+        }
+
+        input[type="number"]:focus {
+            border-color: #ff6b35;
+            background: #1a1a1a;
+        }
+
+        button {
+            padding: 12px 18px;
+            border-radius: 6px;
+            border: none;
+            background: #ff6b35;
+            color: #0a0a0a;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        button:active {
+            background: #e55a24;
+            transform: scale(0.96);
+        }
+
+        /* ============================================
+           PORTFOLIO & STATS
+           ============================================ */
+        .stats-mini {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .stat-box {
+            background: rgba(255, 107, 53, 0.08);
+            border: 1px solid #242424;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-box-label {
+            color: #888888;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-box-value {
+            color: #ff6b35;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        /* ============================================
+           CHALLENGES
+           ============================================ */
+        .challenges-card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .challenges-title {
+            font-size: 12px;
+            color: #888888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .challenge-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .challenge-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .challenge-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .challenge-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #666666;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .challenge-name {
+            color: #ececec;
+        }
+
+        .challenge-progress {
+            color: #666666;
+            font-size: 11px;
+        }
+
+        /* ============================================
+           NOTIFICATION / BONUS
+           ============================================ */
+        .bonus-notification {
+            background: linear-gradient(135deg, #ff6b35, #ff8a5a);
+            color: #0a0a0a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-weight: 700;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .bonus-emoji {
+            font-size: 18px;
+            margin-right: 6px;
+        }
+
+        /* ============================================
+           UNLOCK SECTION
+           ============================================ */
+        .unlocks-card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .unlocks-title {
+            font-size: 12px;
+            color: #888888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .unlocks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+
+        .unlock-badge {
+            background: rgba(255, 107, 53, 0.15);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 4px;
+            padding: 8px;
+            text-align: center;
+            font-size: 10px;
+            color: #888888;
+        }
+
+        .unlock-badge.earned {
+            background: rgba(255, 107, 53, 0.3);
+            border-color: #ff6b35;
+            color: #ff6b35;
+            font-weight: 700;
+        }
+
+        .unlock-emoji {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        @keyframes flame-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes xpPop {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
+        .xp-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            color: #ff6b35;
+            font-weight: 700;
+            font-size: 32px;
+            font-family: 'Courier New', monospace;
+            pointer-events: none;
+            animation: xpPop 0.8s ease-out forwards;
+            z-index: 200;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .card {
+                padding: 12px;
+            }
+
+            h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <svg class="header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7H6v10m0 0v4m0-4l9-9m0 0h-7" />
+                </svg>
+                <h1>Portfolio</h1>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">Level <span class="stat-value" id="headerLevel">1</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="container">
+        <div class="content">
+
+            <!-- Bonus Notification -->
+            <div class="bonus-notification hidden" id="bonusNotification">
+                <span class="bonus-emoji" id="bonusEmoji">✨</span>
+                <span id="bonusText">Lucky Deposit! +50% XP</span>
+            </div>
+
+            <!-- Streak Card -->
+            <div class="card streak-card">
+                <div class="streak-left">
+                    <div class="streak-flame" id="streakFlame">🔥</div>
+                    <div class="streak-info">
+                        <h3>Day Streak</h3>
+                        <div class="streak-days">Keep depositing daily</div>
+                    </div>
+                </div>
+                <div class="streak-count" id="streakCount">0</div>
+            </div>
+
+            <!-- Rank & XP -->
+            <div class="card rank-card">
+                <div class="rank-icon" id="rankEmoji">🎖️</div>
+                <div class="rank-info">
+                    <div class="rank-name" id="rankName">Rookie</div>
+                    <div class="rank-progress-label" id="rankLabel">0 / 3000 XP</div>
+                    <div class="rank-progress-bar">
+                        <div class="rank-progress-fill" id="rankProgressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit -->
+            <div class="card deposit-card">
+                <label class="deposit-label">Today's Deposit</label>
+                <div class="input-group">
+                    <input type="number" id="depositInput" placeholder="0.00" step="0.01" min="0">
+                    <button onclick="handleDeposit()">Deposit</button>
+                </div>
+            </div>
+
+            <!-- Stats Mini -->
+            <div class="stats-mini">
+                <div class="stat-box">
+                    <div class="stat-box-label">Portfolio</div>
+                    <div class="stat-box-value" id="portfolioValue">$0.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-label">Total XP</div>
+                    <div class="stat-box-value" id="totalXP">0</div>
+                </div>
+            </div>
+
+            <!-- Challenges -->
+            <div class="challenges-card">
+                <div class="challenges-title">Weekly Challenges</div>
+                <div id="challengesList"></div>
+            </div>
+
+            <!-- Unlocks -->
+            <div class="unlocks-card">
+                <div class="unlocks-title">Achievements</div>
+                <div class="unlocks-grid" id="unlocksGrid"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // GAME STATE
+        // ============================================
+        const RANKS = [
+            { name: "Rookie", xpRequired: 0, emoji: "🎖️", perks: "Basic tracking" },
+            { name: "Trader", xpRequired: 3000, emoji: "📈", perks: "+5% XP bonus" },
+            { name: "Analyst", xpRequired: 8000, emoji: "📊", perks: "New asset class" },
+            { name: "Strategist", xpRequired: 15000, emoji: "🧠", perks: "Doubled streak" },
+            { name: "Tycoon", xpRequired: 25000, emoji: "💼", perks: "Weekend boost" },
+            { name: "Magnate", xpRequired: 40000, emoji: "👑", perks: "Hall of Fame" },
+            { name: "Legend", xpRequired: 60000, emoji: "⭐", perks: "Exclusive rewards" }
+        ];
+
+        const CHALLENGES = [
+            { id: 1, name: "Three Peat", desc: "Deposit 3 days in a row", xp: 200, max: 3 },
+            { id: 2, name: "Consistency", desc: "Deposit 5 weekdays", xp: 300, max: 5 },
+            { id: 3, name: "Big Money", desc: "Deposit above weekly avg", xp: 150, max: 1 }
+        ];
+
+        const UNLOCKS = [
+            { id: 1, name: "First Deposit", emoji: "🚀", xp: 0 },
+            { id: 2, name: "7-Day Streak", emoji: "🔥", xp: 500 },
+            { id: 3, name: "Level 2", emoji: "📈", xp: 3000 },
+            { id: 4, name: "$1K Portfolio", emoji: "💰", xp: 10000 },
+            { id: 5, name: "14-Day Streak", emoji: "🌟", xp: 2000 },
+            { id: 6, name: "Level 3", emoji: "🎯", xp: 8000 }
+        ];
+
+        let gameState = {
+            totalXP: 0,
+            streak: 0,
+            portfolio: 0,
+            lastDepositDate: null,
+            deposits: [],
+            unlockedAchievements: [],
+            depositCount: 0,
+            weeklyDepositDays: [],
+            weeklyTotal: 0,
+            challengesCompleted: {}
+        };
+
+        // ============================================
+        // LOAD & SAVE
+        // ============================================
+        function loadGame() {
+            const saved = localStorage.getItem('portfolioGame');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                checkStreakContinuation();
+                checkWeeklyReset();
+            }
+        }
+
+        function saveGame() {
+            localStorage.setItem('portfolioGame', JSON.stringify(gameState));
+        }
+
+        function checkStreakContinuation() {
+            const today = new Date().toDateString();
+            const lastDate = gameState.lastDepositDate;
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+            if (lastDate !== today && lastDate !== yesterday) {
+                gameState.streak = 0;
+            }
+        }
+
+        function checkWeeklyReset() {
+            const today = new Date();
+            const currentWeek = Math.floor((Date.now()) / (7 * 86400000));
+            const savedWeek = gameState.currentWeek || 0;
+
+            if (currentWeek !== savedWeek) {
+                gameState.weeklyDepositDays = [];
+                gameState.weeklyTotal = 0;
+                gameState.currentWeek = currentWeek;
+                gameState.challengesCompleted = {};
+            }
+        }
+
+        // ============================================
+        // DEPOSITS & XP
+        // ============================================
+        function handleDeposit() {
+            const input = document.getElementById('depositInput');
+            const amount = parseFloat(input.value);
+
+            if (!amount || amount <= 0) {
+                alert('Enter a valid amount');
+                return;
+            }
+
+            const today = new Date().toDateString();
+            const isNewDay = gameState.lastDepositDate !== today;
+
+            if (isNewDay) {
+                gameState.streak++;
+                gameState.lastDepositDate = today;
+                gameState.weeklyDepositDays.push(today);
+                gameState.weeklyTotal += amount;
+            } else {
+                gameState.weeklyTotal += amount;
+            }
+
+            gameState.portfolio += amount;
+            gameState.depositCount++;
+            gameState.deposits.push({ date: today, amount });
+
+            // Calculate XP
+            let xpGained = 100;
+            let bonusText = "Base deposit";
+            let bonusEmoji = "✓";
+
+            // Random bonus (70% base, 20% lucky, 7% jackpot, 3% legendary)
+            const rand = Math.random() * 100;
+            if (rand < 3) {
+                xpGained = 300; // 200% bonus
+                bonusText = "🏆 Legendary! +200% XP";
+                bonusEmoji = "🏆";
+                showBonus(bonusText, bonusEmoji);
+            } else if (rand < 10) {
+                xpGained = 200; // 100% bonus
+                bonusText = "💎 Jackpot! +100% XP";
+                bonusEmoji = "💎";
+                showBonus(bonusText, bonusEmoji);
+            } else if (rand < 30) {
+                xpGained = 150; // 50% bonus
+                bonusText = "🌟 Lucky! +50% XP";
+                bonusEmoji = "🌟";
+                showBonus(bonusText, bonusEmoji);
+            }
+
+            // Streak bonuses
+            if (gameState.streak === 7) {
+                xpGained += 500;
+                showBonus("🔥 7-Day Streak! +500 XP", "🔥");
+            } else if (gameState.streak === 14) {
+                xpGained += 1000;
+                showBonus("🔥 14-Day Streak! +1000 XP", "🔥");
+            } else if (gameState.streak === 28) {
+                xpGained += 2000;
+                showBonus("👑 Perfect Month! +2000 XP", "👑");
+            }
+
+            gameState.totalXP += xpGained;
+
+            // Update achievements and challenges
+            checkAchievements();
+            updateChallenges();
+
+            // Visual feedback
+            showXPPopup(xpGained);
+            input.value = '';
+            render();
+            saveGame();
+        }
+
+        function showBonus(text, emoji) {
+            const el = document.getElementById('bonusNotification');
+            document.getElementById('bonusText').textContent = text;
+            document.getElementById('bonusEmoji').textContent = emoji;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        function showXPPopup(amount) {
+            const popup = document.createElement('div');
+            popup.className = 'xp-popup';
+            popup.textContent = '+' + amount + ' XP';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 800);
+        }
+
+        // ============================================
+        // CHALLENGES
+        // ============================================
+        function updateChallenges() {
+            // Three Peat - 3 consecutive days
+            if (gameState.streak >= 3 && !gameState.challengesCompleted[1]) {
+                gameState.challengesCompleted[1] = true;
+            }
+
+            // Consistency - 5 weekdays
+            const weekdayCount = gameState.weeklyDepositDays.filter(dateStr => {
+                const day = new Date(dateStr).getDay();
+                return day !== 0 && day !== 6;
+            }).length;
+            if (weekdayCount >= 5 && !gameState.challengesCompleted[2]) {
+                gameState.challengesCompleted[2] = true;
+            }
+
+            // Big Money - deposit above weekly average
+            const avgDeposit = gameState.weeklyTotal / Math.max(gameState.weeklyDepositDays.length, 1);
+            if (gameState.deposits.length > 0) {
+                const lastDeposit = gameState.deposits[gameState.deposits.length - 1].amount;
+                if (lastDeposit > avgDeposit && !gameState.challengesCompleted[3]) {
+                    gameState.challengesCompleted[3] = true;
+                }
+            }
+        }
+
+        // ============================================
+        // ACHIEVEMENTS
+        // ============================================
+        function checkAchievements() {
+            // First Deposit
+            if (gameState.depositCount === 1 && !gameState.unlockedAchievements.includes(1)) {
+                gameState.unlockedAchievements.push(1);
+                showBonus("🎉 First Deposit unlocked!", "🚀");
+            }
+
+            // 7-Day Streak
+            if (gameState.streak === 7 && !gameState.unlockedAchievements.includes(2)) {
+                gameState.unlockedAchievements.push(2);
+                showBonus("🔥 7-Day Streak unlocked!", "🔥");
+            }
+
+            // Level 2
+            if (gameState.totalXP >= 3000 && !gameState.unlockedAchievements.includes(3)) {
+                gameState.unlockedAchievements.push(3);
+                showBonus("📈 Reached Trader level!", "📈");
+            }
+
+            // $1K Portfolio
+            if (gameState.portfolio >= 1000 && !gameState.unlockedAchievements.includes(4)) {
+                gameState.unlockedAchievements.push(4);
+                showBonus("💰 $1K Portfolio!", "💰");
+            }
+
+            // 14-Day Streak
+            if (gameState.streak === 14 && !gameState.unlockedAchievements.includes(5)) {
+                gameState.unlockedAchievements.push(5);
+                showBonus("🌟 14-Day Streak unlocked!", "🌟");
+            }
+
+            // Level 3
+            if (gameState.totalXP >= 8000 && !gameState.unlockedAchievements.includes(6)) {
+                gameState.unlockedAchievements.push(6);
+                showBonus("🎯 Reached Analyst level!", "📊");
+            }
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        function getCurrentRank() {
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (gameState.totalXP >= RANKS[i].xpRequired) {
+                    return { index: i, rank: RANKS[i] };
+                }
+            }
+            return { index: 0, rank: RANKS[0] };
+        }
+
+        function render() {
+            const current = getCurrentRank();
+            const nextRank = RANKS[current.index + 1];
+
+            // Header
+            document.getElementById('headerLevel').textContent = current.index + 1;
+
+            // Streak
+            document.getElementById('streakCount').textContent = gameState.streak;
+            if (gameState.streak === 0) {
+                document.getElementById('streakFlame').style.display = 'none';
+            } else {
+                document.getElementById('streakFlame').style.display = 'block';
+            }
+
+            // Rank
+            document.getElementById('rankEmoji').textContent = current.rank.emoji;
+            document.getElementById('rankName').textContent = current.rank.name;
+
+            if (nextRank) {
+                const xpToNext = nextRank.xpRequired - gameState.totalXP;
+                document.getElementById('rankLabel').textContent = 
+                    gameState.totalXP + ' / ' + nextRank.xpRequired + ' XP';
+                const progress = (gameState.totalXP - current.rank.xpRequired) / 
+                    (nextRank.xpRequired - current.rank.xpRequired) * 100;
+                document.getElementById('rankProgressFill').style.width = Math.min(progress, 100) + '%';
+            } else {
+                document.getElementById('rankLabel').textContent = 'MAX RANK';
+                document.getElementById('rankProgressFill').style.width = '100%';
+            }
+
+            // Portfolio & XP
+            document.getElementById('portfolioValue').textContent = '$' + gameState.portfolio.toFixed(2);
+            document.getElementById('totalXP').textContent = gameState.totalXP;
+
+            // Challenges
+            renderChallenges();
+
+            // Unlocks
+            renderUnlocks();
+        }
+
+        function renderChallenges() {
+            const list = document.getElementById('challengesList');
+            list.innerHTML = CHALLENGES.map(ch => {
+                const completed = gameState.challengesCompleted[ch.id] || false;
+                return `
+                    <div class="challenge-item">
+                        <div class="challenge-left">
+                            <div class="challenge-checkbox" style="border-color: ${completed ? '#ff6b35' : '#666666'}; background: ${completed ? '#ff6b35' : 'transparent'}; color: white;">
+                                ${completed ? '✓' : ''}
+                            </div>
+                            <div>
+                                <div class="challenge-name">${ch.name}</div>
+                                <div class="challenge-progress">${ch.desc} · +${ch.xp} XP</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderUnlocks() {
+            const grid = document.getElementById('unlocksGrid');
+            grid.innerHTML = UNLOCKS.map(unlock => {
+                const earned = gameState.unlockedAchievements.includes(unlock.id);
+                return `
+                    <div class="unlock-badge ${earned ? 'earned' : ''}">
+                        <span class="unlock-emoji">${unlock.emoji}</span>
+                        <div style="font-size: 9px;">${unlock.name}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.getElementById('depositInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleDeposit();
+        });
+
+        window.addEventListener('load', () => {
+            loadGame();
+            render();
+        });
+    </script>
+</body>
+</html>
