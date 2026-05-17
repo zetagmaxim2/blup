@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>ShotSwipe</title>
+<style>
+:root{
+    --bg:#000000;
+    --card:#121212;
+    --border:#262626;
+    --text:#f5f5f5;
+    --muted:#8e8e8e;
+    --accent:#0095f6;
+    --keep:#30d158;
+    --delete:#ff453a;
+}
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+}
+
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+    overflow:hidden;
+}
+
+.app{
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.header{
+    padding:18px 20px 14px;
+    border-bottom:1px solid var(--border);
+    background:rgba(0,0,0,.92);
+    backdrop-filter:blur(18px);
+    position:relative;
+    z-index:5;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:-1px;
+}
+
+.subtitle{
+    color:var(--muted);
+    margin-top:4px;
+    font-size:14px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:16px;
+}
+
+.stat{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:10px 14px;
+    min-width:90px;
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.stat-value{
+    font-size:18px;
+    font-weight:700;
+    margin-top:3px;
+}
+
+.main{
+    flex:1;
+    position:relative;
+    overflow:hidden;
+}
+
+.empty{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    padding:24px;
+    text-align:center;
+}
+
+.empty h2{
+    margin:0 0 10px;
+    font-size:30px;
+}
+
+.empty p{
+    color:var(--muted);
+    line-height:1.5;
+    max-width:340px;
+}
+
+.upload{
+    margin-top:22px;
+    background:var(--accent);
+    color:white;
+    border:none;
+    border-radius:999px;
+    padding:16px 22px;
+    font-size:16px;
+    font-weight:700;
+}
+
+#picker{
+    display:none;
+}
+
+.card-stack{
+    position:absolute;
+    inset:0;
+    padding:20px;
+}
+
+.card{
+    position:absolute;
+    inset:20px;
+    background:var(--card);
+    border-radius:28px;
+    overflow:hidden;
+    border:1px solid var(--border);
+    box-shadow:0 20px 50px rgba(0,0,0,.45);
+    touch-action:none;
+    transition:transform .25s ease;
+}
+
+.card img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:black;
+}
+
+.overlay{
+    position:absolute;
+    top:24px;
+    padding:10px 16px;
+    border-radius:16px;
+    font-size:28px;
+    font-weight:900;
+    letter-spacing:2px;
+    opacity:0;
+}
+
+.keep{
+    left:20px;
+    border:3px solid var(--keep);
+    color:var(--keep);
+    transform:rotate(-10deg);
+}
+
+.delete{
+    right:20px;
+    border:3px solid var(--delete);
+    color:var(--delete);
+    transform:rotate(10deg);
+}
+
+.bottom{
+    padding:18px 20px calc(26px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    background:#0a0a0a;
+}
+
+.action{
+    width:74px;
+    height:74px;
+    border-radius:999px;
+    border:none;
+    font-size:30px;
+    font-weight:700;
+    color:white;
+}
+
+.delete-btn{
+    background:var(--delete);
+}
+
+.keep-btn{
+    background:var(--keep);
+}
+
+.done{
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+    padding:30px;
+}
+
+.done h2{
+    font-size:34px;
+    margin-bottom:12px;
+}
+
+.done p{
+    color:var(--muted);
+    line-height:1.6;
+    max-width:360px;
+}
+
+.summary{
+    margin-top:24px;
+    display:flex;
+    gap:16px;
+}
+
+.summary-box{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:18px 20px;
+    min-width:120px;
+}
+
+.footer-note{
+    position:absolute;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#666;
+    font-size:11px;
+    text-align:center;
+    width:100%;
+    padding:0 20px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+    <div class="header">
+        <div class="logo">ShotSwipe</div>
+        <div class="subtitle">Instagram dark-mode inspired screenshot cleaner</div>
+
+        <div class="topbar">
+            <div class="stat">
+                <div class="stat-label">Remaining</div>
+                <div class="stat-value" id="remaining">0</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">Keep</div>
+                <div class="stat-value" id="keepCount">0</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">Delete</div>
+                <div class="stat-value" id="deleteCount">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="empty" id="empty">
+            <h2>Clean your screenshots.</h2>
+            <p>
+                Pick screenshots from your iPhone, then swipe right to keep
+                or left to delete — just like Tinder.
+            </p>
+
+            <button class="upload" onclick="document.getElementById('picker').click()">
+                Choose Screenshots
+            </button>
+
+            <input id="picker" type="file" accept="image/*" multiple />
+        </div>
+
+        <div class="card-stack" id="stack"></div>
+
+        <div class="done" id="done">
+            <h2>Review complete</h2>
+
+            <p>
+                iPhone browsers cannot directly delete Photos library items for security reasons.
+                Your “Delete” pile is now identified so you can remove them manually from Photos.
+            </p>
+
+            <div class="summary">
+                <div class="summary-box">
+                    <div class="stat-label">Keep</div>
+                    <div class="stat-value" id="finalKeep">0</div>
+                </div>
+
+                <div class="summary-box">
+                    <div class="stat-label">Delete</div>
+                    <div class="stat-value" id="finalDelete">0</div>
+                </div>
+            </div>
+
+            <button class="upload" style="margin-top:24px;" onclick="location.reload()">
+                Start Again
+            </button>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <button class="action delete-btn" onclick="forceSwipe(-1)">✕</button>
+        <button class="action keep-btn" onclick="forceSwipe(1)">♥</button>
+    </div>
+
+</div>
+
+<script>
+const picker = document.getElementById('picker');
+const stack = document.getElementById('stack');
+
+const remainingEl = document.getElementById('remaining');
+const keepCountEl = document.getElementById('keepCount');
+const deleteCountEl = document.getElementById('deleteCount');
+
+const doneScreen = document.getElementById('done');
+const emptyScreen = document.getElementById('empty');
+
+const finalKeep = document.getElementById('finalKeep');
+const finalDelete = document.getElementById('finalDelete');
+
+let cards = [];
+let keepCount = 0;
+let deleteCount = 0;
+
+picker.addEventListener('change', async (e) => {
+    const files = [...e.target.files];
+
+    if(!files.length) return;
+
+    emptyScreen.style.display = 'none';
+
+    cards = await Promise.all(files.map(async (file, index) => {
+        return {
+            id:index,
+            url:URL.createObjectURL(file),
+            name:file.name
+        };
+    }));
+
+    renderCards();
+    updateStats();
+});
+
+function renderCards(){
+    stack.innerHTML = '';
+
+    cards.forEach((cardData, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.zIndex = cards.length - index;
+
+        const img = document.createElement('img');
+        img.src = cardData.url;
+
+        const keep = document.createElement('div');
+        keep.className = 'overlay keep';
+        keep.innerText = 'KEEP';
+
+        const del = document.createElement('div');
+        del.className = 'overlay delete';
+        del.innerText = 'DELETE';
+
+        card.appendChild(img);
+        card.appendChild(keep);
+        card.appendChild(del);
+
+        addGesture(card, keep, del);
+
+        stack.appendChild(card);
+    });
+}
+
+function addGesture(card, keep, del){
+    let startX = 0;
+    let currentX = 0;
+    let dragging = false;
+
+    card.addEventListener('touchstart', (e) => {
+        dragging = true;
+        startX = e.touches[0].clientX;
+    });
+
+    card.addEventListener('touchmove', (e) => {
+        if(!dragging) return;
+
+        currentX = e.touches[0].clientX - startX;
+
+        const rotate = currentX / 14;
+
+        card.style.transform =
+            `translateX(${currentX}px) rotate(${rotate}deg)`;
+
+        if(currentX > 0){
+            keep.style.opacity = Math.min(currentX / 120, 1);
+            del.style.opacity = 0;
+        } else {
+            del.style.opacity = Math.min(Math.abs(currentX) / 120, 1);
+            keep.style.opacity = 0;
+        }
+    });
+
+    card.addEventListener('touchend', () => {
+        dragging = false;
+
+        if(currentX > 120){
+            swipe(card, 1);
+        } else if(currentX < -120){
+            swipe(card, -1);
+        } else {
+            card.style.transform = '';
+            keep.style.opacity = 0;
+            del.style.opacity = 0;
+        }
+
+        currentX = 0;
+    });
+}
+
+function swipe(card, direction){
+    card.style.transition = 'transform .25s ease';
+
+    const moveX = direction > 0 ? window.innerWidth : -window.innerWidth;
+
+    card.style.transform =
+        `translateX(${moveX}px) rotate(${direction * 24}deg)`;
+
+    setTimeout(() => {
+        card.remove();
+
+        cards.shift();
+
+        if(direction > 0){
+            keepCount++;
+        } else {
+            deleteCount++;
+        }
+
+        updateStats();
+
+        if(cards.length === 0){
+            showDone();
+        }
+    }, 220);
+}
+
+function forceSwipe(direction){
+    const card = document.querySelector('.card:last-child');
+    if(!card) return;
+
+    swipe(card, direction);
+}
+
+function updateStats(){
+    remainingEl.innerText = cards.length;
+    keepCountEl.innerText = keepCount;
+    deleteCountEl.innerText = deleteCount;
+}
+
+function showDone(){
+    doneScreen.style.display = 'flex';
+
+    finalKeep.innerText = keepCount;
+    finalDelete.innerText = deleteCount;
+}
+</script>
+</body>
+</html>
