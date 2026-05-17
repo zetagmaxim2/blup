@@ -169,6 +169,13 @@
             text-align: right;
         }
 
+        .streak-multiplier {
+            font-size: 11px;
+            color: #ff8a5a;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
         /* Rank Card */
         .rank-card {
             display: flex;
@@ -360,6 +367,67 @@
         }
 
         /* ============================================
+           QUESTS
+           ============================================ */
+        .quests-card {
+            background: #141414;
+            border: 1px solid rgba(100, 180, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .quests-title {
+            font-size: 12px;
+            color: #64b4ff;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .quest-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(100, 180, 255, 0.08);
+            border-left: 3px solid #64b4ff;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .quest-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .quest-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .quest-icon {
+            font-size: 16px;
+        }
+
+        .quest-name {
+            color: #64b4ff;
+            font-weight: 600;
+        }
+
+        .quest-progress {
+            color: #888888;
+            font-size: 11px;
+        }
+
+        .quest-reward {
+            color: #64b4ff;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        /* ============================================
            CHALLENGES
            ============================================ */
         .challenges-card {
@@ -454,6 +522,15 @@
             text-transform: uppercase;
             margin-bottom: 8px;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .unlocks-count {
+            color: #ff6b35;
+            font-weight: 700;
+            font-size: 11px;
         }
 
         .unlocks-grid {
@@ -463,13 +540,15 @@
         }
 
         .unlock-badge {
-            background: rgba(255, 107, 53, 0.15);
-            border: 1px solid rgba(255, 107, 53, 0.3);
+            background: rgba(100, 100, 100, 0.2);
+            border: 1px solid rgba(100, 100, 100, 0.3);
             border-radius: 4px;
             padding: 8px;
             text-align: center;
             font-size: 10px;
-            color: #888888;
+            color: #555555;
+            opacity: 0.6;
+            cursor: help;
         }
 
         .unlock-badge.earned {
@@ -477,12 +556,22 @@
             border-color: #ff6b35;
             color: #ff6b35;
             font-weight: 700;
+            opacity: 1;
         }
 
         .unlock-emoji {
             display: block;
             font-size: 18px;
             margin-bottom: 2px;
+        }
+
+        .unlock-badge.hidden .unlock-emoji {
+            filter: blur(2px);
+            opacity: 0.5;
+        }
+
+        .unlock-badge.hidden {
+            position: relative;
         }
 
         /* ============================================
@@ -591,6 +680,7 @@
                     <div class="streak-info">
                         <h3>Day Streak</h3>
                         <div class="streak-days">Keep depositing daily</div>
+                        <div class="streak-multiplier" id="streakMultiplier"></div>
                     </div>
                 </div>
                 <div class="streak-count" id="streakCount">0</div>
@@ -601,7 +691,7 @@
                 <div class="rank-icon" id="rankEmoji">🎖️</div>
                 <div class="rank-info">
                     <div class="rank-name" id="rankName">Rookie</div>
-                    <div class="rank-progress-label" id="rankLabel">0 / 3000 XP</div>
+                    <div class="rank-progress-label" id="rankLabel">0 / 1500 XP</div>
                     <div class="rank-progress-bar">
                         <div class="rank-progress-fill" id="rankProgressFill" style="width: 0%"></div>
                     </div>
@@ -629,6 +719,12 @@
                 </div>
             </div>
 
+            <!-- Active Quests -->
+            <div class="quests-card">
+                <div class="quests-title">🎯 Active Quests</div>
+                <div id="questsList"></div>
+            </div>
+
             <!-- Challenges -->
             <div class="challenges-card">
                 <div class="challenges-title">Weekly Challenges</div>
@@ -637,7 +733,10 @@
 
             <!-- Unlocks -->
             <div class="unlocks-card">
-                <div class="unlocks-title">Achievements</div>
+                <div class="unlocks-title">
+                    Achievements
+                    <span class="unlocks-count" id="unlocksCount">0/15</span>
+                </div>
                 <div class="unlocks-grid" id="unlocksGrid"></div>
             </div>
 
@@ -650,27 +749,53 @@
         // ============================================
         const RANKS = [
             { name: "Rookie", xpRequired: 0, emoji: "🎖️", perks: "Basic tracking" },
-            { name: "Trader", xpRequired: 3000, emoji: "📈", perks: "+5% XP bonus" },
-            { name: "Analyst", xpRequired: 8000, emoji: "📊", perks: "New asset class" },
-            { name: "Strategist", xpRequired: 15000, emoji: "🧠", perks: "Doubled streak" },
-            { name: "Tycoon", xpRequired: 25000, emoji: "💼", perks: "Weekend boost" },
-            { name: "Magnate", xpRequired: 40000, emoji: "👑", perks: "Hall of Fame" },
-            { name: "Legend", xpRequired: 60000, emoji: "⭐", perks: "Exclusive rewards" }
+            { name: "Trader", xpRequired: 1500, emoji: "📈", perks: "+5% XP bonus" },
+            { name: "Analyst", xpRequired: 3500, emoji: "📊", perks: "New asset class" },
+            { name: "Strategist", xpRequired: 6500, emoji: "🧠", perks: "Doubled streak" },
+            { name: "Tycoon", xpRequired: 11000, emoji: "💼", perks: "Weekend boost" },
+            { name: "Magnate", xpRequired: 17000, emoji: "👑", perks: "Hall of Fame" },
+            { name: "Legend", xpRequired: 25000, emoji: "⭐", perks: "Exclusive rewards" }
+        ];
+
+        const INITIAL_QUESTS = [
+            { id: 1, name: "First Steps", icon: "👣", desc: "Make your first deposit", xp: 100, type: "deposit_count", target: 1 },
+            { id: 2, name: "Double Down", icon: "🎯", desc: "Deposit 2 times", xp: 150, type: "deposit_count", target: 2 },
+            { id: 3, name: "Weekly Warrior", icon: "🗓️", desc: "Deposit on 3 different days", xp: 200, type: "deposit_days", target: 3 },
+        ];
+
+        const QUEST_POOL = [
+            { name: "Big Spender", icon: "💸", desc: "Deposit $50 or more", xp: 250, type: "deposit_amount", target: 50 },
+            { name: "Humble Grind", icon: "⚙️", desc: "Make 5 deposits", xp: 300, type: "deposit_count", target: 5 },
+            { name: "Dedication", icon: "🎖️", desc: "Maintain a 5-day streak", xp: 350, type: "streak", target: 5 },
+            { name: "Unstoppable", icon: "🚀", desc: "Reach a 10-day streak", xp: 500, type: "streak", target: 10 },
+            { name: "Portfolio Growth", icon: "📈", desc: "Reach $500 portfolio", xp: 400, type: "portfolio", target: 500 },
+            { name: "High Roller", icon: "🎰", desc: "Reach $1000 portfolio", xp: 600, type: "portfolio", target: 1000 },
+            { name: "Daily Ritual", icon: "☀️", desc: "Deposit for 7 consecutive days", xp: 550, type: "streak", target: 7 },
+            { name: "Fortune Finder", icon: "🍀", desc: "Get a lucky bonus 3 times", xp: 300, type: "bonus_count", target: 3 },
+        ];
+
+        const ACHIEVEMENTS = [
+            { id: 1, name: "First Deposit", emoji: "🚀", xp: 0, desc: "Make your first deposit", hidden: false },
+            { id: 2, name: "7-Day Streak", emoji: "🔥", xp: 500, desc: "7 consecutive days", hidden: false },
+            { id: 3, name: "Level 2", emoji: "📈", xp: 1500, desc: "Reach Trader rank", hidden: false },
+            { id: 4, name: "$1K Portfolio", emoji: "💰", xp: 1000, desc: "Portfolio reaches $1K", hidden: false },
+            { id: 5, name: "14-Day Streak", emoji: "🌟", xp: 2000, desc: "14 consecutive days", hidden: false },
+            { id: 6, name: "Level 3", emoji: "📊", xp: 3500, desc: "Reach Analyst rank", hidden: false },
+            { id: 7, name: "All-Star", emoji: "⭐", xp: 3000, desc: "Complete 10 quests", hidden: true },
+            { id: 8, name: "Jackpot!", emoji: "💎", xp: 5000, desc: "Get jackpot bonus 5 times", hidden: true },
+            { id: 9, name: "Month Master", emoji: "👑", xp: 4000, desc: "28-day streak achievement", hidden: true },
+            { id: 10, name: "XP Millionaire", emoji: "🏆", xp: 10000, desc: "Reach 25K XP total", hidden: true },
+            { id: 11, name: "Big Depositor", emoji: "💵", xp: 3500, desc: "Single deposit of $100+", hidden: true },
+            { id: 12, name: "Perfect Week", emoji: "💯", xp: 2500, desc: "Deposit all 7 days of week", hidden: true },
+            { id: 13, name: "Quest Master", emoji: "🎯", xp: 6000, desc: "Complete 25 quests", hidden: true },
+            { id: 14, name: "Legendary Streak", emoji: "⚡", xp: 8000, desc: "60-day streak", hidden: true },
+            { id: 15, name: "Ultimate Tycoon", emoji: "🏛️", xp: 12000, desc: "Reach Magnate rank", hidden: true },
         ];
 
         const CHALLENGES = [
             { id: 1, name: "Three Peat", desc: "Deposit 3 days in a row", xp: 200, max: 3 },
             { id: 2, name: "Consistency", desc: "Deposit 5 weekdays", xp: 300, max: 5 },
             { id: 3, name: "Big Money", desc: "Deposit above weekly avg", xp: 150, max: 1 }
-        ];
-
-        const UNLOCKS = [
-            { id: 1, name: "First Deposit", emoji: "🚀", xp: 0 },
-            { id: 2, name: "7-Day Streak", emoji: "🔥", xp: 500 },
-            { id: 3, name: "Level 2", emoji: "📈", xp: 3000 },
-            { id: 4, name: "$1K Portfolio", emoji: "💰", xp: 10000 },
-            { id: 5, name: "14-Day Streak", emoji: "🌟", xp: 2000 },
-            { id: 6, name: "Level 3", emoji: "🎯", xp: 8000 }
         ];
 
         let gameState = {
@@ -680,10 +805,15 @@
             lastDepositDate: null,
             deposits: [],
             unlockedAchievements: [],
+            completedQuests: [],
+            activeQuests: [],
             depositCount: 0,
             weeklyDepositDays: [],
             weeklyTotal: 0,
-            challengesCompleted: {}
+            challengesCompleted: {},
+            bonusCount: 0,
+            maxSingleDeposit: 0,
+            currentWeek: 0
         };
 
         // ============================================
@@ -695,6 +825,9 @@
                 gameState = JSON.parse(saved);
                 checkStreakContinuation();
                 checkWeeklyReset();
+                initializeActiveQuests();
+            } else {
+                initializeActiveQuests();
             }
         }
 
@@ -725,6 +858,73 @@
             }
         }
 
+        function initializeActiveQuests() {
+            if (gameState.activeQuests.length === 0) {
+                gameState.activeQuests = INITIAL_QUESTS.slice(0, 3);
+            }
+        }
+
+        function getStreakMultiplier() {
+            if (gameState.streak >= 28) return 4;
+            if (gameState.streak >= 14) return 3;
+            if (gameState.streak >= 7) return 2;
+            if (gameState.streak >= 3) return 1.5;
+            return 1;
+        }
+
+        // ============================================
+        // QUEST SYSTEM
+        // ============================================
+        function checkQuestProgress() {
+            gameState.activeQuests.forEach(quest => {
+                let progress = 0;
+                
+                if (quest.type === 'deposit_count') {
+                    progress = gameState.depositCount;
+                } else if (quest.type === 'deposit_days') {
+                    progress = gameState.weeklyDepositDays.length;
+                } else if (quest.type === 'deposit_amount') {
+                    progress = gameState.maxSingleDeposit;
+                } else if (quest.type === 'streak') {
+                    progress = gameState.streak;
+                } else if (quest.type === 'portfolio') {
+                    progress = gameState.portfolio;
+                } else if (quest.type === 'bonus_count') {
+                    progress = gameState.bonusCount;
+                }
+
+                if (progress >= quest.target && !gameState.completedQuests.includes(quest.id)) {
+                    completeQuest(quest);
+                }
+            });
+        }
+
+        function completeQuest(quest) {
+            gameState.completedQuests.push(quest.id);
+            gameState.totalXP += quest.xp;
+            showBonus(`✅ Quest Complete: ${quest.name}! +${quest.xp} XP`, "🎯");
+            unlockNewQuest();
+            render();
+        }
+
+        function unlockNewQuest() {
+            const availableQuests = QUEST_POOL.filter(q => 
+                !gameState.activeQuests.some(aq => aq.name === q.name) &&
+                !gameState.completedQuests.some(cq => 
+                    QUEST_POOL.find(p => p.name === q.name && p.id === cq)
+                )
+            );
+
+            if (availableQuests.length > 0 && gameState.activeQuests.length < 3) {
+                const randomQuest = availableQuests[Math.floor(Math.random() * availableQuests.length)];
+                const questWithId = { 
+                    ...randomQuest, 
+                    id: Math.random() 
+                };
+                gameState.activeQuests.push(questWithId);
+            }
+        }
+
         // ============================================
         // DEPOSITS & XP
         // ============================================
@@ -751,48 +951,55 @@
 
             gameState.portfolio += amount;
             gameState.depositCount++;
+            gameState.maxSingleDeposit = Math.max(gameState.maxSingleDeposit, amount);
             gameState.deposits.push({ date: today, amount });
 
-            // Calculate XP
-            let xpGained = 100;
+            // Calculate XP with streak multiplier
+            const multiplier = getStreakMultiplier();
+            let baseXP = 100;
+            let xpGained = Math.floor(baseXP * multiplier);
             let bonusText = "Base deposit";
             let bonusEmoji = "✓";
 
             // Random bonus (70% base, 20% lucky, 7% jackpot, 3% legendary)
             const rand = Math.random() * 100;
             if (rand < 3) {
-                xpGained = 300; // 200% bonus
+                xpGained = Math.floor(300 * multiplier); // 200% bonus
                 bonusText = "🏆 Legendary! +200% XP";
                 bonusEmoji = "🏆";
+                gameState.bonusCount++;
                 showBonus(bonusText, bonusEmoji);
             } else if (rand < 10) {
-                xpGained = 200; // 100% bonus
+                xpGained = Math.floor(200 * multiplier); // 100% bonus
                 bonusText = "💎 Jackpot! +100% XP";
                 bonusEmoji = "💎";
+                gameState.bonusCount++;
                 showBonus(bonusText, bonusEmoji);
             } else if (rand < 30) {
-                xpGained = 150; // 50% bonus
+                xpGained = Math.floor(150 * multiplier); // 50% bonus
                 bonusText = "🌟 Lucky! +50% XP";
                 bonusEmoji = "🌟";
+                gameState.bonusCount++;
                 showBonus(bonusText, bonusEmoji);
             }
 
             // Streak bonuses
             if (gameState.streak === 7) {
-                xpGained += 500;
-                showBonus("🔥 7-Day Streak! +500 XP", "🔥");
+                xpGained += Math.floor(500 * multiplier);
+                showBonus("🔥 7-Day Streak! +" + Math.floor(500 * multiplier) + " XP", "🔥");
             } else if (gameState.streak === 14) {
-                xpGained += 1000;
-                showBonus("🔥 14-Day Streak! +1000 XP", "🔥");
+                xpGained += Math.floor(1000 * multiplier);
+                showBonus("🔥 14-Day Streak! +" + Math.floor(1000 * multiplier) + " XP", "🔥");
             } else if (gameState.streak === 28) {
-                xpGained += 2000;
-                showBonus("👑 Perfect Month! +2000 XP", "👑");
+                xpGained += Math.floor(2000 * multiplier);
+                showBonus("👑 Perfect Month! +" + Math.floor(2000 * multiplier) + " XP", "👑");
             }
 
             gameState.totalXP += xpGained;
 
-            // Update achievements and challenges
+            // Update achievements, quests, and challenges
             checkAchievements();
+            checkQuestProgress();
             updateChallenges();
 
             // Visual feedback
@@ -862,8 +1069,8 @@
                 showBonus("🔥 7-Day Streak unlocked!", "🔥");
             }
 
-            // Level 2
-            if (gameState.totalXP >= 3000 && !gameState.unlockedAchievements.includes(3)) {
+            // Level 2 (Trader)
+            if (gameState.totalXP >= 1500 && !gameState.unlockedAchievements.includes(3)) {
                 gameState.unlockedAchievements.push(3);
                 showBonus("📈 Reached Trader level!", "📈");
             }
@@ -880,10 +1087,65 @@
                 showBonus("🌟 14-Day Streak unlocked!", "🌟");
             }
 
-            // Level 3
-            if (gameState.totalXP >= 8000 && !gameState.unlockedAchievements.includes(6)) {
+            // Level 3 (Analyst)
+            if (gameState.totalXP >= 3500 && !gameState.unlockedAchievements.includes(6)) {
                 gameState.unlockedAchievements.push(6);
-                showBonus("🎯 Reached Analyst level!", "📊");
+                showBonus("📊 Reached Analyst level!", "📊");
+            }
+
+            // All-Star (10 quests)
+            if (gameState.completedQuests.length >= 10 && !gameState.unlockedAchievements.includes(7)) {
+                gameState.unlockedAchievements.push(7);
+                showBonus("⭐ All-Star - 10 Quests Complete!", "⭐");
+            }
+
+            // Jackpot (5 jackpot bonuses)
+            if (gameState.bonusCount >= 5 && !gameState.unlockedAchievements.includes(8)) {
+                gameState.unlockedAchievements.push(8);
+                showBonus("💎 Jackpot! 5 bonus hits!", "💎");
+            }
+
+            // Month Master (28-day streak)
+            if (gameState.streak === 28 && !gameState.unlockedAchievements.includes(9)) {
+                gameState.unlockedAchievements.push(9);
+                showBonus("👑 Perfect Month!", "👑");
+            }
+
+            // XP Millionaire (25K XP)
+            if (gameState.totalXP >= 25000 && !gameState.unlockedAchievements.includes(10)) {
+                gameState.unlockedAchievements.push(10);
+                showBonus("🏆 XP Millionaire - 25K XP!", "🏆");
+            }
+
+            // Big Depositor (100+ single deposit)
+            if (gameState.maxSingleDeposit >= 100 && !gameState.unlockedAchievements.includes(11)) {
+                gameState.unlockedAchievements.push(11);
+                showBonus("💵 Big Depositor - $100+!", "💵");
+            }
+
+            // Perfect Week (all 7 days)
+            const uniqueDays = new Set(gameState.weeklyDepositDays.map(d => new Date(d).getDay()));
+            if (uniqueDays.size === 7 && !gameState.unlockedAchievements.includes(12)) {
+                gameState.unlockedAchievements.push(12);
+                showBonus("💯 Perfect Week - All 7 Days!", "💯");
+            }
+
+            // Quest Master (25 quests)
+            if (gameState.completedQuests.length >= 25 && !gameState.unlockedAchievements.includes(13)) {
+                gameState.unlockedAchievements.push(13);
+                showBonus("🎯 Quest Master - 25 Quests!", "🎯");
+            }
+
+            // Legendary Streak (60 days)
+            if (gameState.streak === 60 && !gameState.unlockedAchievements.includes(14)) {
+                gameState.unlockedAchievements.push(14);
+                showBonus("⚡ Legendary Streak - 60 Days!", "⚡");
+            }
+
+            // Ultimate Tycoon (Magnate rank - 17000 XP)
+            if (gameState.totalXP >= 17000 && !gameState.unlockedAchievements.includes(15)) {
+                gameState.unlockedAchievements.push(15);
+                showBonus("🏛️ Ultimate Tycoon - Magnate!", "🏛️");
             }
         }
 
@@ -908,6 +1170,10 @@
 
             // Streak
             document.getElementById('streakCount').textContent = gameState.streak;
+            const multiplier = getStreakMultiplier();
+            document.getElementById('streakMultiplier').textContent = 
+                multiplier > 1 ? `${multiplier}x XP Multiplier` : '';
+            
             if (gameState.streak === 0) {
                 document.getElementById('streakFlame').style.display = 'none';
             } else {
@@ -934,11 +1200,51 @@
             document.getElementById('portfolioValue').textContent = '$' + gameState.portfolio.toFixed(2);
             document.getElementById('totalXP').textContent = gameState.totalXP;
 
+            // Quests
+            renderQuests();
+
             // Challenges
             renderChallenges();
 
             // Unlocks
             renderUnlocks();
+        }
+
+        function renderQuests() {
+            const list = document.getElementById('questsList');
+            list.innerHTML = gameState.activeQuests.map(quest => {
+                let progress = 0;
+                let maxProgress = quest.target;
+                
+                if (quest.type === 'deposit_count') {
+                    progress = gameState.depositCount;
+                } else if (quest.type === 'deposit_days') {
+                    progress = gameState.weeklyDepositDays.length;
+                } else if (quest.type === 'deposit_amount') {
+                    progress = Math.floor(gameState.maxSingleDeposit);
+                } else if (quest.type === 'streak') {
+                    progress = gameState.streak;
+                } else if (quest.type === 'portfolio') {
+                    progress = Math.floor(gameState.portfolio);
+                } else if (quest.type === 'bonus_count') {
+                    progress = gameState.bonusCount;
+                }
+
+                const completed = progress >= maxProgress;
+                
+                return `
+                    <div class="quest-item">
+                        <div class="quest-left">
+                            <div class="quest-icon">${quest.icon}</div>
+                            <div>
+                                <div class="quest-name">${quest.name}</div>
+                                <div class="quest-progress">${quest.desc}</div>
+                            </div>
+                        </div>
+                        <div class="quest-reward">${progress}/${maxProgress}</div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function renderChallenges() {
@@ -963,12 +1269,17 @@
 
         function renderUnlocks() {
             const grid = document.getElementById('unlocksGrid');
-            grid.innerHTML = UNLOCKS.map(unlock => {
+            const unlockedCount = gameState.unlockedAchievements.length;
+            document.getElementById('unlocksCount').textContent = `${unlockedCount}/15`;
+            
+            grid.innerHTML = ACHIEVEMENTS.map(unlock => {
                 const earned = gameState.unlockedAchievements.includes(unlock.id);
+                const isHidden = unlock.hidden && !earned;
+                
                 return `
-                    <div class="unlock-badge ${earned ? 'earned' : ''}">
-                        <span class="unlock-emoji">${unlock.emoji}</span>
-                        <div style="font-size: 9px;">${unlock.name}</div>
+                    <div class="unlock-badge ${earned ? 'earned' : ''} ${isHidden ? 'hidden' : ''}" title="${isHidden ? '?' : unlock.desc}">
+                        <span class="unlock-emoji">${isHidden ? '❓' : unlock.emoji}</span>
+                        <div style="font-size: 9px;">${isHidden ? 'Secret' : unlock.name}</div>
                     </div>
                 `;
             }).join('');
