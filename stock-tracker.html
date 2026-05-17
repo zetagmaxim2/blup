@@ -36,7 +36,7 @@
             user-select: none;
             overflow-x: hidden;
             padding-bottom: env(safe-area-inset-bottom);
-            margin-top: 20px;
+            margin-top: 56px;
         }
 
         h1, h2, h3 {
@@ -751,9 +751,9 @@
 
             const displayCard = document.getElementById('displayCard');
             if (todayEntry) {
-                document.getElementById('todayStock').textContent = '$' + parseFloat(todayEntry.stock).toFixed(2);
+                document.getElementById('todayStock').textContent = '💰' + parseFloat(todayEntry.stock).toFixed(2);
                 document.getElementById('todayChange').textContent = 
-                    parseFloat(todayEntry.input).toFixed(2) + ' per day';
+                    parseFloat(todayEntry.input).toFixed(2) + ' left';
                 document.getElementById('todayInput').textContent = 
                     '$' + parseFloat(todayEntry.input).toFixed(2);
                 document.getElementById('todayFormula').textContent = 
