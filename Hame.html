@@ -537,6 +537,7 @@
             font-family: 'Courier New', monospace;
             pointer-events: none;
             animation: xpPop 0.8s ease-out forwards;
+            z-index: 200;
         }
 
         .hidden {
@@ -587,7 +588,7 @@
             <div class="card streak-card">
                 <div class="streak-left">
                     <div class="streak-flame" id="streakFlame">🔥</div>
-                    <div>
+                    <div class="streak-info">
                         <h3>Day Streak</h3>
                         <div class="streak-days">Keep depositing daily</div>
                     </div>
@@ -611,7 +612,7 @@
             <div class="card deposit-card">
                 <label class="deposit-label">Today's Deposit</label>
                 <div class="input-group">
-                    <input type="number" id="depositInput" placeholder="0.00" step="0.01">
+                    <input type="number" id="depositInput" placeholder="0.00" step="0.01" min="0">
                     <button onclick="handleDeposit()">Deposit</button>
                 </div>
             </div>
@@ -620,7 +621,7 @@
             <div class="stats-mini">
                 <div class="stat-box">
                     <div class="stat-box-label">Portfolio</div>
-                    <div class="stat-box-value" id="portfolioValue">$0</div>
+                    <div class="stat-box-value" id="portfolioValue">$0.00</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-box-label">Total XP</div>
@@ -658,9 +659,9 @@
         ];
 
         const CHALLENGES = [
-            { id: 1, name: "Three Peat", desc: "Deposit 3 days in a row", xp: 200, progress: 0, max: 3 },
-            { id: 2, name: "Consistency", desc: "Deposit 5 weekdays", xp: 300, progress: 0, max: 5 },
-            { id: 3, name: "Big Money", desc: "Deposit above weekly avg", xp: 150, progress: 0, max: 1 }
+            { id: 1, name: "Three Peat", desc: "Deposit 3 days in a row", xp: 200, max: 3 },
+            { id: 2, name: "Consistency", desc: "Deposit 5 weekdays", xp: 300, max: 5 },
+            { id: 3, name: "Big Money", desc: "Deposit above weekly avg", xp: 150, max: 1 }
         ];
 
         const UNLOCKS = [
@@ -679,7 +680,10 @@
             lastDepositDate: null,
             deposits: [],
             unlockedAchievements: [],
-            depositCount: 0
+            depositCount: 0,
+            weeklyDepositDays: [],
+            weeklyTotal: 0,
+            challengesCompleted: {}
         };
 
         // ============================================
@@ -690,6 +694,7 @@
             if (saved) {
                 gameState = JSON.parse(saved);
                 checkStreakContinuation();
+                checkWeeklyReset();
             }
         }
 
@@ -704,6 +709,19 @@
 
             if (lastDate !== today && lastDate !== yesterday) {
                 gameState.streak = 0;
+            }
+        }
+
+        function checkWeeklyReset() {
+            const today = new Date();
+            const currentWeek = Math.floor((Date.now()) / (7 * 86400000));
+            const savedWeek = gameState.currentWeek || 0;
+
+            if (currentWeek !== savedWeek) {
+                gameState.weeklyDepositDays = [];
+                gameState.weeklyTotal = 0;
+                gameState.currentWeek = currentWeek;
+                gameState.challengesCompleted = {};
             }
         }
 
@@ -725,6 +743,10 @@
             if (isNewDay) {
                 gameState.streak++;
                 gameState.lastDepositDate = today;
+                gameState.weeklyDepositDays.push(today);
+                gameState.weeklyTotal += amount;
+            } else {
+                gameState.weeklyTotal += amount;
             }
 
             gameState.portfolio += amount;
@@ -769,8 +791,9 @@
 
             gameState.totalXP += xpGained;
 
-            // Update achievements
+            // Update achievements and challenges
             checkAchievements();
+            updateChallenges();
 
             // Visual feedback
             showXPPopup(xpGained);
@@ -796,6 +819,34 @@
         }
 
         // ============================================
+        // CHALLENGES
+        // ============================================
+        function updateChallenges() {
+            // Three Peat - 3 consecutive days
+            if (gameState.streak >= 3 && !gameState.challengesCompleted[1]) {
+                gameState.challengesCompleted[1] = true;
+            }
+
+            // Consistency - 5 weekdays
+            const weekdayCount = gameState.weeklyDepositDays.filter(dateStr => {
+                const day = new Date(dateStr).getDay();
+                return day !== 0 && day !== 6;
+            }).length;
+            if (weekdayCount >= 5 && !gameState.challengesCompleted[2]) {
+                gameState.challengesCompleted[2] = true;
+            }
+
+            // Big Money - deposit above weekly average
+            const avgDeposit = gameState.weeklyTotal / Math.max(gameState.weeklyDepositDays.length, 1);
+            if (gameState.deposits.length > 0) {
+                const lastDeposit = gameState.deposits[gameState.deposits.length - 1].amount;
+                if (lastDeposit > avgDeposit && !gameState.challengesCompleted[3]) {
+                    gameState.challengesCompleted[3] = true;
+                }
+            }
+        }
+
+        // ============================================
         // ACHIEVEMENTS
         // ============================================
         function checkAchievements() {
@@ -808,6 +859,7 @@
             // 7-Day Streak
             if (gameState.streak === 7 && !gameState.unlockedAchievements.includes(2)) {
                 gameState.unlockedAchievements.push(2);
+                showBonus("🔥 7-Day Streak unlocked!", "🔥");
             }
 
             // Level 2
@@ -825,6 +877,7 @@
             // 14-Day Streak
             if (gameState.streak === 14 && !gameState.unlockedAchievements.includes(5)) {
                 gameState.unlockedAchievements.push(5);
+                showBonus("🌟 14-Day Streak unlocked!", "🌟");
             }
 
             // Level 3
@@ -891,17 +944,16 @@
         function renderChallenges() {
             const list = document.getElementById('challengesList');
             list.innerHTML = CHALLENGES.map(ch => {
-                const percent = Math.min((ch.progress / ch.max) * 100, 100);
-                const completed = gameState.depositCount >= ch.max;
+                const completed = gameState.challengesCompleted[ch.id] || false;
                 return `
                     <div class="challenge-item">
                         <div class="challenge-left">
-                            <div class="challenge-checkbox" style="border-color: ${completed ? '#ff6b35' : '#666666'}; background: ${completed ? '#ff6b35' : 'transparent'}">
+                            <div class="challenge-checkbox" style="border-color: ${completed ? '#ff6b35' : '#666666'}; background: ${completed ? '#ff6b35' : 'transparent'}; color: white;">
                                 ${completed ? '✓' : ''}
                             </div>
                             <div>
                                 <div class="challenge-name">${ch.name}</div>
-                                <div class="challenge-progress">${ch.progress}/${ch.max} · +${ch.xp} XP</div>
+                                <div class="challenge-progress">${ch.desc} · +${ch.xp} XP</div>
                             </div>
                         </div>
                     </div>
