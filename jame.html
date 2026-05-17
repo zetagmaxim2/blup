@@ -221,56 +221,6 @@
             transition: width 0.3s ease;
         }
 
-        /* XP Card */
-        .xp-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .xp-left {
-            flex: 1;
-        }
-
-        .xp-label {
-            font-size: 11px;
-            color: #888888;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-
-        .xp-bar {
-            width: 100%;
-            height: 6px;
-            background: #242424;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .xp-fill {
-            height: 100%;
-            background: #ff6b35;
-            transition: width 0.3s ease;
-        }
-
-        .xp-right {
-            text-align: right;
-            margin-left: 12px;
-        }
-
-        .xp-amount {
-            font-size: 14px;
-            font-weight: 700;
-            color: #ff6b35;
-            font-family: 'Courier New', monospace;
-        }
-
-        .xp-next {
-            font-size: 10px;
-            color: #666666;
-            margin-top: 2px;
-        }
-
         /* ============================================
            DEPOSIT SECTION
            ============================================ */
@@ -364,6 +314,12 @@
             font-weight: 700;
             font-family: 'Courier New', monospace;
             font-size: 16px;
+        }
+
+        .stat-box-sublabel {
+            color: #666666;
+            font-size: 9px;
+            margin-top: 4px;
         }
 
         /* ============================================
@@ -700,10 +656,10 @@
 
             <!-- Deposit -->
             <div class="card deposit-card">
-                <label class="deposit-label">Today's Deposit</label>
+                <label class="deposit-label">Daily Amount</label>
                 <div class="input-group">
                     <input type="number" id="depositInput" placeholder="0.00" step="0.01" min="0">
-                    <button onclick="handleDeposit()">Deposit</button>
+                    <button onclick="handleDeposit()">Submit</button>
                 </div>
             </div>
 
@@ -714,8 +670,9 @@
                     <div class="stat-box-value" id="portfolioValue">$0.00</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-box-label">Total XP</div>
-                    <div class="stat-box-value" id="totalXP">0</div>
+                    <div class="stat-box-label">Stock Price</div>
+                    <div class="stat-box-value" id="stockPrice">$0.00</div>
+                    <div class="stat-box-sublabel" id="daysRemaining">0 days left</div>
                 </div>
             </div>
 
@@ -813,8 +770,53 @@
             challengesCompleted: {},
             bonusCount: 0,
             maxSingleDeposit: 0,
-            currentWeek: 0
+            currentWeek: 0,
+            monthlyAmount: 0,
+            monthlyResetDate: null
         };
+
+        // ============================================
+        // STOCK PRICE CALCULATOR
+        // ============================================
+        function getDaysUntil28th() {
+            const today = new Date();
+            const currentDay = today.getDate();
+            
+            if (currentDay === 28) {
+                return 1; // Last day of cycle
+            } else if (currentDay < 28) {
+                return 28 - currentDay;
+            } else {
+                // After 28th, calculate days until next month's 28th
+                const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 28);
+                const msPerDay = 86400000;
+                return Math.ceil((nextMonth - today) / msPerDay);
+            }
+        }
+
+        function calculateStockPrice() {
+            const daysLeft = getDaysUntil28th();
+            if (gameState.monthlyAmount && daysLeft > 0) {
+                return gameState.monthlyAmount / daysLeft;
+            }
+            return 0;
+        }
+
+        function checkMonthlyReset() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            if (!gameState.monthlyResetDate) {
+                gameState.monthlyResetDate = `${currentYear}-${currentMonth}`;
+            }
+            
+            const newMonthKey = `${currentYear}-${currentMonth}`;
+            if (newMonthKey !== gameState.monthlyResetDate) {
+                gameState.monthlyAmount = 0;
+                gameState.monthlyResetDate = newMonthKey;
+            }
+        }
 
         // ============================================
         // LOAD & SAVE
@@ -825,8 +827,10 @@
                 gameState = JSON.parse(saved);
                 checkStreakContinuation();
                 checkWeeklyReset();
+                checkMonthlyReset();
                 initializeActiveQuests();
             } else {
+                checkMonthlyReset();
                 initializeActiveQuests();
             }
         }
@@ -937,6 +941,9 @@
                 return;
             }
 
+            checkMonthlyReset();
+            gameState.monthlyAmount = amount;
+
             const today = new Date().toDateString();
             const isNewDay = gameState.lastDepositDate !== today;
 
@@ -958,29 +965,21 @@
             const multiplier = getStreakMultiplier();
             let baseXP = 100;
             let xpGained = Math.floor(baseXP * multiplier);
-            let bonusText = "Base deposit";
-            let bonusEmoji = "✓";
 
-            // Random bonus (70% base, 20% lucky, 7% jackpot, 3% legendary)
+            // Random bonus
             const rand = Math.random() * 100;
             if (rand < 3) {
-                xpGained = Math.floor(300 * multiplier); // 200% bonus
-                bonusText = "🏆 Legendary! +200% XP";
-                bonusEmoji = "🏆";
+                xpGained = Math.floor(300 * multiplier);
                 gameState.bonusCount++;
-                showBonus(bonusText, bonusEmoji);
+                showBonus("🏆 Legendary! +200% XP", "🏆");
             } else if (rand < 10) {
-                xpGained = Math.floor(200 * multiplier); // 100% bonus
-                bonusText = "💎 Jackpot! +100% XP";
-                bonusEmoji = "💎";
+                xpGained = Math.floor(200 * multiplier);
                 gameState.bonusCount++;
-                showBonus(bonusText, bonusEmoji);
+                showBonus("💎 Jackpot! +100% XP", "💎");
             } else if (rand < 30) {
-                xpGained = Math.floor(150 * multiplier); // 50% bonus
-                bonusText = "🌟 Lucky! +50% XP";
-                bonusEmoji = "🌟";
+                xpGained = Math.floor(150 * multiplier);
                 gameState.bonusCount++;
-                showBonus(bonusText, bonusEmoji);
+                showBonus("🌟 Lucky! +50% XP", "🌟");
             }
 
             // Streak bonuses
@@ -997,12 +996,10 @@
 
             gameState.totalXP += xpGained;
 
-            // Update achievements, quests, and challenges
             checkAchievements();
             checkQuestProgress();
             updateChallenges();
 
-            // Visual feedback
             showXPPopup(xpGained);
             input.value = '';
             render();
@@ -1029,12 +1026,10 @@
         // CHALLENGES
         // ============================================
         function updateChallenges() {
-            // Three Peat - 3 consecutive days
             if (gameState.streak >= 3 && !gameState.challengesCompleted[1]) {
                 gameState.challengesCompleted[1] = true;
             }
 
-            // Consistency - 5 weekdays
             const weekdayCount = gameState.weeklyDepositDays.filter(dateStr => {
                 const day = new Date(dateStr).getDay();
                 return day !== 0 && day !== 6;
@@ -1043,7 +1038,6 @@
                 gameState.challengesCompleted[2] = true;
             }
 
-            // Big Money - deposit above weekly average
             const avgDeposit = gameState.weeklyTotal / Math.max(gameState.weeklyDepositDays.length, 1);
             if (gameState.deposits.length > 0) {
                 const lastDeposit = gameState.deposits[gameState.deposits.length - 1].amount;
@@ -1057,92 +1051,77 @@
         // ACHIEVEMENTS
         // ============================================
         function checkAchievements() {
-            // First Deposit
             if (gameState.depositCount === 1 && !gameState.unlockedAchievements.includes(1)) {
                 gameState.unlockedAchievements.push(1);
                 showBonus("🎉 First Deposit unlocked!", "🚀");
             }
 
-            // 7-Day Streak
             if (gameState.streak === 7 && !gameState.unlockedAchievements.includes(2)) {
                 gameState.unlockedAchievements.push(2);
                 showBonus("🔥 7-Day Streak unlocked!", "🔥");
             }
 
-            // Level 2 (Trader)
             if (gameState.totalXP >= 1500 && !gameState.unlockedAchievements.includes(3)) {
                 gameState.unlockedAchievements.push(3);
                 showBonus("📈 Reached Trader level!", "📈");
             }
 
-            // $1K Portfolio
             if (gameState.portfolio >= 1000 && !gameState.unlockedAchievements.includes(4)) {
                 gameState.unlockedAchievements.push(4);
-                showBonus("💰 $1K Portfolio!", "💰");
+                showBonus("💰 $1K Portfolio!", "���");
             }
 
-            // 14-Day Streak
             if (gameState.streak === 14 && !gameState.unlockedAchievements.includes(5)) {
                 gameState.unlockedAchievements.push(5);
                 showBonus("🌟 14-Day Streak unlocked!", "🌟");
             }
 
-            // Level 3 (Analyst)
             if (gameState.totalXP >= 3500 && !gameState.unlockedAchievements.includes(6)) {
                 gameState.unlockedAchievements.push(6);
                 showBonus("📊 Reached Analyst level!", "📊");
             }
 
-            // All-Star (10 quests)
             if (gameState.completedQuests.length >= 10 && !gameState.unlockedAchievements.includes(7)) {
                 gameState.unlockedAchievements.push(7);
                 showBonus("⭐ All-Star - 10 Quests Complete!", "⭐");
             }
 
-            // Jackpot (5 jackpot bonuses)
             if (gameState.bonusCount >= 5 && !gameState.unlockedAchievements.includes(8)) {
                 gameState.unlockedAchievements.push(8);
                 showBonus("💎 Jackpot! 5 bonus hits!", "💎");
             }
 
-            // Month Master (28-day streak)
             if (gameState.streak === 28 && !gameState.unlockedAchievements.includes(9)) {
                 gameState.unlockedAchievements.push(9);
                 showBonus("👑 Perfect Month!", "👑");
             }
 
-            // XP Millionaire (25K XP)
             if (gameState.totalXP >= 25000 && !gameState.unlockedAchievements.includes(10)) {
                 gameState.unlockedAchievements.push(10);
                 showBonus("🏆 XP Millionaire - 25K XP!", "🏆");
             }
 
-            // Big Depositor (100+ single deposit)
             if (gameState.maxSingleDeposit >= 100 && !gameState.unlockedAchievements.includes(11)) {
                 gameState.unlockedAchievements.push(11);
                 showBonus("💵 Big Depositor - $100+!", "💵");
             }
 
-            // Perfect Week (all 7 days)
             const uniqueDays = new Set(gameState.weeklyDepositDays.map(d => new Date(d).getDay()));
             if (uniqueDays.size === 7 && !gameState.unlockedAchievements.includes(12)) {
                 gameState.unlockedAchievements.push(12);
                 showBonus("💯 Perfect Week - All 7 Days!", "💯");
             }
 
-            // Quest Master (25 quests)
             if (gameState.completedQuests.length >= 25 && !gameState.unlockedAchievements.includes(13)) {
                 gameState.unlockedAchievements.push(13);
                 showBonus("🎯 Quest Master - 25 Quests!", "🎯");
             }
 
-            // Legendary Streak (60 days)
             if (gameState.streak === 60 && !gameState.unlockedAchievements.includes(14)) {
                 gameState.unlockedAchievements.push(14);
                 showBonus("⚡ Legendary Streak - 60 Days!", "⚡");
             }
 
-            // Ultimate Tycoon (Magnate rank - 17000 XP)
             if (gameState.totalXP >= 17000 && !gameState.unlockedAchievements.includes(15)) {
                 gameState.unlockedAchievements.push(15);
                 showBonus("🏛️ Ultimate Tycoon - Magnate!", "🏛️");
@@ -1162,6 +1141,7 @@
         }
 
         function render() {
+            checkMonthlyReset();
             const current = getCurrentRank();
             const nextRank = RANKS[current.index + 1];
 
@@ -1185,7 +1165,6 @@
             document.getElementById('rankName').textContent = current.rank.name;
 
             if (nextRank) {
-                const xpToNext = nextRank.xpRequired - gameState.totalXP;
                 document.getElementById('rankLabel').textContent = 
                     gameState.totalXP + ' / ' + nextRank.xpRequired + ' XP';
                 const progress = (gameState.totalXP - current.rank.xpRequired) / 
@@ -1196,17 +1175,15 @@
                 document.getElementById('rankProgressFill').style.width = '100%';
             }
 
-            // Portfolio & XP
+            // Portfolio & Stock Price
             document.getElementById('portfolioValue').textContent = '$' + gameState.portfolio.toFixed(2);
-            document.getElementById('totalXP').textContent = gameState.totalXP;
+            const stockPrice = calculateStockPrice();
+            const daysLeft = getDaysUntil28th();
+            document.getElementById('stockPrice').textContent = '$' + stockPrice.toFixed(2);
+            document.getElementById('daysRemaining').textContent = daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' left';
 
-            // Quests
             renderQuests();
-
-            // Challenges
             renderChallenges();
-
-            // Unlocks
             renderUnlocks();
         }
 
