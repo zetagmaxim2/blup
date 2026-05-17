@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="STOCK">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>STOCK</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ececec;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        h1 {
+            font-size: 28px;
+            letter-spacing: -0.01em;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+
+        /* ============================================
+           LAYOUT
+           ============================================ */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: env(safe-area-inset-top);
+            background: #0a0a0a;
+        }
+
+        .header {
+            padding: 20px 20px 24px;
+            border-bottom: 1px solid #1a1a1a;
+            background: #0a0a0a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 24px;
+            height: 24px;
+            color: #ff6b35;
+            stroke-width: 2;
+            flex-shrink: 0;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: #888888;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ============================================
+           METRIC CARDS
+           ============================================ */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .metric-card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .metric-card:active {
+            border-color: #404040;
+        }
+
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .metric-label-icon {
+            width: 16px;
+            height: 16px;
+            color: #666666;
+            stroke-width: 2;
+            flex-shrink: 0;
+        }
+
+        .metric-label-text {
+            font-size: 12px;
+            color: #888888;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #ff6b35;
+            line-height: 1;
+        }
+
+        .metric-subtext {
+            font-size: 12px;
+            color: #666666;
+            margin-top: 6px;
+        }
+
+        /* ============================================
+           DISPLAY CARD
+           ============================================ */
+        .display-card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .display-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .display-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .display-icon {
+            width: 20px;
+            height: 20px;
+            color: #ff6b35;
+            stroke-width: 2;
+            flex-shrink: 0;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            background: rgba(255, 107, 53, 0.15);
+            color: #ff6b35;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .price-section {
+            margin-bottom: 20px;
+        }
+
+        .price-label {
+            font-size: 12px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .price-value {
+            font-size: 40px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            color: #ff6b35;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .price-detail {
+            font-size: 13px;
+            color: #888888;
+            font-family: 'Courier New', monospace;
+        }
+
+        .divider {
+            height: 1px;
+            background: #242424;
+            margin: 16px 0;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+        }
+
+        .calc-label {
+            font-size: 13px;
+            color: #888888;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .calc-icon {
+            width: 16px;
+            height: 16px;
+            color: #666666;
+            stroke-width: 2;
+            flex-shrink: 0;
+        }
+
+        .calc-value {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #ececec;
+            font-size: 14px;
+        }
+
+        /* ============================================
+           INPUT SECTION
+           ============================================ */
+        .input-card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .input-label {
+            font-size: 12px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-label-icon {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+            color: #666666;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 14px 14px;
+            border-radius: 6px;
+            border: 1px solid #242424;
+            background: #0a0a0a;
+            color: #ececec;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input[type="number"]::placeholder {
+            color: #666666;
+        }
+
+        input[type="number"]:focus {
+            border-color: #ff6b35;
+            background: #1a1a1a;
+        }
+
+        button {
+            padding: 14px 20px;
+            border-radius: 6px;
+            border: none;
+            background: #ff6b35;
+            color: #0a0a0a;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-user-select: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        button:active {
+            background: #e55a24;
+        }
+
+        .button-icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
+        }
+
+        /* ============================================
+           HISTORY
+           ============================================ */
+        .history-card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .history-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .history-icon {
+            width: 18px;
+            height: 18px;
+            color: #ff6b35;
+            stroke-width: 2;
+            flex-shrink: 0;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #1a1a1a;
+            transition: opacity 0.2s ease;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-item:active {
+            opacity: 0.8;
+        }
+
+        .history-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .history-date {
+            font-size: 13px;
+            color: #888888;
+            font-weight: 500;
+        }
+
+        .history-calc {
+            font-size: 12px;
+            color: #666666;
+            font-family: 'Courier New', monospace;
+        }
+
+        .history-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .history-stock {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ff6b35;
+            font-family: 'Courier New', monospace;
+        }
+
+        .history-input {
+            font-size: 12px;
+            color: #666666;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666666;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: #888888;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 480px) {
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .price-value {
+                font-size: 32px;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <svg class="header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7H6v10m0 0v4m0-4l9-9m0 0h-7" />
+            </svg>
+            <div>
+                <h1>STOCK</h1>
+                <div class="header-subtitle">Daily Tracker</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <div class="content">
+            
+            <!-- Metric Grid -->
+            <div class="metric-grid">
+                <!-- Days Remaining -->
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <svg class="metric-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="metric-label-text">Days Left</span>
+                    </div>
+                    <div class="metric-value" id="daysRemaining">—</div>
+                    <div class="metric-subtext">until reset</div>
+                </div>
+
+                <!-- Status -->
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <svg class="metric-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="metric-label-text">Status</span>
+                    </div>
+                    <div class="metric-value" style="color: #ff6b35; font-size: 14px;">ACTIVE</div>
+                    <div class="metric-subtext">tracking enabled</div>
+                </div>
+            </div>
+
+            <!-- Today's Stock Card -->
+            <div class="display-card" id="displayCard" style="display: none;">
+                <div class="display-header">
+                    <h2 class="display-title">
+                        <svg class="display-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Today's Stock
+                    </h2>
+                    <span class="status-badge">Live</span>
+                </div>
+
+                <div class="price-section">
+                    <div class="price-label">Current Value</div>
+                    <div class="price-value" id="todayStock">$0.00</div>
+                    <div class="price-detail" id="todayChange">—</div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="calc-row">
+                    <span class="calc-label">
+                        <svg class="calc-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Daily Input
+                    </span>
+                    <span class="calc-value" id="todayInput">—</span>
+                </div>
+
+                <div class="calc-row">
+                    <span class="calc-label">
+                        <svg class="calc-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-6 3v-5m0 0h12a2 2 0 012 2v8a2 2 0 01-2 2H3a2 2 0 01-2-2v-8a2 2 0 012-2z" />
+                        </svg>
+                        Calculation
+                    </span>
+                    <span class="calc-value" id="todayFormula">—</span>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-card">
+                <label class="input-label">
+                    <svg class="input-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Enter Value
+                </label>
+                <div class="input-group">
+                    <input 
+                        type="number" 
+                        id="inputValue" 
+                        placeholder="0.00"
+                        inputmode="decimal"
+                        step="0.01"
+                    >
+                    <button onclick="handleAddEntry()" type="button">
+                        <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add
+                    </button>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="history-card hidden" id="historyCard">
+                <div class="history-header">
+                    <svg class="history-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h2 class="history-title">History</h2>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">📊</div>
+                <p class="empty-text">Enter your first value to start tracking</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let entries = [];
+        let todayEntry = null;
+
+        function calculateDaysRemaining() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            let targetDate = new Date(currentYear, currentMonth, 28);
+            
+            if (today.getDate() >= 28) {
+                targetDate = new Date(currentYear, currentMonth + 1, 28);
+            }
+            
+            const daysLeft = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+            return Math.max(daysLeft, 1);
+        }
+
+        function getTodayKey() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        function calculateStock(inputNum) {
+            const daysRemaining = calculateDaysRemaining();
+            return (inputNum / daysRemaining).toFixed(2);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem('stockEntries');
+            const lastResetDate = localStorage.getItem('lastResetDate');
+            const today = getTodayKey();
+
+            if (stored) {
+                try {
+                    const parsedEntries = JSON.parse(stored);
+                    
+                    const todayDate = new Date(today);
+                    const lastReset = lastResetDate ? new Date(lastResetDate) : new Date(0);
+                    
+                    if (todayDate.getDate() <= 28 && lastReset.getDate() > 28) {
+                        localStorage.clear();
+                        entries = [];
+                        todayEntry = null;
+                    } else {
+                        entries = parsedEntries;
+                        todayEntry = parsedEntries.find(e => e.date === today) || null;
+                    }
+                } catch (e) {
+                    console.error('Error parsing entries:', e);
+                    entries = [];
+                    todayEntry = null;
+                }
+            }
+            
+            localStorage.setItem('lastResetDate', today);
+        }
+
+        function handleAddEntry() {
+            const inputEl = document.getElementById('inputValue');
+            const inputValue = inputEl.value.trim();
+            
+            if (!inputValue || isNaN(inputValue) || parseFloat(inputValue) <= 0) {
+                alert('Please enter a valid number');
+                return;
+            }
+
+            const today = getTodayKey();
+            const numValue = parseFloat(inputValue);
+            const stockValue = calculateStock(numValue);
+            const daysRemaining = calculateDaysRemaining();
+
+            const newEntry = {
+                date: today,
+                input: numValue,
+                stock: parseFloat(stockValue),
+                daysRemaining: daysRemaining
+            };
+
+            const updatedEntries = entries.filter(e => e.date !== today);
+            updatedEntries.unshift(newEntry);
+            
+            entries = updatedEntries;
+            todayEntry = newEntry;
+            
+            try {
+                localStorage.setItem('stockEntries', JSON.stringify(updatedEntries));
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
+            }
+            
+            inputEl.value = '';
+            render();
+        }
+
+        function render() {
+            const daysRemaining = calculateDaysRemaining();
+            document.getElementById('daysRemaining').textContent = daysRemaining;
+
+            const displayCard = document.getElementById('displayCard');
+            if (todayEntry) {
+                document.getElementById('todayStock').textContent = '$' + parseFloat(todayEntry.stock).toFixed(2);
+                document.getElementById('todayChange').textContent = 
+                    parseFloat(todayEntry.input).toFixed(2) + ' per day';
+                document.getElementById('todayInput').textContent = 
+                    '$' + parseFloat(todayEntry.input).toFixed(2);
+                document.getElementById('todayFormula').textContent = 
+                    parseFloat(todayEntry.input).toFixed(2) + ' ÷ ' + todayEntry.daysRemaining;
+                displayCard.style.display = 'block';
+            } else {
+                displayCard.style.display = 'none';
+            }
+
+            const historyCard = document.getElementById('historyCard');
+            const historyList = document.getElementById('historyList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (entries.length > 0) {
+                historyList.innerHTML = entries.map((entry) => {
+                    return `
+                        <div class="history-item">
+                            <div class="history-left">
+                                <div class="history-date">${formatDate(entry.date)}</div>
+                                <div class="history-calc">${parseFloat(entry.input).toFixed(2)} ÷ ${entry.daysRemaining}d</div>
+                            </div>
+                            <div class="history-right">
+                                <div class="history-stock">$${parseFloat(entry.stock).toFixed(2)}</div>
+                                <div class="history-input">${parseFloat(entry.input).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                historyCard.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            } else if (!todayEntry) {
+                historyCard.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                historyCard.classList.add('hidden');
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('inputValue').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleAddEntry();
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', function() {
+            loadData();
+            render();
+        });
+    </script>
+</body>
+</html>
