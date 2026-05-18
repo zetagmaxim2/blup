@@ -264,7 +264,7 @@ class CubeGame {
         this.score = 0;
         this.highScore = parseInt(localStorage.getItem('cubeHighScore')) || 0;
 
-        this.gridCellSize = Math.min(window.innerWidth, window.innerHeight) * 0.26;
+        this.gridCellSize = Math.min(window.innerWidth, window.innerHeight) * 0.32;
 
         this.currentPlatform = null;
         this.nextPlatform = null;
@@ -281,7 +281,7 @@ class CubeGame {
 
         this.time = 0;
 
-        this.platformTimer = 0;
+        this.platformTimer = Math.min(this.platformTimer * 0.15, 0.25);
         this.platformDuration = 3;
 
         this.setupInputs();
@@ -386,7 +386,9 @@ class CubeGame {
             { x: -this.gridCellSize, y: 0 }
         ];
 
-        const shuffled = [...directions].sort(() => Math.random() - 0.5);
+        const shuffled = [...directions]
+            .sort(() => Math.random() - 0.5)
+            .sort(() => Math.random() > 0.7 ? 1 : -1);
 
         const margin = this.gridCellSize * 0.9;
 
@@ -427,9 +429,12 @@ class CubeGame {
             };
         }
 
+        // occasional fake pressure by slightly offsetting target visuals
+        const jitter = this.score > 20 ? (Math.random() - 0.5) * 10 : 0;
+
         this.nextPlatform = {
-            x: validPosition.x,
-            y: validPosition.y,
+            x: validPosition.x + jitter,
+            y: validPosition.y + jitter,
             width: 60,
             height: 60,
             breaking: false,
@@ -438,7 +443,7 @@ class CubeGame {
 
         this.platformTimer = 0;
 
-        this.platformDuration = Math.max(1.8, 3.5 - this.score * 0.04);
+        this.platformDuration = Math.max(0.85, 2.4 - this.score * 0.035);
     }
 
     jump(direction) {
@@ -472,7 +477,7 @@ class CubeGame {
 
         let progress = 0;
 
-        const duration = 0.18;
+        const duration = 0.14;
 
         const animate = () => {
             progress += 0.016 / duration;
@@ -486,7 +491,7 @@ class CubeGame {
 
                 this.score++;
 
-                if (this.platformTimer < this.platformDuration * 0.35) {
+                if (this.platformTimer < this.platformDuration * 0.22) {
                     this.createParticles(this.cube.x, this.cube.y, 25);
                 }
 
@@ -495,7 +500,7 @@ class CubeGame {
                     localStorage.setItem('cubeHighScore', this.highScore);
                 }
 
-                this.screenShake = 6;
+                this.screenShake = 10;
 
                 this.createParticles(this.cube.x, this.cube.y, 10);
 
@@ -515,7 +520,7 @@ class CubeGame {
             this.cube.x = startX + (targetX - startX) * t;
             this.cube.y = startY + (targetY - startY) * t - jumpArc;
 
-            this.cube.rotation += 0.08;
+            this.cube.rotation += 0.18;
 
             requestAnimationFrame(animate);
         };
@@ -638,7 +643,7 @@ class CubeGame {
         if (this.nextPlatform) {
             const p = this.nextPlatform;
 
-            const pulse = Math.sin(this.time * 5) * 0.15 + 0.85;
+            const pulse = Math.sin(this.time * 9) * 0.25 + 0.75;
 
             ctx.globalAlpha = pulse;
 
