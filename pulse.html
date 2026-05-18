@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PULSE SHIFT</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#0a0a0a;
+    color:#f5f5f5;
+    font-family:Inter,Arial,sans-serif;
+}
+
+body{
+    touch-action:none;
+}
+
+.game-container{
+    width:100vw;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    background:#0a0a0a;
+}
+
+.top-bar{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    z-index:100;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:20px;
+
+    background:rgba(10,10,10,0.55);
+    backdrop-filter:blur(12px);
+}
+
+.button-group-left{
+    display:flex;
+    gap:10px;
+}
+
+.icon-btn{
+    width:44px;
+    height:44px;
+
+    border-radius:12px;
+
+    border:1px solid rgba(247,55,79,0.15);
+
+    background:rgba(247,55,79,0.05);
+
+    color:#F7374F;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    transition:0.15s;
+}
+
+.icon-btn:hover{
+    background:rgba(247,55,79,0.12);
+}
+
+.icon-btn:active{
+    transform:scale(0.95);
+}
+
+.hidden{
+    display:none;
+}
+
+.score-display{
+    text-align:center;
+}
+
+.score-label{
+    font-size:11px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:rgba(247,55,79,0.5);
+}
+
+.score-value{
+    font-size:40px;
+    font-weight:700;
+}
+
+.game-area{
+    position:relative;
+
+    width:min(100vw,500px);
+    height:min(100vh,900px);
+
+    overflow:hidden;
+
+    background:#0f0f0f;
+
+    border-radius:28px;
+    border:1px solid rgba(247,55,79,0.08);
+}
+
+canvas{
+    width:100%;
+    height:100%;
+    display:block;
+    background:#0a0a0a;
+}
+
+.game-status{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+
+    width:min(320px,90vw);
+
+    padding:32px;
+
+    border-radius:24px;
+
+    background:rgba(20,20,20,0.96);
+
+    border:1px solid rgba(247,55,79,0.1);
+
+    text-align:center;
+
+    display:none;
+}
+
+.game-status.show{
+    display:block;
+}
+
+.game-status h2{
+    font-size:30px;
+    margin-bottom:12px;
+}
+
+.game-status p{
+    color:rgba(247,55,79,0.65);
+    margin-top:10px;
+}
+
+@media (max-width:768px){
+
+    .top-bar{
+        padding:12px;
+    }
+
+    .score-value{
+        font-size:28px;
+    }
+
+    .game-area{
+        width:100vw;
+        height:100vh;
+        border:none;
+        border-radius:0;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="game-container">
+
+    <div class="top-bar">
+
+        <div class="button-group-left">
+            <button class="icon-btn" id="playBtn" onclick="game.startGame()">▶</button>
+            <button class="icon-btn hidden" id="pauseBtn" onclick="game.togglePause()">❚❚</button>
+            <button class="icon-btn hidden" id="restartBtn" onclick="game.startGame()">↺</button>
+        </div>
+
+        <div class="score-display">
+            <div class="score-label">Score</div>
+            <div class="score-value" id="scoreValue">0</div>
+        </div>
+
+    </div>
+
+    <div class="game-area">
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="game-status show" id="gameStatus">
+            <h2 id="statusTitle">PULSE SHIFT</h2>
+            <p>Rotate gravity to survive</p>
+            <p>Swipe / A D / Arrow Keys</p>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+class PulseShiftGame{
+
+    constructor(canvas){
+
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+
+        this.resize();
+
+        window.addEventListener('resize', () => this.resize());
+
+        this.setupInputs();
+
+        this.gravityAngle = Math.PI / 2;
+
+        this.gravityStrength = 0.25;
+
+        this.worldRotation = 0;
+
+        this.score = 0;
+
+        this.combo = 1;
+
+        this.timeAlive = 0;
+
+        this.gameRunning = false;
+
+        this.gamePaused = false;
+
+        this.screenShake = 0;
+
+        this.freezeTimer = 0;
+
+        this.particles = [];
+
+        this.cube = {
+            x: 0,
+            y: 0,
+            size: 22,
+            vx: 0,
+            vy: 0,
+            rotation: 0
+        };
+
+        this.platforms = [];
+
+        this.lastPlatformSpawn = 0;
+
+        this.lastPulse = 0;
+
+        this.gameLoop();
+    }
+
+    resize(){
+
+        const maxWidth = Math.min(window.innerWidth,500);
+        const maxHeight = Math.min(window.innerHeight,900);
+
+        this.canvas.width = maxWidth;
+        this.canvas.height = maxHeight;
+    }
+
+    setupInputs(){
+
+        window.addEventListener('keydown',(e)=>{
+
+            const key = e.key.toLowerCase();
+
+            if(key === 'a' || e.key === 'ArrowLeft'){
+                this.rotateLeft();
+            }
+
+            if(key === 'd' || e.key === 'ArrowRight'){
+                this.rotateRight();
+            }
+
+        });
+
+        let sx = 0;
+
+        this.canvas.addEventListener('touchstart',(e)=>{
+            sx = e.touches[0].clientX;
+        });
+
+        this.canvas.addEventListener('touchend',(e)=>{
+
+            const dx = e.changedTouches[0].clientX - sx;
+
+            if(dx > 30){
+                this.rotateRight();
+            }
+
+            if(dx < -30){
+                this.rotateLeft();
+            }
+
+        });
+
+    }
+
+    rotateLeft(){
+
+        if(!this.gameRunning || this.gamePaused) return;
+
+        this.gravityAngle -= Math.PI / 2;
+
+        this.worldRotation -= Math.PI / 2;
+
+        this.screenShake = 5;
+    }
+
+    rotateRight(){
+
+        if(!this.gameRunning || this.gamePaused) return;
+
+        this.gravityAngle += Math.PI / 2;
+
+        this.worldRotation += Math.PI / 2;
+
+        this.screenShake = 5;
+    }
+
+    startGame(){
+
+        this.gameRunning = true;
+        this.gamePaused = false;
+
+        this.score = 0;
+        this.combo = 1;
+        this.timeAlive = 0;
+
+        this.gravityStrength = 0.25;
+
+        this.platforms = [];
+
+        this.cube.x = this.canvas.width / 2;
+        this.cube.y = 120;
+
+        this.cube.vx = 0;
+        this.cube.vy = 0;
+
+        this.gravityAngle = Math.PI / 2;
+        this.worldRotation = 0;
+
+        this.spawnInitialPlatforms();
+
+        this.updateUI();
+        this.showUI(false);
+
+        document.getElementById('playBtn').classList.add('hidden');
+        document.getElementById('pauseBtn').classList.remove('hidden');
+        document.getElementById('restartBtn').classList.add('hidden');
+    }
+
+    spawnInitialPlatforms(){
+
+        for(let i = 0; i < 10; i++){
+
+            this.spawnPlatform(
+                Math.random() * this.canvas.width,
+                160 + i * 120
+            );
+        }
+    }
+
+    spawnPlatform(x,y){
+
+        let type = 'safe';
+
+        const r = Math.random();
+
+        if(this.score > 10 && r < 0.12){
+            type = 'fake';
+        }
+
+        if(this.score > 18 && r < 0.1){
+            type = 'magnet';
+        }
+
+        this.platforms.push({
+            x,
+            y,
+            width: 90,
+            height: 18,
+            type,
+            pulse: Math.random() * 10,
+            broken:false
+        });
+    }
+
+    update(){
+
+        if(!this.gameRunning || this.gamePaused) return;
+
+        const dt = 1;
+
+        this.timeAlive += 0.016;
+
+        // freeze pulse mechanic
+        this.lastPulse += 0.016;
+
+        if(this.lastPulse > 9){
+
+            this.freezeTimer = 0.35;
+            this.lastPulse = 0;
+        }
+
+        if(this.freezeTimer > 0){
+
+            this.freezeTimer -= 0.016;
+            return;
+        }
+
+        // gravity increase
+        this.gravityStrength += 0.000015;
+
+        // broken gravity
+        if(Math.random() < 0.0009){
+
+            this.gravityAngle += Math.PI;
+        }
+
+        // apply gravity
+        this.cube.vx += Math.cos(this.gravityAngle) * this.gravityStrength;
+        this.cube.vy += Math.sin(this.gravityAngle) * this.gravityStrength;
+
+        this.cube.x += this.cube.vx * dt;
+        this.cube.y += this.cube.vy * dt;
+
+        this.cube.rotation += 0.04;
+
+        // drag
+        this.cube.vx *= 0.995;
+        this.cube.vy *= 0.995;
+
+        // bounds
+        if(
+            this.cube.x < -100 ||
+            this.cube.x > this.canvas.width + 100 ||
+            this.cube.y < -120 ||
+            this.cube.y > this.canvas.height + 120
+        ){
+            this.gameOver();
+        }
+
+        // collision
+        this.platforms.forEach(platform=>{
+
+            if(platform.broken) return;
+
+            const withinX =
+                this.cube.x > platform.x - platform.width/2 &&
+                this.cube.x < platform.x + platform.width/2;
+
+            const withinY =
+                this.cube.y + this.cube.size > platform.y - 10 &&
+                this.cube.y + this.cube.size < platform.y + 20;
+
+            if(withinX && withinY){
+
+                // bounce
+                this.cube.vx *= 0.94;
+                this.cube.vy *= -0.72;
+
+                // score
+                this.combo += 0.02;
+
+                this.score += Math.floor(1 * this.combo);
+
+                // magnet zones
+                if(platform.type === 'magnet'){
+
+                    this.cube.vx *= 1.08;
+                    this.cube.vy *= 1.08;
+                }
+
+                // fake platform
+                if(platform.type === 'fake'){
+
+                    platform.broken = true;
+                }
+
+                this.createParticles(
+                    this.cube.x,
+                    this.cube.y,
+                    8
+                );
+
+            }
+
+        });
+
+        // spawn more
+        this.lastPlatformSpawn += 0.016;
+
+        if(this.lastPlatformSpawn > 1.1){
+
+            this.lastPlatformSpawn = 0;
+
+            const density =
+                Math.max(
+                    2,
+                    7 - Math.floor(this.score / 12)
+                );
+
+            for(let i = 0; i < density; i++){
+
+                this.spawnPlatform(
+                    Math.random() * this.canvas.width,
+                    Math.random() * this.canvas.height
+                );
+            }
+
+            // cleanup
+            if(this.platforms.length > 40){
+
+                this.platforms.splice(0,10);
+            }
+        }
+
+        this.updateParticles();
+
+        this.updateUI();
+    }
+
+    updateParticles(){
+
+        this.particles.forEach(p=>{
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            p.life -= 0.03;
+
+            p.vx *= 0.98;
+            p.vy *= 0.98;
+        });
+
+        this.particles = this.particles.filter(p=>p.life > 0);
+    }
+
+    createParticles(x,y,n){
+
+        for(let i = 0; i < n; i++){
+
+            const a = Math.random() * Math.PI * 2;
+
+            this.particles.push({
+                x,
+                y,
+                vx: Math.cos(a) * (1 + Math.random() * 4),
+                vy: Math.sin(a) * (1 + Math.random() * 4),
+                life: 1
+            });
+        }
+    }
+
+    draw(){
+
+        const ctx = this.ctx;
+
+        ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+
+        ctx.save();
+
+        // screenshake
+        if(this.screenShake > 0){
+
+            ctx.translate(
+                (Math.random()-0.5)*this.screenShake,
+                (Math.random()-0.5)*this.screenShake
+            );
+
+            this.screenShake *= 0.9;
+        }
+
+        // world rotation
+        ctx.translate(
+            this.canvas.width / 2,
+            this.canvas.height / 2
+        );
+
+        ctx.rotate(this.worldRotation * 0.08);
+
+        ctx.translate(
+            -this.canvas.width / 2,
+            -this.canvas.height / 2
+        );
+
+        // grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+
+        for(let x = 0; x < this.canvas.width; x += 40){
+
+            ctx.beginPath();
+            ctx.moveTo(x,0);
+            ctx.lineTo(x,this.canvas.height);
+            ctx.stroke();
+        }
+
+        for(let y = 0; y < this.canvas.height; y += 40){
+
+            ctx.beginPath();
+            ctx.moveTo(0,y);
+            ctx.lineTo(this.canvas.width,y);
+            ctx.stroke();
+        }
+
+        // platforms
+        this.platforms.forEach(p=>{
+
+            if(p.broken) return;
+
+            if(p.type === 'safe'){
+                ctx.fillStyle = '#F7374F';
+            }
+            else if(p.type === 'magnet'){
+                ctx.fillStyle = '#00ffaa';
+            }
+            else if(p.type === 'fake'){
+                ctx.fillStyle = '#ffaa00';
+            }
+
+            const pulse = Math.sin(Date.now()*0.003 + p.pulse) * 4;
+
+            ctx.fillRect(
+                p.x - p.width/2,
+                p.y - p.height/2,
+                p.width + pulse,
+                p.height
+            );
+        });
+
+        // cube
+        ctx.save();
+
+        ctx.translate(this.cube.x,this.cube.y);
+
+        ctx.rotate(this.cube.rotation);
+
+        // glow
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ffffff';
+
+        ctx.fillStyle = '#ffffff';
+
+        ctx.fillRect(
+            -this.cube.size/2,
+            -this.cube.size/2,
+            this.cube.size,
+            this.cube.size
+        );
+
+        ctx.restore();
+
+        // particles
+        this.particles.forEach(p=>{
+
+            ctx.globalAlpha = p.life;
+
+            ctx.fillStyle = '#ffffff';
+
+            ctx.fillRect(p.x,p.y,2,2);
+        });
+
+        ctx.globalAlpha = 1;
+
+        // gravity direction indicator
+        ctx.save();
+
+        ctx.translate(70, this.canvas.height - 70);
+
+        ctx.rotate(this.gravityAngle);
+
+        ctx.strokeStyle = '#F7374F';
+        ctx.lineWidth = 4;
+
+        ctx.beginPath();
+        ctx.moveTo(-20,0);
+        ctx.lineTo(20,0);
+
+        ctx.lineTo(8,-8);
+
+        ctx.moveTo(20,0);
+        ctx.lineTo(8,8);
+
+        ctx.stroke();
+
+        ctx.restore();
+
+        // freeze pulse overlay
+        if(this.freezeTimer > 0){
+
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+        }
+
+        ctx.restore();
+    }
+
+    updateUI(){
+
+        document.getElementById('scoreValue').textContent = this.score;
+    }
+
+    showUI(show){
+
+        document.getElementById('gameStatus').classList.toggle('show',show);
+    }
+
+    togglePause(){
+
+        this.gamePaused = !this.gamePaused;
+
+        document.getElementById('pauseBtn').textContent =
+            this.gamePaused ? '▶' : '❚❚';
+    }
+
+    gameOver(){
+
+        this.gameRunning = false;
+
+        document.getElementById('statusTitle').textContent = 'CORE LOST';
+
+        document.getElementById('statusMessage').textContent =
+            `Final Score: ${this.score}`;
+
+        this.showUI(true);
+
+        document.getElementById('playBtn').classList.remove('hidden');
+        document.getElementById('pauseBtn').classList.add('hidden');
+        document.getElementById('restartBtn').classList.remove('hidden');
+    }
+
+    gameLoop(){
+
+        const loop = ()=>{
+
+            this.update();
+            this.draw();
+
+            requestAnimationFrame(loop);
+        };
+
+        loop();
+    }
+
+}
+
+const canvas = document.getElementById('gameCanvas');
+
+const game = new PulseShiftGame(canvas);
+
+window.game = game;
+
+</script>
+</body>
+</html>
