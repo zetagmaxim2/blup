@@ -386,19 +386,50 @@ class CubeGame {
             { x: -this.gridCellSize, y: 0 }
         ];
 
-        const dir = directions[Math.floor(Math.random() * directions.length)];
-
-        let newX = this.currentPlatform.x + dir.x;
-        let newY = this.currentPlatform.y + dir.y;
+        const shuffled = [...directions].sort(() => Math.random() - 0.5);
 
         const margin = this.gridCellSize * 0.9;
 
-        newX = Math.max(margin, Math.min(this.canvas.width - margin, newX));
-        newY = Math.max(margin, Math.min(this.canvas.height - margin, newY));
+        let validPosition = null;
+
+        for (const dir of shuffled) {
+            const candidateX = this.currentPlatform.x + dir.x;
+            const candidateY = this.currentPlatform.y + dir.y;
+
+            const insideBounds = (
+                candidateX > margin &&
+                candidateX < this.canvas.width - margin &&
+                candidateY > margin &&
+                candidateY < this.canvas.height - margin
+            );
+
+            if (!insideBounds) continue;
+
+            const distance = Math.hypot(
+                candidateX - this.currentPlatform.x,
+                candidateY - this.currentPlatform.y
+            );
+
+            if (distance < this.gridCellSize * 0.9) continue;
+
+            validPosition = {
+                x: candidateX,
+                y: candidateY
+            };
+
+            break;
+        }
+
+        if (!validPosition) {
+            validPosition = {
+                x: this.canvas.width / 2,
+                y: this.canvas.height / 2
+            };
+        }
 
         this.nextPlatform = {
-            x: newX,
-            y: newY,
+            x: validPosition.x,
+            y: validPosition.y,
             width: 60,
             height: 60,
             breaking: false,
