@@ -17,7 +17,7 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: #0a0a0a;
-    color: #f5f5f5;
+    color: #F7374F;
     font-family: Inter, Arial, sans-serif;
 }
 
@@ -66,9 +66,9 @@ body {
     width: 44px;
     height: 44px;
 
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.04);
-    color: white;
+    border: 1px solid rgba(247,55,79,0.15);
+    background: rgba(247,55,79,0.04);
+    color: #F7374F;
 
     border-radius: 12px;
 
@@ -83,8 +83,8 @@ body {
 }
 
 .icon-btn:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.3);
+    background: rgba(247,55,79,0.1);
+    border-color: rgba(247,55,79,0.3);
 }
 
 .icon-btn:active {
@@ -103,7 +103,7 @@ body {
     font-size: 11px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
+    color: rgba(247,55,79,0.4);
 }
 
 .score-value {
@@ -120,14 +120,14 @@ body {
     height: 2px;
     z-index: 200;
 
-    background: rgba(255,255,255,0.05);
+    background: rgba(247,55,79,0.05);
 }
 
 .timer-fill {
     height: 100%;
     width: 100%;
 
-    background: white;
+    background: #F7374F;
 
     transform-origin: left;
 }
@@ -141,7 +141,7 @@ body {
     border-radius: 28px;
     overflow: hidden;
 
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(247,55,79,0.08);
 
     background: #0f0f0f;
 }
@@ -168,7 +168,7 @@ canvas {
 
     background: rgba(20,20,20,0.96);
 
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(247,55,79,0.1);
     border-radius: 24px;
 
     padding: 32px;
@@ -190,7 +190,7 @@ canvas {
 }
 
 .game-status p {
-    color: rgba(255,255,255,0.6);
+    color: rgba(247,55,79,0.6);
     margin-top: 10px;
 }
 
@@ -635,7 +635,7 @@ class CubeGame {
             ctx.fillStyle = '#1f1f1f';
             ctx.fillRect(p.x - 30, p.y - 30, 60, 60);
 
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = '#F7374F';
             ctx.lineWidth = 2;
             ctx.strokeRect(p.x - 30, p.y - 30, 60, 60);
         }
@@ -647,14 +647,14 @@ class CubeGame {
 
             ctx.globalAlpha = pulse;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#F7374F';
             ctx.fillRect(p.x - 30, p.y - 30, 60, 60);
 
-            ctx.strokeStyle = '#ffffff';
+            ctx.strokeStyle = '#F7374F';
             ctx.lineWidth = 2;
             ctx.strokeRect(p.x - 30, p.y - 30, 60, 60);
 
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.strokeStyle = 'rgba(247,55,79,0.2)';
             ctx.lineWidth = 2;
             ctx.setLineDash([10, 10]);
 
@@ -675,7 +675,7 @@ class CubeGame {
 
         const size = 18;
 
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#F7374F';
         ctx.fillRect(-size, -size, size * 2, size * 2);
 
         ctx.strokeStyle = '#000000';
@@ -687,7 +687,7 @@ class CubeGame {
         this.particles.forEach(p => {
             ctx.globalAlpha = p.life;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#F7374F';
 
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
