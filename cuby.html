@@ -262,27 +262,22 @@ class CubeGame {
         this.isJumping = false;
 
         this.score = 0;
+        this.combo = 1;
         this.highScore = parseInt(localStorage.getItem('cubeHighScore')) || 0;
 
-        this.gridCellSize = Math.min(window.innerWidth, window.innerHeight) * 0.32;
+        this.gridCellSize = Math.min(window.innerWidth, window.innerHeight) * 0.26;
 
         this.currentPlatform = null;
-        this.nextPlatform = null;
+        this.nextPlatforms = [];
 
-        this.cube = {
-            x: 0,
-            y: 0,
-            rotation: 0
-        };
+        this.cube = { x: 0, y: 0, rotation: 0 };
 
         this.particles = [];
-
         this.screenShake = 0;
 
         this.time = 0;
-
-        this.platformTimer = Math.min(this.platformTimer * 0.15, 0.25);
-        this.platformDuration = 3;
+        this.platformTimer = 0;
+        this.platformDuration = 2.2;
 
         this.setupInputs();
         this.gameLoop();
@@ -295,279 +290,248 @@ class CubeGame {
         this.canvas.width = maxWidth;
         this.canvas.height = maxHeight;
 
-        this.canvas.style.width = `${maxWidth}px`;
-        this.canvas.style.height = `${maxHeight}px`;
-
         this.gridCellSize = Math.min(maxWidth, maxHeight) * 0.26;
     }
 
+    // ---------------- INPUT ----------------
     setupInputs() {
         window.addEventListener('keydown', (e) => {
             if (!this.gameRunning || this.gamePaused) return;
 
             const key = e.key.toLowerCase();
 
-            if (e.key === 'ArrowUp' || key === 'w') this.jump('UP');
-            if (e.key === 'ArrowRight' || key === 'd') this.jump('RIGHT');
-            if (e.key === 'ArrowDown' || key === 's') this.jump('DOWN');
-            if (e.key === 'ArrowLeft' || key === 'a') this.jump('LEFT');
+            if (key === 'w' || e.key === 'ArrowUp') this.tryJump('UP');
+            if (key === 'd' || e.key === 'ArrowRight') this.tryJump('RIGHT');
+            if (key === 's' || e.key === 'ArrowDown') this.tryJump('DOWN');
+            if (key === 'a' || e.key === 'ArrowLeft') this.tryJump('LEFT');
         });
 
-        let touchStartX = 0;
-        let touchStartY = 0;
+        let sx = 0, sy = 0;
 
         this.canvas.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
+            sx = e.touches[0].clientX;
+            sy = e.touches[0].clientY;
         });
 
         this.canvas.addEventListener('touchend', (e) => {
             if (!this.gameRunning || this.gamePaused) return;
 
-            const dx = e.changedTouches[0].clientX - touchStartX;
-            const dy = touchStartY - e.changedTouches[0].clientY;
-
-            const threshold = 30;
-
-            if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) {
-                return;
-            }
+            const dx = e.changedTouches[0].clientX - sx;
+            const dy = e.changedTouches[0].clientY - sy;
 
             if (Math.abs(dx) > Math.abs(dy)) {
-                if (dx > threshold) this.jump('RIGHT');
-                else this.jump('LEFT');
+                this.tryJump(dx > 0 ? 'RIGHT' : 'LEFT');
             } else {
-                if (dy > threshold) this.jump('UP');
-                else this.jump('DOWN');
+                this.tryJump(dy > 0 ? 'DOWN' : 'UP');
             }
         });
     }
 
+    // ---------------- GAME START ----------------
     startGame() {
         this.gameRunning = true;
         this.gamePaused = false;
-        this.isJumping = false;
-
         this.score = 0;
+        this.combo = 1;
         this.time = 0;
-        this.particles = [];
 
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height * 0.65;
+        const cx = this.canvas.width / 2;
+        const cy = this.canvas.height * 0.65;
 
-        this.currentPlatform = {
-            x: centerX,
-            y: centerY,
-            width: 60,
-            height: 60,
-            breaking: false,
-            breakProgress: 0
-        };
+        this.currentPlatform = this.createPlatform(cx, cy, 'stable');
 
-        this.cube.x = centerX;
-        this.cube.y = centerY;
-        this.cube.rotation = 0;
+        this.cube.x = cx;
+        this.cube.y = cy;
 
-        this.spawnNext();
+        this.spawnChoices();
+
+        this.updateUI();
+        this.showUI(true);
 
         document.getElementById('playBtn').classList.add('hidden');
         document.getElementById('pauseBtn').classList.remove('hidden');
         document.getElementById('restartBtn').classList.add('hidden');
-        document.getElementById('gameStatus').classList.remove('show');
-
-        this.updateDisplay();
     }
 
-    spawnNext() {
-        const directions = [
-            { x: 0, y: -this.gridCellSize },
-            { x: this.gridCellSize, y: 0 },
-            { x: 0, y: this.gridCellSize },
-            { x: -this.gridCellSize, y: 0 }
-        ];
-
-        const shuffled = [...directions]
-            .sort(() => Math.random() - 0.5)
-            .sort(() => Math.random() > 0.7 ? 1 : -1);
-
-        const margin = this.gridCellSize * 0.2;
-
-        let validPosition = null;
-
-        for (const dir of shuffled) {
-            const candidateX = this.currentPlatform.x + dir.x;
-            const candidateY = this.currentPlatform.y + dir.y;
-
-            const insideBounds = (
-                candidateX > margin &&
-                candidateX < this.canvas.width - margin &&
-                candidateY > margin &&
-                candidateY < this.canvas.height - margin
-            );
-
-            if (!insideBounds) continue;
-
-            const distance = Math.hypot(
-                candidateX - this.currentPlatform.x,
-                candidateY - this.currentPlatform.y
-            );
-
-            if (distance < this.gridCellSize * 0.6) continue;
-
-            validPosition = {
-                x: candidateX,
-                y: candidateY
-            };
-
-            break;
-        }
-
-        if (!validPosition) {
-            validPosition = {
-                x: this.canvas.width / 2,
-                y: this.canvas.height / 2
-            };
-        }
-
-        // occasional fake pressure by slightly offsetting target visuals
-        const jitter = this.score > 20 ? (Math.random() - 0.5) * 10 : 0;
-
-        this.nextPlatform = {
-            x: validPosition.x + jitter,
-            y: validPosition.y + jitter,
+    // ---------------- PLATFORM SYSTEM ----------------
+    createPlatform(x, y, type = 'stable') {
+        return {
+            x, y,
+            type,
             width: 60,
             height: 60,
             breaking: false,
-            breakProgress: 0
+            life: type === 'fragile' ? 0.6 : 1
         };
+    }
+
+    spawnChoices() {
+        const dirs = [
+            { x: 0, y: -1, dir: 'UP' },
+            { x: 1, y: 0, dir: 'RIGHT' },
+            { x: 0, y: 1, dir: 'DOWN' },
+            { x: -1, y: 0, dir: 'LEFT' }
+        ];
+
+        const shuffled = dirs.sort(() => Math.random() - 0.5);
+
+        const base = this.gridCellSize;
+
+        this.nextPlatforms = [];
+
+        // spawn 2–3 choices
+        const count = this.score > 10 ? 3 : 2;
+
+        for (let i = 0; i < count; i++) {
+            const d = shuffled[i];
+
+            const x = this.currentPlatform.x + d.x * base;
+            const y = this.currentPlatform.y + d.y * base;
+
+            let type = 'stable';
+
+            // difficulty injection
+            const r = Math.random();
+
+            if (this.score > 5 && r < 0.2) type = 'fragile';
+            if (this.score > 10 && r < 0.15) type = 'decoy';
+            if (this.score > 15 && r < 0.1) type = 'bonus';
+
+            this.nextPlatforms.push({
+                x,
+                y,
+                dir: d.dir,
+                type,
+                pulse: Math.random() * 10
+            });
+        }
 
         this.platformTimer = 0;
 
-        this.platformDuration = Math.max(0.85, 2.4 - this.score * 0.035);
+        // exponential difficulty curve
+        this.platformDuration = Math.max(0.6, 2.2 * Math.pow(0.965, this.score));
     }
 
-    jump(direction) {
-        if (!this.gameRunning || this.gamePaused || !this.nextPlatform) return;
-        if (this.isJumping) return;
+    // ---------------- JUMP SYSTEM ----------------
+    tryJump(direction) {
+        if (this.isJumping || !this.gameRunning || this.gamePaused) return;
 
-        const dx = this.nextPlatform.x - this.cube.x;
-        const dy = this.nextPlatform.y - this.cube.y;
-
-        let valid = false;
-
-        if (direction === 'UP' && dy < 0) valid = true;
-        if (direction === 'RIGHT' && dx > 0) valid = true;
-        if (direction === 'DOWN' && dy > 0) valid = true;
-        if (direction === 'LEFT' && dx < 0) valid = true;
-
-        if (!valid) {
-            this.screenShake = 3;
+        const target = this.nextPlatforms.find(p => p.dir === direction);
+        if (!target) {
+            this.screenShake = 4;
             return;
         }
 
         this.isJumping = true;
 
-        this.currentPlatform.breaking = true;
-
         const startX = this.cube.x;
         const startY = this.cube.y;
 
-        const targetX = this.nextPlatform.x;
-        const targetY = this.nextPlatform.y;
+        const endX = target.x;
+        const endY = target.y;
 
-        let progress = 0;
+        let t = 0;
+        const duration = 140;
 
-        const duration = 0.14;
+        const animate = (ts = 0) => {
+            t += 16 / duration;
+            if (t >= 1) t = 1;
 
-        const animate = () => {
-            progress += 0.016 / duration;
+            const ease = t < 0.5
+                ? 2 * t * t
+                : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
-            if (progress >= 1) {
-                this.cube.x = targetX;
-                this.cube.y = targetY;
+            const arc = Math.sin(t * Math.PI) * 40;
 
-                this.currentPlatform = this.nextPlatform;
-                this.nextPlatform = null;
+            this.cube.x = startX + (endX - startX) * ease;
+            this.cube.y = startY + (endY - startY) * ease - arc;
 
-                this.score++;
+            this.cube.rotation += 0.2;
 
-                if (this.platformTimer < this.platformDuration * 0.22) {
-                    this.createParticles(this.cube.x, this.cube.y, 25);
-                }
-
-                if (this.score > this.highScore) {
-                    this.highScore = this.score;
-                    localStorage.setItem('cubeHighScore', this.highScore);
-                }
-
-                this.screenShake = 10;
-
-                this.createParticles(this.cube.x, this.cube.y, 10);
-
-                this.spawnNext();
-                this.updateDisplay();
-
-                this.isJumping = false;
+            if (t < 1) {
+                requestAnimationFrame(animate);
                 return;
             }
 
-            const t = progress < 0.5
-                ? 2 * progress * progress
-                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-
-            const jumpArc = Math.sin(progress * Math.PI) * 40;
-
-            this.cube.x = startX + (targetX - startX) * t;
-            this.cube.y = startY + (targetY - startY) * t - jumpArc;
-
-            this.cube.rotation += 0.18;
-
-            requestAnimationFrame(animate);
+            this.resolveLanding(target);
+            this.isJumping = false;
         };
 
         animate();
     }
 
-    togglePause() {
-        this.gamePaused = !this.gamePaused;
-        document.getElementById('pauseBtn').textContent = this.gamePaused ? '▶' : '❚❚';
-    }
+    resolveLanding(target) {
+        this.currentPlatform = this.createPlatform(target.x, target.y, target.type);
 
-    createParticles(x, y, count) {
-        for (let i = 0; i < count; i++) {
-            const angle = Math.random() * Math.PI * 2;
-
-            this.particles.push({
-                x,
-                y,
-                vx: Math.cos(angle) * (2 + Math.random() * 4),
-                vy: Math.sin(angle) * (2 + Math.random() * 4),
-                life: 1,
-                size: 2 + Math.random() * 3
-            });
-        }
-    }
-
-    update() {
-        if (!this.gameRunning || this.gamePaused) return;
-
-        this.time += 0.016;
-
-        this.platformTimer += 0.016;
-
-        if (this.platformTimer >= this.platformDuration) {
+        // DECAY LOGIC
+        if (target.type === 'decoy') {
             this.gameOver();
             return;
         }
 
-        if (this.currentPlatform && this.currentPlatform.breaking) {
-            this.currentPlatform.breakProgress += 0.03;
+        // SCORE SYSTEM
+        this.combo += 0.15;
 
-            if (this.currentPlatform.breakProgress > 1) {
-                this.currentPlatform = null;
-            }
+        let gain = 1;
+
+        if (target.type === 'bonus') gain = 3;
+        if (target.type === 'fragile') gain = 2;
+
+        this.score += Math.floor(gain * this.combo);
+
+        // effects
+        this.createParticles(this.cube.x, this.cube.y, 12);
+
+        this.screenShake = 6;
+
+        this.spawnChoices();
+        this.updateUI();
+    }
+
+    // ---------------- GAME LOOP ----------------
+    update() {
+        if (!this.gameRunning || this.gamePaused) return;
+
+        this.platformTimer += 0.016;
+
+        if (this.platformTimer > this.platformDuration) {
+            this.gameOver();
         }
 
+        this.time += 0.016;
+    }
+
+    gameOver() {
+        this.gameRunning = false;
+        this.combo = 1;
+
+        this.highScore = Math.max(this.highScore, this.score);
+        localStorage.setItem('cubeHighScore', this.highScore);
+
+        this.showUI(false);
+        this.updateUI();
+
+        document.getElementById('playBtn').classList.remove('hidden');
+        document.getElementById('pauseBtn').classList.add('hidden');
+        document.getElementById('restartBtn').classList.remove('hidden');
+    }
+
+    // ---------------- PARTICLES ----------------
+    createParticles(x, y, n) {
+        for (let i = 0; i < n; i++) {
+            const a = Math.random() * Math.PI * 2;
+
+            this.particles.push({
+                x, y,
+                vx: Math.cos(a) * (2 + Math.random() * 3),
+                vy: Math.sin(a) * (2 + Math.random() * 3),
+                life: 1
+            });
+        }
+    }
+
+    // Update particle positions
+    updateParticles() {
         this.particles.forEach(p => {
             p.life -= 0.03;
             p.x += p.vx;
@@ -577,135 +541,78 @@ class CubeGame {
         });
 
         this.particles = this.particles.filter(p => p.life > 0);
-
-        if (this.screenShake > 0) {
-            this.screenShake *= 0.85;
-        }
-
-        this.updateDisplay();
     }
 
-    gameOver() {
-        this.gameRunning = false;
-
-        this.createParticles(this.cube.x, this.cube.y, 30);
-
-        document.getElementById('playBtn').classList.remove('hidden');
-        document.getElementById('pauseBtn').classList.add('hidden');
-        document.getElementById('restartBtn').classList.remove('hidden');
-
-        document.getElementById('gameStatus').classList.add('show');
-
-        document.getElementById('statusTitle').textContent = this.score >= this.highScore
-            ? 'New Record'
-            : 'Game Over';
-
-        document.getElementById('statusMessage').textContent = `Score ${this.score} · Best ${this.highScore}`;
-    }
-
-    updateDisplay() {
+    // ---------------- UI ----------------
+    updateUI() {
         document.getElementById('scoreValue').textContent = this.score;
 
         const progress = Math.max(0, 1 - this.platformTimer / this.platformDuration);
-
         document.getElementById('timerFill').style.width = `${progress * 100}%`;
     }
 
+    showUI(running) {
+        document.getElementById('gameStatus').classList.toggle('show', !running);
+    }
+
+    togglePause() {
+        this.gamePaused = !this.gamePaused;
+        document.getElementById('pauseBtn').textContent = this.gamePaused ? '▶' : '❚❚';
+    }
+
+    // ---------------- DRAW ----------------
     draw() {
         const ctx = this.ctx;
 
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        let shakeX = 0;
-        let shakeY = 0;
-
-        if (this.screenShake > 0) {
-            shakeX = (Math.random() - 0.5) * this.screenShake;
-            shakeY = (Math.random() - 0.5) * this.screenShake;
-        }
-
-        ctx.save();
-        ctx.translate(shakeX, shakeY);
-
+        // current
         if (this.currentPlatform) {
-            const p = this.currentPlatform;
-
-            ctx.globalAlpha = 1 - p.breakProgress * 0.7;
-
             ctx.fillStyle = '#1f1f1f';
-            ctx.fillRect(p.x - 30, p.y - 30, 60, 60);
-
-            ctx.strokeStyle = '#F7374F';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(p.x - 30, p.y - 30, 60, 60);
+            ctx.fillRect(this.currentPlatform.x - 30, this.currentPlatform.y - 30, 60, 60);
         }
 
-        if (this.nextPlatform) {
-            const p = this.nextPlatform;
+        // choices
+        this.nextPlatforms.forEach(p => {
+            ctx.globalAlpha = 0.9;
 
-            const pulse = Math.sin(this.time * 9) * 0.25 + 0.75;
+            if (p.type === 'bonus') ctx.fillStyle = '#00ff99';
+            else if (p.type === 'fragile') ctx.fillStyle = '#ffaa00';
+            else if (p.type === 'decoy') ctx.fillStyle = '#ff0033';
+            else ctx.fillStyle = '#F7374F';
 
-            ctx.globalAlpha = pulse;
-
-            ctx.fillStyle = '#F7374F';
             ctx.fillRect(p.x - 30, p.y - 30, 60, 60);
-
-            ctx.strokeStyle = '#F7374F';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(p.x - 30, p.y - 30, 60, 60);
-
-            ctx.globalAlpha = 1;
-
-            ctx.strokeStyle = 'rgba(247,55,79,0.2)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([10, 10]);
-
-            ctx.beginPath();
-            ctx.moveTo(this.cube.x, this.cube.y);
-            ctx.lineTo(this.nextPlatform.x, this.nextPlatform.y);
-            ctx.stroke();
-
-            ctx.setLineDash([]);
-        }
+        });
 
         ctx.globalAlpha = 1;
 
+        // cube
         ctx.save();
-
         ctx.translate(this.cube.x, this.cube.y);
         ctx.rotate(this.cube.rotation);
 
-        const size = 18;
-
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(-size, -size, size * 2, size * 2);
-
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(-size, -size, size * 2, size * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(-18, -18, 36, 36);
 
         ctx.restore();
 
+        // particles
         this.particles.forEach(p => {
             ctx.globalAlpha = p.life;
-
-            ctx.fillStyle = '#FFFFFF';
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(p.x, p.y, 2, 2);
         });
 
-        ctx.restore();
+        ctx.globalAlpha = 1;
     }
 
     gameLoop() {
         const loop = () => {
             this.update();
+            this.updateParticles();
             this.draw();
             requestAnimationFrame(loop);
         };
-
         loop();
     }
 }
