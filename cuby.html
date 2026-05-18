@@ -17,7 +17,7 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: #0a0a0a;
-    color: #F7374F;
+    color: #f5f5f5;
     font-family: Inter, Arial, sans-serif;
 }
 
@@ -390,7 +390,7 @@ class CubeGame {
             .sort(() => Math.random() - 0.5)
             .sort(() => Math.random() > 0.7 ? 1 : -1);
 
-        const margin = this.gridCellSize * 0.9;
+        const margin = this.gridCellSize * 0.6;
 
         let validPosition = null;
 
@@ -412,7 +412,7 @@ class CubeGame {
                 candidateY - this.currentPlatform.y
             );
 
-            if (distance < this.gridCellSize * 0.9) continue;
+            if (distance < this.gridCellSize * 0.6) continue;
 
             validPosition = {
                 x: candidateX,
