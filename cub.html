@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cube Runner Minimal</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: #f5f5f5;
+    font-family: Inter, Arial, sans-serif;
+}
+
+body {
+    touch-action: none;
+}
+
+.game-container {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    overflow: hidden;
+
+    background: #0a0a0a;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px;
+
+    background: rgba(10,10,10,0.55);
+    backdrop-filter: blur(12px);
+}
+
+.button-group-left {
+    display: flex;
+    gap: 10px;
+}
+
+.icon-btn {
+    width: 44px;
+    height: 44px;
+
+    border: 1px solid rgba(247,55,79,0.15);
+    background: rgba(247,55,79,0.04);
+    color: #F7374F;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+
+    font-size: 16px;
+}
+
+.icon-btn:hover {
+    background: rgba(247,55,79,0.1);
+    border-color: rgba(247,55,79,0.3);
+}
+
+.icon-btn:active {
+    transform: scale(0.94);
+}
+
+.icon-btn.hidden {
+    display: none;
+}
+
+.score-display {
+    text-align: center;
+}
+
+.score-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(247,55,79,0.4);
+}
+
+.score-value {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.timer-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    z-index: 200;
+
+    background: rgba(247,55,79,0.05);
+}
+
+.timer-fill {
+    height: 100%;
+    width: 100%;
+
+    background: #F7374F;
+
+    transform-origin: left;
+}
+
+.game-area {
+    position: relative;
+
+    width: min(100vw, 500px);
+    height: min(100vh, 900px);
+
+    border-radius: 28px;
+    overflow: hidden;
+
+    border: 1px solid rgba(247,55,79,0.08);
+
+    background: #0f0f0f;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    background: #0a0a0a;
+
+    touch-action: none;
+}
+
+.game-status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: min(320px, 90vw);
+
+    background: rgba(20,20,20,0.96);
+
+    border: 1px solid rgba(247,55,79,0.1);
+    border-radius: 24px;
+
+    padding: 32px;
+
+    text-align: center;
+
+    display: none;
+
+    z-index: 500;
+}
+
+.game-status.show {
+    display: block;
+}
+
+.game-status h2 {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.game-status p {
+    color: rgba(247,55,79,0.6);
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .score-value {
+        font-size: 28px;
+    }
+
+    .top-bar {
+        padding: 12px;
+    }
+
+    .icon-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .game-area {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+    }
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill"></div>
+    </div>
+
+    <div class="top-bar">
+        <div class="button-group-left">
+            <button class="icon-btn" id="playBtn" onclick="gameInstance.startGame()">▶</button>
+            <button class="icon-btn hidden" id="pauseBtn" onclick="gameInstance.togglePause()">❚❚</button>
+            <button class="icon-btn hidden" id="restartBtn" onclick="gameInstance.startGame()">↺</button>
+        </div>
+
+        <div class="score-display">
+            <div class="score-label">Score</div>
+            <div class="score-value" id="scoreValue">0</div>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="game-status" id="gameStatus">
+            <h2 id="statusTitle">Game Over</h2>
+            <p id="statusMessage">Score: 0</p>
+            <p>Swipe or use WASD / Arrow Keys</p>
+        </div>
+    </div>
+</div>
+
+<script>
+class CubeGame {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+
+        this.gameRunning = false;
+        this.gamePaused = false;
+        this.isJumping = false;
+
+        this.score = 0;
+        this.highScore = parseInt(localStorage.getItem('cubeHighScore')) || 0;
+
+        this.gridCellSize = Math.min(window.innerWidth, window.innerHeight) * 0.32;
+
+        this.currentPlatform = null;
+        this.nextPlatform = null;
+
+        this.cube = {
+            x: 0,
+            y: 0,
+            rotation: 0
+        };
+
+        this.particles = [];
+
+        this.screenShake = 0;
+
+        this.time = 0;
+
+        this.platformTimer = Math.min(this.platformTimer * 0.15, 0.25);
+        this.platformDuration = 3;
+
+        this.setupInputs();
+        this.gameLoop();
+    }
+
+    resize() {
+        const maxWidth = Math.min(window.innerWidth, 500);
+        const maxHeight = Math.min(window.innerHeight, 900);
+
+        this.canvas.width = maxWidth;
+        this.canvas.height = maxHeight;
+
+        this.canvas.style.width = `${maxWidth}px`;
+        this.canvas.style.height = `${maxHeight}px`;
+
+        this.gridCellSize = Math.min(maxWidth, maxHeight) * 0.26;
+    }
+
+    setupInputs() {
+        window.addEventListener('keydown', (e) => {
+            if (!this.gameRunning || this.gamePaused) return;
+
+            const key = e.key.toLowerCase();
+
+            if (e.key === 'ArrowUp' || key === 'w') this.jump('UP');
+            if (e.key === 'ArrowRight' || key === 'd') this.jump('RIGHT');
+            if (e.key === 'ArrowDown' || key === 's') this.jump('DOWN');
+            if (e.key === 'ArrowLeft' || key === 'a') this.jump('LEFT');
+        });
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        this.canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            if (!this.gameRunning || this.gamePaused) return;
+
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = touchStartY - e.changedTouches[0].clientY;
+
+            const threshold = 30;
+
+            if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) {
+                return;
+            }
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx > threshold) this.jump('RIGHT');
+                else this.jump('LEFT');
+            } else {
+                if (dy > threshold) this.jump('UP');
+                else this.jump('DOWN');
+            }
+        });
+    }
+
+    startGame() {
+        this.gameRunning = true;
+        this.gamePaused = false;
+        this.isJumping = false;
+
+        this.score = 0;
+        this.time = 0;
+        this.particles = [];
+
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height * 0.65;
+
+        this.currentPlatform = {
+            x: centerX,
+            y: centerY,
+            width: 60,
+            height: 60,
+            breaking: false,
+            breakProgress: 0
+        };
+
+        this.cube.x = centerX;
+        this.cube.y = centerY;
+        this.cube.rotation = 0;
+
+        this.spawnNext();
+
+        document.getElementById('playBtn').classList.add('hidden');
+        document.getElementById('pauseBtn').classList.remove('hidden');
+        document.getElementById('restartBtn').classList.add('hidden');
+        document.getElementById('gameStatus').classList.remove('show');
+
+        this.updateDisplay();
+    }
+
+    spawnNext() {
+        const directions = [
+            { x: 0, y: -this.gridCellSize },
+            { x: this.gridCellSize, y: 0 },
+            { x: 0, y: this.gridCellSize },
+            { x: -this.gridCellSize, y: 0 }
+        ];
+
+        const shuffled = [...directions]
+            .sort(() => Math.random() - 0.5)
+            .sort(() => Math.random() > 0.7 ? 1 : -1);
+
+        const margin = this.gridCellSize * 0.2;
+
+        let validPosition = null;
+
+        for (const dir of shuffled) {
+            const candidateX = this.currentPlatform.x + dir.x;
+            const candidateY = this.currentPlatform.y + dir.y;
+
+            const insideBounds = (
+                candidateX > margin &&
+                candidateX < this.canvas.width - margin &&
+                candidateY > margin &&
+                candidateY < this.canvas.height - margin
+            );
+
+            if (!insideBounds) continue;
+
+            const distance = Math.hypot(
+                candidateX - this.currentPlatform.x,
+                candidateY - this.currentPlatform.y
+            );
+
+            if (distance < this.gridCellSize * 0.6) continue;
+
+            validPosition = {
+                x: candidateX,
+                y: candidateY
+            };
+
+            break;
+        }
+
+        if (!validPosition) {
+            validPosition = {
+                x: this.canvas.width / 2,
+                y: this.canvas.height / 2
+            };
+        }
+
+        // occasional fake pressure by slightly offsetting target visuals
+        const jitter = this.score > 20 ? (Math.random() - 0.5) * 10 : 0;
+
+        this.nextPlatform = {
+            x: validPosition.x + jitter,
+            y: validPosition.y + jitter,
+            width: 60,
+            height: 60,
+            breaking: false,
+            breakProgress: 0
+        };
+
+        this.platformTimer = 0;
+
+        this.platformDuration = Math.max(0.85, 2.4 - this.score * 0.035);
+    }
+
+    jump(direction) {
+        if (!this.gameRunning || this.gamePaused || !this.nextPlatform) return;
+        if (this.isJumping) return;
+
+        const dx = this.nextPlatform.x - this.cube.x;
+        const dy = this.nextPlatform.y - this.cube.y;
+
+        let valid = false;
+
+        if (direction === 'UP' && dy < 0) valid = true;
+        if (direction === 'RIGHT' && dx > 0) valid = true;
+        if (direction === 'DOWN' && dy > 0) valid = true;
+        if (direction === 'LEFT' && dx < 0) valid = true;
+
+        if (!valid) {
+            this.screenShake = 3;
+            return;
+        }
+
+        this.isJumping = true;
+
+        this.currentPlatform.breaking = true;
+
+        const startX = this.cube.x;
+        const startY = this.cube.y;
+
+        const targetX = this.nextPlatform.x;
+        const targetY = this.nextPlatform.y;
+
+        let progress = 0;
+
+        const duration = 0.14;
+
+        const animate = () => {
+            progress += 0.016 / duration;
+
+            if (progress >= 1) {
+                this.cube.x = targetX;
+                this.cube.y = targetY;
+
+                this.currentPlatform = this.nextPlatform;
+                this.nextPlatform = null;
+
+                this.score++;
+
+                if (this.platformTimer < this.platformDuration * 0.22) {
+                    this.createParticles(this.cube.x, this.cube.y, 25);
+                }
+
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('cubeHighScore', this.highScore);
+                }
+
+                this.screenShake = 10;
+
+                this.createParticles(this.cube.x, this.cube.y, 10);
+
+                this.spawnNext();
+                this.updateDisplay();
+
+                this.isJumping = false;
+                return;
+            }
+
+            const t = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+            const jumpArc = Math.sin(progress * Math.PI) * 40;
+
+            this.cube.x = startX + (targetX - startX) * t;
+            this.cube.y = startY + (targetY - startY) * t - jumpArc;
+
+            this.cube.rotation += 0.18;
+
+            requestAnimationFrame(animate);
+        };
+
+        animate();
+    }
+
+    togglePause() {
+        this.gamePaused = !this.gamePaused;
+        document.getElementById('pauseBtn').textContent = this.gamePaused ? '▶' : '❚❚';
+    }
+
+    createParticles(x, y, count) {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+
+            this.particles.push({
+                x,
+                y,
+                vx: Math.cos(angle) * (2 + Math.random() * 4),
+                vy: Math.sin(angle) * (2 + Math.random() * 4),
+                life: 1,
+                size: 2 + Math.random() * 3
+            });
+        }
+    }
+
+    update() {
+        if (!this.gameRunning || this.gamePaused) return;
+
+        this.time += 0.016;
+
+        this.platformTimer += 0.016;
+
+        if (this.platformTimer >= this.platformDuration) {
+            this.gameOver();
+            return;
+        }
+
+        if (this.currentPlatform && this.currentPlatform.breaking) {
+            this.currentPlatform.breakProgress += 0.03;
+
+            if (this.currentPlatform.breakProgress > 1) {
+                this.currentPlatform = null;
+            }
+        }
+
+        this.particles.forEach(p => {
+            p.life -= 0.03;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= 0.98;
+            p.vy *= 0.98;
+        });
+
+        this.particles = this.particles.filter(p => p.life > 0);
+
+        if (this.screenShake > 0) {
+            this.screenShake *= 0.85;
+        }
+
+        this.updateDisplay();
+    }
+
+    gameOver() {
+        this.gameRunning = false;
+
+        this.createParticles(this.cube.x, this.cube.y, 30);
+
+        document.getElementById('playBtn').classList.remove('hidden');
+        document.getElementById('pauseBtn').classList.add('hidden');
+        document.getElementById('restartBtn').classList.remove('hidden');
+
+        document.getElementById('gameStatus').classList.add('show');
+
+        document.getElementById('statusTitle').textContent = this.score >= this.highScore
+            ? 'New Record'
+            : 'Game Over';
+
+        document.getElementById('statusMessage').textContent = `Score ${this.score} · Best ${this.highScore}`;
+    }
+
+    updateDisplay() {
+        document.getElementById('scoreValue').textContent = this.score;
+
+        const progress = Math.max(0, 1 - this.platformTimer / this.platformDuration);
+
+        document.getElementById('timerFill').style.width = `${progress * 100}%`;
+    }
+
+    draw() {
+        const ctx = this.ctx;
+
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        let shakeX = 0;
+        let shakeY = 0;
+
+        if (this.screenShake > 0) {
+            shakeX = (Math.random() - 0.5) * this.screenShake;
+            shakeY = (Math.random() - 0.5) * this.screenShake;
+        }
+
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+
+        if (this.currentPlatform) {
+            const p = this.currentPlatform;
+
+            ctx.globalAlpha = 1 - p.breakProgress * 0.7;
+
+            ctx.fillStyle = '#1f1f1f';
+            ctx.fillRect(p.x - 30, p.y - 30, 60, 60);
+
+            ctx.strokeStyle = '#F7374F';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(p.x - 30, p.y - 30, 60, 60);
+        }
+
+        if (this.nextPlatform) {
+            const p = this.nextPlatform;
+
+            const pulse = Math.sin(this.time * 9) * 0.25 + 0.75;
+
+            ctx.globalAlpha = pulse;
+
+            ctx.fillStyle = '#F7374F';
+            ctx.fillRect(p.x - 30, p.y - 30, 60, 60);
+
+            ctx.strokeStyle = '#F7374F';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(p.x - 30, p.y - 30, 60, 60);
+
+            ctx.globalAlpha = 1;
+
+            ctx.strokeStyle = 'rgba(247,55,79,0.2)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+
+            ctx.beginPath();
+            ctx.moveTo(this.cube.x, this.cube.y);
+            ctx.lineTo(this.nextPlatform.x, this.nextPlatform.y);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+        }
+
+        ctx.globalAlpha = 1;
+
+        ctx.save();
+
+        ctx.translate(this.cube.x, this.cube.y);
+        ctx.rotate(this.cube.rotation);
+
+        const size = 18;
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(-size, -size, size * 2, size * 2);
+
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-size, -size, size * 2, size * 2);
+
+        ctx.restore();
+
+        this.particles.forEach(p => {
+            ctx.globalAlpha = p.life;
+
+            ctx.fillStyle = '#FFFFFF';
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.restore();
+    }
+
+    gameLoop() {
+        const loop = () => {
+            this.update();
+            this.draw();
+            requestAnimationFrame(loop);
+        };
+
+        loop();
+    }
+}
+
+const canvas = document.getElementById('gameCanvas');
+const gameInstance = new CubeGame(canvas);
+window.gameInstance = gameInstance;
+</script>
+</body>
+</html>
