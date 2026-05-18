@@ -654,6 +654,8 @@ class CubeGame {
             ctx.lineWidth = 2;
             ctx.strokeRect(p.x - 30, p.y - 30, 60, 60);
 
+            ctx.globalAlpha = 1;
+
             ctx.strokeStyle = 'rgba(247,55,79,0.2)';
             ctx.lineWidth = 2;
             ctx.setLineDash([10, 10]);
@@ -675,7 +677,7 @@ class CubeGame {
 
         const size = 18;
 
-        ctx.fillStyle = '#F7374F';
+        ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(-size, -size, size * 2, size * 2);
 
         ctx.strokeStyle = '#000000';
@@ -687,7 +689,7 @@ class CubeGame {
         this.particles.forEach(p => {
             ctx.globalAlpha = p.life;
 
-            ctx.fillStyle = '#F7374F';
+            ctx.fillStyle = '#FFFFFF';
 
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
