@@ -28,7 +28,16 @@ body {
 .game-container {
     width: 100vw;
     height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     position: relative;
+
+    overflow: hidden;
+
+    background: #0a0a0a;
 }
 
 .top-bar {
@@ -124,15 +133,28 @@ body {
 }
 
 .game-area {
-    width: 100%;
-    height: 100%;
+    position: relative;
+
+    width: min(100vw, 500px);
+    height: min(100vh, 900px);
+
+    border-radius: 28px;
+    overflow: hidden;
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    background: #0f0f0f;
 }
 
 canvas {
     width: 100%;
     height: 100%;
+
     display: block;
+
     background: #0a0a0a;
+
+    touch-action: none;
 }
 
 .game-status {
@@ -142,7 +164,7 @@ canvas {
 
     transform: translate(-50%, -50%);
 
-    width: 320px;
+    width: min(320px, 90vw);
 
     background: rgba(20,20,20,0.96);
 
@@ -174,11 +196,23 @@ canvas {
 
 @media (max-width: 768px) {
     .score-value {
-        font-size: 32px;
+        font-size: 28px;
     }
 
     .top-bar {
-        padding: 14px;
+        padding: 12px;
+    }
+
+    .icon-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .game-area {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
     }
 }
 </style>
@@ -230,7 +264,7 @@ class CubeGame {
         this.score = 0;
         this.highScore = parseInt(localStorage.getItem('cubeHighScore')) || 0;
 
-        this.gridCellSize = 170;
+        this.gridCellSize = Math.min(window.innerWidth, window.innerHeight) * 0.26;
 
         this.currentPlatform = null;
         this.nextPlatform = null;
@@ -255,8 +289,16 @@ class CubeGame {
     }
 
     resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        const maxWidth = Math.min(window.innerWidth, 500);
+        const maxHeight = Math.min(window.innerHeight, 900);
+
+        this.canvas.width = maxWidth;
+        this.canvas.height = maxHeight;
+
+        this.canvas.style.width = `${maxWidth}px`;
+        this.canvas.style.height = `${maxHeight}px`;
+
+        this.gridCellSize = Math.min(maxWidth, maxHeight) * 0.26;
     }
 
     setupInputs() {
@@ -311,7 +353,7 @@ class CubeGame {
         this.particles = [];
 
         const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height * 0.7;
+        const centerY = this.canvas.height * 0.65;
 
         this.currentPlatform = {
             x: centerX,
@@ -349,7 +391,7 @@ class CubeGame {
         let newX = this.currentPlatform.x + dir.x;
         let newY = this.currentPlatform.y + dir.y;
 
-        const margin = 140;
+        const margin = this.gridCellSize * 0.9;
 
         newX = Math.max(margin, Math.min(this.canvas.width - margin, newX));
         newY = Math.max(margin, Math.min(this.canvas.height - margin, newY));
