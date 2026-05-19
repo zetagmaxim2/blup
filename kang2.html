@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Noo:r</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #030304;
+    color: #E2E8F0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+body {
+    touch-action: none;
+}
+
+.game-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: #050507;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    background: linear-gradient(to bottom, rgba(5,5,7,0.85), rgba(5,5,7,0));
+    pointer-events: none;
+}
+
+.score-display {
+    text-align: right;
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.score-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(226, 232, 240, 0.4);
+    margin-bottom: 2px;
+}
+
+.score-value {
+    font-size: 36px;
+    font-weight: 200;
+    line-height: 1;
+    color: #FFFFFF;
+    text-shadow: 0 0 12px rgba(255,255,255,0.4);
+    transition: transform 0.1s ease;
+}
+
+.combo-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-top: 6px;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.combo-badge.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.timer-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    z-index: 200;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.timer-fill {
+    height: 100%;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    transform-origin: left;
+    transition: transform 0.08s linear;
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+}
+
+.game-area {
+    position: relative;
+    width: min(100vw, 480px);
+    height: min(100vh, 850px);
+    border-radius: 32px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: #07070a;
+    box-shadow: 0 50px 120px -30px rgba(0,0,0,0.85);
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #040406;
+}
+
+.game-status {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 4, 6, 0.88);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 500;
+}
+
+.game-status.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.game-status h2 {
+    font-size: 38px;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+    color: #FFFFFF;
+}
+
+.game-status p {
+    color: rgba(226, 232, 240, 0.55);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+}
+
+.start-btn {
+    padding: 14px 40px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #040406;
+    background: #FFFFFF;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 0 12px 30px -5px rgba(255,255,255,0.25);
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.start-btn:hover {
+    background: #E2E8F0;
+    transform: translateY(-2px);
+    box-shadow: 0 18px 35px -5px rgba(255,255,255,0.35);
+}
+
+.start-btn:active {
+    transform: translateY(0) scale(0.96);
+}
+
+@media (max-width: 768px) {
+    .score-value { font-size: 30px; }
+    .top-bar { padding: 20px; }
+    .game-area { width: 100vw; height: 100vh; border-radius: 0; border: none; }
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill"></div>
+    </div>
+
+    <div class="top-bar">
+        <div class="score-display">
+            <div class="score-label">Score</div>
+            <div class="score-value" id="scoreValue">0</div>
+            <div class="combo-badge" id="comboBadge">2X COMBO</div>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- START SCREEN -->
+        <div class="game-status show" id="startScreen">
+            <h2>Noo:r</h2>
+            <p>
+                Navigate the glowing grid. Absolute precision required.
+            </p>
+            <button class="start-btn" onclick="gameInstance.startGame()">ENGAGE</button>
+        </div>
+
+        <!-- GAME OVER / STATUS SCREEN -->
+        <div class="game-status" id="gameStatus">
+            <h2 id="statusTitle">System Stalled</h2>
+            <p id="statusMessage">Score: 0</p>
+            <button class="start-btn" onclick="gameInstance.startGame()">RE-ENGAGE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// 1. EXTENSIBLE PLATFORM TYPE SYSTEM
+// ==========================================
+
+class PlatformType {
+    constructor(id, config = {}) {
+        this.id = id;
+        this.fillColor = config.fillColor || 'rgba(255,255,255,0.02)';
+        this.strokeColor = config.strokeColor || '#ffffff';
+        this.lineColor = config.lineColor || 'rgba(255,255,255,0.1)';
+        this.glowColor = config.glowColor || 'transparent';
+    }
+
+    onSpawn(game) { return {}; }
+    onLanding(game, platform) {
+        return { isGameOver: false, pointYield: 0, label: '', popupColor: this.strokeColor, resetCombo: false };
+    }
+}
+
+// ==========================================
+// 2. DEFINE DISTINCT HIGH-CONTRAST NEON REGISTRY
+// ==========================================
+
+const Platforms = {
+    BASE: new PlatformType('BASE', {
+        fillColor: '#0a0a0f',
+        strokeColor: 'rgba(255,255,255,0.08)'
+    }),
+    
+    RIGHT: new PlatformType('RIGHT', {
+        fillColor: 'rgba(57, 255, 20, 0.02)',
+        strokeColor: '#39FF14', // Vibrant Electric Lime Green
+        lineColor: 'rgba(57, 255, 20, 0.25)',
+        glowColor: 'rgba(57, 255, 20, 0.5)'
+    }),
+
+    WRONG: new PlatformType('WRONG', {
+        fillColor: 'rgba(255, 0, 51, 0.05)',
+        strokeColor: '#FF1E27', // Menacing Blood Crimson Red
+        lineColor: 'rgba(255, 0, 51, 0.15)',
+        glowColor: 'rgba(255, 0, 51, 0.6)'
+    }),
+
+    BONUS: new PlatformType('BONUS', {
+        fillColor: 'rgba(0, 229, 255, 0.04)',
+        strokeColor: '#00E5FF', // Ultra Bright Cyan Blue
+        lineColor: 'rgba(0, 229, 255, 0.35)',
+        glowColor: 'rgba(0, 229, 255, 0.6)'
+    }),
+
+    INVERSE: new PlatformType('INVERSE', {
+        fillColor: 'rgba(189, 0, 255, 0.04)',
+        strokeColor: '#BD00FF', // Deep Arcane Purple
+        lineColor: 'rgba(189, 0, 255, 0.35)',
+        glowColor: 'rgba(189, 0, 255, 0.6)'
+    }),
+
+    MULTIPLIER: new PlatformType('MULTIPLIER', {
+        fillColor: 'rgba(255, 0, 128, 0.05)',
+        strokeColor: '#FF0080', // Hot Magenta
+        lineColor: 'rgba(255, 0, 128, 0.4)',
+        glowColor: 'rgba(255, 0, 128, 0.6)'
+    }),
+
+    CHAOS: new PlatformType('CHAOS', {
+        fillColor: 'rgba(255, 234, 0, 0.04)',
+        strokeColor: '#FFEA00', // Warning Yellow
+        lineColor: 'rgba(255, 234, 0, 0.4)',
+        glowColor: 'rgba(255, 234, 0, 0.6)'
+    }),
+
+    SHIELD: new PlatformType('SHIELD', {
+        fillColor: 'rgba(255, 255, 255, 0.03)',
+        strokeColor: '#FFFFFF', // Pure White Glow
+        lineColor: 'rgba(255, 255, 255, 0.4)',
+        glowColor: 'rgba(255, 255, 255, 0.7)'
+    }),
+
+    WARP: new PlatformType('WARP', {
+        fillColor: 'rgba(255, 111, 0, 0.04)',
+        strokeColor: '#FF6F00', // Safety Orange
+        lineColor: 'rgba(255, 111, 0, 0.4)',
+        glowColor: 'rgba(255, 111, 0, 0.6)'
+    })
+};
+
+// --- BEHAVIOR HOOKS ---
+
+Platforms.RIGHT.onLanding = function(game, platform) {
+    const isFast = game.isFastJumpAvailable();
+    const multiplier = game.getComboMultiplier();
+    return {
+        isGameOver: false,
+        pointYield: multiplier,
+        label: multiplier === 3 ? '+3 Streak!' : (multiplier === 2 ? '+2 Double' : '+1'),
+        popupColor: multiplier === 3 ? '#FF0080' : (multiplier === 2 ? '#FFEA00' : this.strokeColor),
+        resetCombo: !isFast
+    };
+};
+
+Platforms.WRONG.onLanding = function(game, platform) {
+    if (game.hasShield) {
+        game.popShield("Trap Deflected!");
+        return { isGameOver: false, pointYield: 0, label: '', popupColor: '#FFFFFF', resetCombo: false };
+    }
+    return { isGameOver: true, pointYield: 0, label: '', popupColor: this.strokeColor, resetCombo: true };
+};
+
+Platforms.BONUS.onLanding = function(game, platform) {
+    game.timeFreezeTurns = 3;
+    game.createParticles(platform.x, platform.y, 30, this.strokeColor);
+    return {
+        isGameOver: false,
+        pointYield: game.getComboMultiplier() + 3,
+        label: `+${game.getComboMultiplier() + 3} Freeze!`,
+        popupColor: this.strokeColor,
+        resetCombo: !game.isFastJumpAvailable()
+    };
+};
+
+Platforms.INVERSE.onLanding = function(game, platform) {
+    game.confusionTurns = 2; // Fixed balance: Land here triggers exactly 1 total future input reverse step
+    game.createParticles(platform.x, platform.y, 30, this.strokeColor);
+    return { isGameOver: false, pointYield: 10, label: 'INVERTED! +10', popupColor: this.strokeColor, resetCombo: false };
+};
+
+Platforms.MULTIPLIER.onLanding = function(game, platform) {
+    game.createParticles(platform.x, platform.y, 35, this.strokeColor);
+    const exponentialBonus = Math.max(5, game.comboStreak * 4);
+    game.comboStreak += 3;
+    return { isGameOver: false, pointYield: exponentialBonus, label: `X-COMBO! +${exponentialBonus}`, popupColor: this.strokeColor, resetCombo: false };
+};
+
+Platforms.CHAOS.onLanding = function(game, platform) {
+    game.createParticles(platform.x, platform.y, 40, this.strokeColor);
+    const highRollerYield = Math.floor(game.score * 0.2) + 8;
+    return { isGameOver: false, pointYield: highRollerYield, label: `CHAOS ENGINE! +${highRollerYield}`, popupColor: this.strokeColor, resetCombo: false };
+};
+
+Platforms.SHIELD.onLanding = function(game, platform) {
+    game.hasShield = true;
+    game.createParticles(platform.x, platform.y, 35, '#FFFFFF');
+    return { isGameOver: false, pointYield: 2, label: '🛡️ Barrier Up', popupColor: '#FFFFFF', resetCombo: false };
+};
+
+Platforms.WARP.onLanding = function(game, platform) {
+    game.createParticles(platform.x, platform.y, 35, this.strokeColor);
+    return { isGameOver: false, pointYield: 15, label: 'WARP CORES! +15', popupColor: this.strokeColor, resetCombo: false };
+};
+
+// ==========================================
+// 3. CORE PUNCHY GAME ENGINE
+// ==========================================
+
+class CubeGame {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+
+        this.colors = {
+            bg: '#040406',
+            grid: 'rgba(255, 255, 255, 0.015)',
+            player: '#FFFFFF',
+            playerStroke: '#040406'
+        };
+
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+
+        this.gameRunning = false;
+        this.gamePaused = false;
+        this.isJumping = false;
+
+        this.score = 0;
+        this.highScore = parseInt(localStorage.getItem('cubeHighScore')) || 0;
+        this.comboStreak = 0;
+
+        this.currentPlatform = null;
+        this.activePlatforms = [];
+
+        this.cube = { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 };
+        this.particles = [];
+        this.floatingTexts = []; 
+        this.screenShake = 0;
+        this.time = 0;
+        this.platformTimer = 0;
+        this.platformDuration = 1.7; 
+
+        this.freezePhase = false; 
+        this.timeFreezeTurns = 0; 
+        this.confusionTurns = 0; 
+        this.hasShield = false;
+
+        this.setupInputs();
+        this.gameLoop();
+    }
+
+    resize() {
+        const maxWidth = Math.min(window.innerWidth, 480);
+        const maxHeight = Math.min(window.innerHeight, 850);
+        this.canvas.width = maxWidth;
+        this.canvas.height = maxHeight;
+        this.canvas.style.width = `${maxWidth}px`;
+        this.canvas.style.height = `${maxHeight}px`;
+        this.gridCellSize = Math.min(maxWidth, maxHeight) * 0.28;
+    }
+
+    setupInputs() {
+        const handleDirection = (inputDir) => {
+            if (!this.gameRunning || this.gamePaused) return;
+            
+            let finalDirection = inputDir;
+            if (this.confusionTurns > 0) {
+                const inverses = { 'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT', 'RIGHT': 'LEFT' };
+                finalDirection = inverses[inputDir];
+            }
+            this.jump(finalDirection);
+        };
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (e.key === 'ArrowUp' || key === 'w') handleDirection('UP');
+            if (e.key === 'ArrowRight' || key === 'd') handleDirection('RIGHT');
+            if (e.key === 'ArrowDown' || key === 's') handleDirection('DOWN');
+            if (e.key === 'ArrowLeft' || key === 'a') handleDirection('LEFT');
+        });
+
+        let touchStartX = 0, touchStartY = 0;
+        this.canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            if (!this.gameRunning || this.gamePaused) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = touchStartY - e.changedTouches[0].clientY;
+            const threshold = 30;
+            if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) return;
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                handleDirection(dx > 0 ? 'RIGHT' : 'LEFT');
+            } else {
+                handleDirection(dy > 0 ? 'UP' : 'DOWN');
+            }
+        }, { passive: true });
+    }
+
+    startGame() {
+        this.gameRunning = true;
+        this.gamePaused = false;
+        this.isJumping = false;
+        this.freezePhase = false;
+        this.timeFreezeTurns = 0;
+        this.confusionTurns = 0;
+        this.hasShield = false;
+        this.score = 0;
+        this.comboStreak = 0;
+        this.time = 0;
+        this.particles = [];
+        this.floatingTexts = [];
+
+        this.currentPlatform = {
+            x: 0, y: 0, width: 56, height: 56,
+            breaking: false, breakProgress: 0,
+            type: Platforms.BASE
+        };
+
+        this.cube.x = 0; this.cube.y = 0; this.cube.rotation = 0;
+        this.cube.scaleX = 1; this.cube.scaleY = 1;
+
+        this.spawnNext();
+        document.getElementById('startScreen').classList.remove('show');
+        document.getElementById('gameStatus').classList.remove('show');
+        this.updateDisplay();
+    }
+
+    getComboMultiplier() {
+        return this.comboStreak >= 5 ? 3 : (this.comboStreak >= 2 ? 2 : 1);
+    }
+
+    isFastJumpAvailable() {
+        const timerRatioRemaining = 1 - (this.platformTimer / this.platformDuration);
+        return timerRatioRemaining >= 0.40 || this.timeFreezeTurns > 0;
+    }
+
+    popShield(message = "Shield Broken!") {
+        this.hasShield = false;
+        this.screenShake = 22; // Bigger shield breakout impact
+        this.platformTimer = 0; 
+        this.createParticles(this.cube.x, this.cube.y, 60, '#FFFFFF');
+        this.triggerFloatingText(this.cube.x, this.cube.y, message, '#FFFFFF');
+        this.spawnNext();
+    }
+
+    spawnNext() {
+        this.activePlatforms = [];
+        this.platformTimer = 0;
+
+        if (this.timeFreezeTurns > 0) this.timeFreezeTurns--;
+        if (this.confusionTurns > 0) this.confusionTurns--;
+
+        const directions = [
+            { dir: 'UP', x: 0, y: -this.gridCellSize },
+            { dir: 'RIGHT', x: this.gridCellSize, y: 0 },
+            { dir: 'DOWN', x: 0, y: this.gridCellSize },
+            { dir: 'LEFT', x: -this.gridCellSize, y: 0 }
+        ];
+        const shuffled = [...directions].sort(() => Math.random() - 0.5);
+        const jitter = this.score > 15 ? (Math.random() - 0.5) * 6 : 0;
+
+        if (this.score > 0 && this.score % 9 === 0 && !this.freezePhase && this.timeFreezeTurns <= 0) {
+            this.freezePhase = true;
+            this.platformDuration = 1.8; 
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.WRONG);
+            return;
+        }
+
+        this.freezePhase = false;
+        
+        // Highly Forgiving Adaptive Grace Timer Equation (Caps smoothly at 0.65s floor)
+        this.platformDuration = Math.max(0.65, 1.75 - (this.score * 0.016));
+
+        const roll = Math.random();
+        
+        if (this.score > 4 && roll < 0.12 && !this.hasShield) {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.SHIELD);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.WRONG);
+        } else if (this.score > 8 && roll >= 0.12 && roll < 0.25) {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.WARP);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.WARP);
+            this.createPlatformNode(shuffled[2].dir, shuffled[2].x, shuffled[2].y, jitter, Platforms.WRONG);
+        } else if (this.score > 12 && roll >= 0.25 && roll < 0.38) {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.INVERSE);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.WRONG);
+        } else if (this.score > 16 && roll >= 0.38 && roll < 0.50) {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.MULTIPLIER);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.WRONG);
+        } else if (this.score > 22 && roll >= 0.50 && roll < 0.60) {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.CHAOS);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.WRONG);
+            this.createPlatformNode(shuffled[2].dir, shuffled[2].x, shuffled[2].y, jitter, Platforms.WRONG);
+        } else if (roll >= 0.60 && roll < 0.80 && this.score > 3) {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.RIGHT);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.BONUS);
+            this.createPlatformNode(shuffled[2].dir, shuffled[2].x, shuffled[2].y, jitter, Platforms.WRONG);
+        } else {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.RIGHT);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.WRONG);
+        }
+    }
+
+    createPlatformNode(dir, vectorX, vectorY, jitter, type) {
+        this.activePlatforms.push({
+            dir: dir,
+            x: this.currentPlatform.x + vectorX + jitter,
+            y: this.currentPlatform.y + vectorY + jitter,
+            width: 56, height: 56,
+            type: type,
+            ...type.onSpawn(this)
+        });
+    }
+
+    jump(direction) {
+        if (!this.gameRunning || this.gamePaused || this.isJumping) return;
+
+        if (this.freezePhase) {
+            if (this.hasShield) {
+                this.popShield("Freeze Trap Deflected!");
+                return;
+            }
+            this.gameOver(false, "System Shifted!");
+            return;
+        }
+
+        const targetPlatform = this.activePlatforms.find(p => p.dir === direction);
+
+        if (!targetPlatform) {
+            this.screenShake = 5; // Input rejection buzz interaction
+            return;
+        }
+
+        const timerProgressRatio = this.platformTimer / this.platformDuration;
+        const isPerfectDashWindow = timerProgressRatio >= 0.82 && this.timeFreezeTurns <= 0;
+
+        this.isJumping = true;
+        this.currentPlatform.breaking = true;
+
+        const startX = this.cube.x, startY = this.cube.y;
+        const targetX = targetPlatform.x, targetY = targetPlatform.y;
+
+        let progress = 0;
+        const duration = 0.11; // Slightly snappier transition frame
+
+        // Visual squash micro interaction setup
+        this.cube.scaleX = ['LEFT', 'RIGHT'].includes(direction) ? 1.4 : 0.65;
+        this.cube.scaleY = ['LEFT', 'RIGHT'].includes(direction) ? 0.65 : 1.4;
+
+        const animate = () => {
+            progress += 0.016 / duration;
+
+            if (progress >= 1) {
+                this.cube.x = targetX; this.cube.y = targetY;
+                this.cube.scaleX = 0.85; this.cube.scaleY = 1.15; // Rebound landing snap
+                this.currentPlatform = targetPlatform;
+                
+                const result = targetPlatform.type.onLanding(this, targetPlatform);
+
+                if (result.isGameOver) {
+                    this.isJumping = false;
+                    this.gameOver(false);
+                    return;
+                }
+
+                if (result.resetCombo) {
+                    this.comboStreak = 0;
+                } else {
+                    this.comboStreak++;
+                }
+
+                let totalYield = result.pointYield;
+
+                if (isPerfectDashWindow && targetPlatform.type !== Platforms.WRONG) {
+                    totalYield *= 2; 
+                    this.comboStreak += 1;
+                    this.platformTimer = Math.max(0, this.platformTimer - (this.platformDuration * 0.40));
+                    this.triggerFloatingText(this.cube.x, this.cube.y - 22, "🎯 PERFECT DASH x2", '#FFEA00');
+                    this.createParticles(this.cube.x, this.cube.y, 30, '#FFEA00');
+                }
+
+                this.score += totalYield;
+
+                if (result.label) {
+                    this.triggerFloatingText(this.cube.x, this.cube.y, isPerfectDashWindow ? `${result.label}!!` : result.label, result.popupColor);
+                }
+
+                const exoticWhitespaces = [Platforms.BONUS, Platforms.INVERSE, Platforms.MULTIPLIER, Platforms.CHAOS, Platforms.SHIELD, Platforms.WARP];
+                if (this.isFastJumpAvailable() && !exoticWhitespaces.includes(targetPlatform.type)) {
+                    this.createParticles(this.cube.x, this.cube.y, 16, result.popupColor);
+                }
+
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('cubeHighScore', this.highScore);
+                }
+
+                this.screenShake = isPerfectDashWindow ? 16 : this.getComboMultiplier() * 6;
+                this.createParticles(this.cube.x, this.cube.y, 10, '#FFFFFF');
+
+                const scoreValEl = document.getElementById('scoreValue');
+                scoreValEl.style.transform = 'scale(1.22)';
+                setTimeout(() => scoreValEl.style.transform = 'scale(1)', 90);
+
+                if (this.isJumping) {
+                    this.spawnNext();
+                    this.updateDisplay();
+                    this.isJumping = false;
+                }
+                return;
+            }
+
+            const t = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            const jumpArc = Math.sin(progress * Math.PI) * 38;
+
+            this.cube.x = startX + (targetX - startX) * t;
+            this.cube.y = startY + (targetY - startY) * t - jumpArc;
+            this.cube.rotation += 0.22;
+
+            requestAnimationFrame(animate);
+        };
+
+        animate();
+    }
+
+    triggerFloatingText(x, y, text, color) {
+        this.floatingTexts.push({
+            x: x, y: y - 30, text: text, color: color,
+            tilt: (Math.random() - 0.5) * 0.25, alpha: 1, scale: 0.35, life: 1.25   
+        });
+    }
+
+    createParticles(x, y, count, color = '#FFFFFF') {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            this.particles.push({
+                x, y,
+                vx: Math.cos(angle) * (2.0 + Math.random() * 4.5),
+                vy: Math.sin(angle) * (2.0 + Math.random() * 4.5),
+                life: 1, size: 1.8 + Math.random() * 3.0, color
+            });
+        }
+    }
+
+    update() {
+        if (!this.gameRunning || this.gamePaused) return;
+
+        this.time += 0.016;
+        if (this.timeFreezeTurns === 0) this.platformTimer += 0.022;
+
+        if (this.platformTimer >= this.platformDuration) {
+            if (this.freezePhase) {
+                this.score += 5;
+                this.createParticles(this.cube.x, this.cube.y, 35, Platforms.RIGHT.strokeColor);
+                this.triggerFloatingText(this.cube.x, this.cube.y, "SURVIVED! +5", Platforms.RIGHT.strokeColor);
+                this.freezePhase = false;
+                this.spawnNext();
+                this.updateDisplay();
+                return;
+            } else {
+                if (this.hasShield) {
+                    this.popShield("Timer Cleared!");
+                    return;
+                }
+                this.gameOver(true);
+                return;
+            }
+        }
+
+        if (this.currentPlatform && this.currentPlatform.breaking) {
+            this.currentPlatform.breakProgress += 0.05;
+            if (this.currentPlatform.breakProgress > 1) this.currentPlatform = null;
+        }
+
+        // Damp scale values smoothly back to idle baseline values
+        this.cube.scaleX += (1 - this.cube.scaleX) * 0.16;
+        this.cube.scaleY += (1 - this.cube.scaleY) * 0.16;
+
+        this.particles.forEach(p => {
+            p.life -= 0.03; p.x += p.vx; p.y += p.vy;
+            p.vx *= 0.94; p.vy *= 0.94;
+        });
+        this.particles = this.particles.filter(p => p.life > 0);
+
+        this.floatingTexts.forEach(t => {
+            t.life -= 0.025; t.y -= 1.0;      
+            if (t.scale < 1) t.scale += 0.18; 
+            t.alpha = Math.max(0, t.life);
+        });
+        this.floatingTexts = this.floatingTexts.filter(t => t.life > 0);
+
+        if (this.screenShake > 0) this.screenShake *= 0.80;
+
+        this.updateDisplay();
+    }
+
+    gameOver(wasTimeout = true, customizedMsg = null) {
+        this.gameRunning = false;
+        const explosionColor = wasTimeout ? '#FFFFFF' : '#FF1E27';
+        this.createParticles(this.cube.x, this.cube.y, 45, explosionColor);
+
+        document.getElementById('gameStatus').classList.add('show');
+        document.getElementById('comboBadge').classList.remove('active');
+
+        if (customizedMsg) {
+            document.getElementById('statusTitle').textContent = customizedMsg;
+        } else if (!wasTimeout) {
+            document.getElementById('statusTitle').textContent = 'Trap Triggered';
+        } else {
+            document.getElementById('statusTitle').textContent = this.score >= this.highScore ? 'New Horizon Cleared' : 'Core Shutdown';
+        }
+        document.getElementById('statusMessage').textContent = `Score ${this.score}  ·  Best Score ${this.highScore}`;
+    }
+
+    updateDisplay() {
+        document.getElementById('scoreValue').textContent = this.score;
+        let progress = Math.max(0, 1 - this.platformTimer / this.platformDuration);
+        if (this.timeFreezeTurns > 0) progress = 1.0; 
+        
+        const timerBarEl = document.getElementById('timerFill');
+        timerBarEl.style.transform = `scaleX(${progress})`;
+        
+        if (this.timeFreezeTurns > 0) {
+            timerBarEl.style.background = Platforms.BONUS.strokeColor;
+            timerBarEl.style.boxShadow = `0 0 10px ${Platforms.BONUS.strokeColor}`;
+        } else if (this.freezePhase) {
+            timerBarEl.style.background = '#FF1E27';
+            timerBarEl.style.boxShadow = '0 0 12px #FF1E27';
+        } else if (this.confusionTurns > 0) {
+            timerBarEl.style.background = Platforms.INVERSE.strokeColor;
+            timerBarEl.style.boxShadow = `0 0 10px ${Platforms.INVERSE.strokeColor}`;
+        } else if (this.hasShield) {
+            timerBarEl.style.background = '#FFFFFF'; 
+            timerBarEl.style.boxShadow = '0 0 10px #FFFFFF';
+        } else {
+            timerBarEl.style.background = "#FFFFFF";
+            timerBarEl.style.boxShadow = '0 0 6px rgba(255,255,255,0.5)';
+        }
+
+        const comboBadge = document.getElementById('comboBadge');
+        if (this.timeFreezeTurns > 0) {
+            comboBadge.textContent = `⚡ FREEZE WINDOW (${this.timeFreezeTurns})`;
+            comboBadge.style.color = Platforms.BONUS.strokeColor;
+            comboBadge.style.textShadow = `0 0 8px ${Platforms.BONUS.glowColor}`;
+            comboBadge.classList.add('active');
+        } else if (this.hasShield) {
+            comboBadge.textContent = `🛡️ SHIELD COMPOSITE ACTIVE`;
+            comboBadge.style.color = '#FFFFFF';
+            comboBadge.style.textShadow = '0 0 8px rgba(255,255,255,0.4)';
+            comboBadge.classList.add('active');
+        } else if (this.confusionTurns > 0) {
+            comboBadge.textContent = `🔮 INVERSE DISRUPTION ACTIVE`;
+            comboBadge.style.color = Platforms.INVERSE.strokeColor;
+            comboBadge.style.textShadow = `0 0 8px ${Platforms.INVERSE.glowColor}`;
+            comboBadge.classList.add('active');
+        } else if (this.comboStreak >= 8) {
+            comboBadge.textContent = `🔥 HYPER STREAK (X3)`;
+            comboBadge.style.color = '#FF0080';
+            comboBadge.style.textShadow = '0 0 10px rgba(255,0,128,0.5)';
+            comboBadge.classList.add('active');
+        } else if (this.comboStreak >= 5) {
+            comboBadge.textContent = `⚡ TRIPLE STREAK (X3)`;
+            comboBadge.style.color = '#FFEA00';
+            comboBadge.style.textShadow = '0 0 8px rgba(255,234,0,0.4)';
+            comboBadge.classList.add('active');
+        } else if (this.comboStreak >= 2) {
+            comboBadge.textContent = `✨ DOUBLE STREAK (X2)`;
+            comboBadge.style.color = '#00E5FF';
+            comboBadge.style.textShadow = '0 0 8px rgba(0,229,255,0.4)';
+            comboBadge.classList.add('active');
+        } else {
+            comboBadge.classList.remove('active');
+        }
+    }
+
+    worldToScreen(x, y) {
+        return {
+            x: x - this.cube.x + this.canvas.width / 2,
+            y: y - this.cube.y + this.canvas.height / 2
+        };
+    }
+
+    drawPlatform(p, alpha = 1) {
+        const ctx = this.ctx;
+        const pos = this.worldToScreen(p.x, p.y);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        
+        // GLOW IMPLEMENTATION ENGINE
+        if (p.type !== Platforms.BASE) {
+            ctx.shadowBlur = 14;
+            ctx.shadowColor = p.type.strokeColor;
+        }
+
+        ctx.fillStyle = p.type.fillColor;
+        ctx.strokeStyle = p.type.strokeColor;
+        ctx.lineWidth = p.type === Platforms.WRONG ? 2.5 : 1.5; // Make trap outline extra thick
+        
+        ctx.beginPath();
+        ctx.roundRect(pos.x - 28, pos.y - 28, 56, 56, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Extra menacing center core detailing loop specifically for dangerous traps
+        if (p.type === Platforms.WRONG) {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#FF0000';
+            ctx.fillStyle = '#FF1E27';
+            ctx.beginPath();
+            // A small core box that flickers slightly
+            const pulseSize = 6 + Math.sin(this.time * 18) * 1.5;
+            ctx.roundRect(pos.x - pulseSize/2, pos.y - pulseSize/2, pulseSize, pulseSize, 1);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    draw() {
+        const ctx = this.ctx;
+        ctx.fillStyle = this.freezePhase ? '#0f0406' : (this.confusionTurns > 0 ? '#07030f' : this.colors.bg);
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Tech space accent matrix grid line renders
+        ctx.strokeStyle = this.colors.grid;
+        ctx.lineWidth = 1;
+        const offsetX = -(this.cube.x % 40), offsetY = -(this.cube.y % 40);
+        for (let x = offsetX; x < this.canvas.width; x += 40) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.canvas.height); ctx.stroke();
+        }
+        for (let y = offsetY; y < this.canvas.height; y += 40) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+        }
+
+        let shakeX = 0, shakeY = 0;
+        if (this.screenShake > 0) {
+            shakeX = (Math.random() - 0.5) * this.screenShake;
+            shakeY = (Math.random() - 0.5) * this.screenShake;
+        }
+
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+
+        if (this.currentPlatform) {
+            this.drawPlatform(this.currentPlatform, 1 - (this.currentPlatform.breakProgress || 0));
+        }
+
+        const pulse = Math.sin(this.time * 6) * 0.10 + 0.90;
+        this.activePlatforms.forEach(p => this.drawPlatform(p, pulse));
+
+        if (this.freezePhase) {
+            ctx.save();
+            ctx.fillStyle = '#FF1E27';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#FF0000';
+            ctx.font = "900 20px 'Inter', system-ui, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("⚠️ CRITICAL IMMOBILITY PHASE", this.canvas.width / 2, 125);
+            ctx.restore();
+        }
+
+        // Connection paths laser pointers
+        if (!this.isJumping) {
+            const cubeScreen = this.worldToScreen(this.cube.x, this.cube.y);
+            ctx.lineWidth = 1.2;
+            ctx.setLineDash([3, 6]);
+            this.activePlatforms.forEach(p => {
+                const targetScreen = this.worldToScreen(p.x, p.y);
+                ctx.strokeStyle = p.type.lineColor;
+                ctx.beginPath(); ctx.moveTo(cubeScreen.x, cubeScreen.y); ctx.lineTo(targetScreen.x, targetScreen.y); ctx.stroke();
+            });
+            ctx.setLineDash([]);
+        }
+
+        // Draw Player Block with dynamic additive aura layers
+        ctx.save();
+        ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+        
+        ctx.shadowBlur = this.hasShield ? 20 : 12;
+        ctx.shadowColor = this.hasShield ? '#00E5FF' : '#FFFFFF';
+
+        ctx.rotate(this.cube.rotation);
+        ctx.scale(this.cube.scaleX, this.cube.scaleY);
+        ctx.fillStyle = this.colors.player;
+        ctx.strokeStyle = this.colors.playerStroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-15, -15, 30, 30, 4); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        // Switch pipeline to hardware blended compositing modes for punchy particle graphics
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        this.particles.forEach(p => {
+            const pos = this.worldToScreen(p.x, p.y);
+            ctx.save();
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = p.color;
+            ctx.beginPath(); ctx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        });
+        ctx.restore();
+
+        // High brightness pop texts rendering pass loop
+        this.floatingTexts.forEach(t => {
+            const pos = this.worldToScreen(t.x, t.y);
+            ctx.save(); ctx.translate(pos.x, pos.y); ctx.rotate(t.tilt); 
+            ctx.globalAlpha = t.alpha; ctx.fillStyle = t.color;
+            ctx.shadowBlur = 8; ctx.shadowColor = t.color;
+            ctx.font = `800 ${Math.floor(18 * t.scale)}px 'Inter', system-ui, sans-serif`;
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(t.text, 0, 0); ctx.restore();
+        });
+
+        ctx.restore();
+    }
+
+    gameLoop() {
+        const loop = () => {
+            this.update(); this.draw();
+            requestAnimationFrame(loop);
+        };
+        loop();
+    }
+}
+
+const canvas = document.getElementById('gameCanvas');
+const gameInstance = new CubeGame(canvas);
+window.gameInstance = gameInstance;
+</script>
+</body>
+</html>
