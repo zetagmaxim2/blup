@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KanG</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #050505;
+    color: #E2E8F0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+body {
+    touch-action: none;
+}
+
+.game-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: #070708;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    background: linear-gradient(to bottom, rgba(7,7,8,0.8), rgba(7,7,8,0));
+    pointer-events: none;
+}
+
+.score-display {
+    text-align: right;
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.score-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(226, 232, 240, 0.35);
+    margin-bottom: 2px;
+}
+
+.score-value {
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    color: #FFFFFF;
+    transition: transform 0.1s ease;
+}
+
+.combo-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #F6AD55;
+    margin-top: 4px;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.combo-badge.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.timer-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 200;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.timer-fill {
+    height: 100%;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    transform-origin: left;
+    transition: transform 0.1s linear;
+}
+
+.game-area {
+    position: relative;
+    width: min(100vw, 480px);
+    height: min(100vh, 850px);
+    border-radius: 32px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: #0A0A0C;
+    box-shadow: 0 40px 100px -30px rgba(0,0,0,0.7);
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #070708;
+    touch-action: none;
+}
+
+.game-status {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(7, 7, 8, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 500;
+}
+
+.game-status.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.game-status h2 {
+    font-size: 36px;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+    color: #FFFFFF;
+}
+
+.game-status p {
+    color: rgba(226, 232, 240, 0.5);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.start-btn {
+    padding: 14px 36px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: #070708;
+    background: #FFFFFF;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px -5px rgba(255,255,255,0.15);
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.start-btn:hover {
+    background: #E2E8F0;
+    box-shadow: 0 15px 30px -5px rgba(255,255,255,0.25);
+}
+
+.start-btn:active {
+    transform: scale(0.97);
+}
+
+@media (max-width: 768px) {
+    .score-value {
+        font-size: 26px;
+    }
+    .top-bar {
+        padding: 20px;
+    }
+    .game-area {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+    }
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill"></div>
+    </div>
+
+    <div class="top-bar">
+        <div class="score-display">
+            <div class="score-label">Score</div>
+            <div class="score-value" id="scoreValue">0</div>
+            <div class="combo-badge" id="comboBadge">2X COMBO</div>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- START SCREEN -->
+        <div class="game-status show" id="startScreen">
+            <h2>Cube Runner</h2>
+            <p>Target the <span style="color: #4FD1C5; font-weight: 500;">Mint</span> platform.<br>Avoid the <span style="color: #F56565; font-weight: 500;">Coral</span> trap.<br><br>⚠️ Look out for <span style="color: #ECC94B; font-weight: 600;">Gold Bonus Zones</span> and warning phases where you <span style="color: #E53E3E; font-weight: 600;">MUST NOT MOVE</span> to survive!</p>
+            <button class="start-btn" onclick="gameInstance.startGame()">BEGIN</button>
+        </div>
+
+        <!-- GAME OVER / STATUS SCREEN -->
+        <div class="game-status" id="gameStatus">
+            <h2 id="statusTitle">Game Over</h2>
+            <p id="statusMessage">Score: 0</p>
+            <button class="start-btn" onclick="gameInstance.startGame()">RETRY</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// 1. EXTENSIBLE MECHANICS INTERFACES
+// ==========================================
+
+class PlatformType {
+    constructor(id, config = {}) {
+        this.id = id;
+        this.fillColor = config.fillColor || 'rgba(255,255,255,0.1)';
+        this.strokeColor = config.strokeColor || '#ffffff';
+        this.lineColor = config.lineColor || 'rgba(255,255,255,0.2)';
+    }
+
+    // Returns structural attributes to append when generating this platform
+    onSpawn(game) { return {}; }
+
+    // Evaluates actions when player steps onto this type
+    onLanding(game, platform) {
+        return { isGameOver: false, pointYield: 0, label: '', popupColor: this.strokeColor, resetCombo: false };
+    }
+}
+
+// ==========================================
+// 2. DEFINE PLATFORM REGISTRY
+// ==========================================
+
+const Platforms = {
+    BASE: new PlatformType('BASE', {
+        fillColor: '#121214',
+        strokeColor: 'rgba(255,255,255,0.06)'
+    }),
+    
+    RIGHT: new PlatformType('RIGHT', {
+        fillColor: 'rgba(79, 209, 197, 0.05)',
+        strokeColor: '#4FD1C5',
+        lineColor: 'rgba(79, 209, 197, 0.25)'
+    }),
+
+    WRONG: new PlatformType('WRONG', {
+        fillColor: 'rgba(245, 101, 101, 0.03)',
+        strokeColor: '#F56565',
+        lineColor: 'rgba(245, 101, 101, 0.15)'
+    }),
+
+    BONUS: new PlatformType('BONUS', {
+        fillColor: 'rgba(236, 201, 75, 0.08)',
+        strokeColor: '#ECC94B',
+        lineColor: 'rgba(236, 201, 75, 0.4)'
+    })
+};
+
+// Customize unique actions via hook overrides
+Platforms.RIGHT.onLanding = function(game, platform) {
+    const isFast = game.isFastJumpAvailable();
+    const multiplier = game.getComboMultiplier();
+    return {
+        isGameOver: false,
+        pointYield: multiplier,
+        label: multiplier === 3 ? '+3 Streak!' : (multiplier === 2 ? '+2 Double' : '+1'),
+        popupColor: multiplier === 3 ? '#F6AD55' : (multiplier === 2 ? '#F6E05E' : this.strokeColor),
+        resetCombo: !isFast
+    };
+};
+
+Platforms.WRONG.onLanding = function(game, platform) {
+    return { isGameOver: true, pointYield: 0, label: '', popupColor: this.strokeColor, resetCombo: true };
+};
+
+Platforms.BONUS.onLanding = function(game, platform) {
+    game.timeFreezeTurns = 3;
+    game.createParticles(platform.x, platform.y, 25, this.strokeColor);
+    return {
+        isGameOver: false,
+        pointYield: game.getComboMultiplier() + 3,
+        label: `+${game.getComboMultiplier() + 3} Time Frozen!`,
+        popupColor: this.strokeColor,
+        resetCombo: !game.isFastJumpAvailable()
+    };
+};
+
+
+// ==========================================
+// 3. CORE GAME ENGINE
+// ==========================================
+
+class CubeGame {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+
+        this.colors = {
+            bg: '#070708',
+            grid: 'rgba(255, 255, 255, 0.02)',
+            player: '#FFFFFF',
+            playerStroke: '#070708',
+            wrong: '#F56565',
+            bonus: '#ECC94B'
+        };
+
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+
+        this.gameRunning = false;
+        this.gamePaused = false;
+        this.isJumping = false;
+
+        this.score = 0;
+        this.highScore = parseInt(localStorage.getItem('cubeHighScore')) || 0;
+        this.comboStreak = 0;
+
+        // Active spatial elements
+        this.currentPlatform = null;
+        this.activePlatforms = []; // Dynamic pool running all active targets
+
+        this.cube = { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 };
+        this.particles = [];
+        this.floatingTexts = []; 
+        this.screenShake = 0;
+        this.time = 0;
+        this.platformTimer = 0;
+        this.platformDuration = 1.45;
+
+        this.freezePhase = false; 
+        this.timeFreezeTurns = 0; 
+
+        this.setupInputs();
+        this.gameLoop();
+    }
+
+    resize() {
+        const maxWidth = Math.min(window.innerWidth, 480);
+        const maxHeight = Math.min(window.innerHeight, 850);
+        this.canvas.width = maxWidth;
+        this.canvas.height = maxHeight;
+        this.canvas.style.width = `${maxWidth}px`;
+        this.canvas.style.height = `${maxHeight}px`;
+        this.gridCellSize = Math.min(maxWidth, maxHeight) * 0.28;
+    }
+
+    setupInputs() {
+        window.addEventListener('keydown', (e) => {
+            if (!this.gameRunning || this.gamePaused) return;
+            const key = e.key.toLowerCase();
+            if (e.key === 'ArrowUp' || key === 'w') this.jump('UP');
+            if (e.key === 'ArrowRight' || key === 'd') this.jump('RIGHT');
+            if (e.key === 'ArrowDown' || key === 's') this.jump('DOWN');
+            if (e.key === 'ArrowLeft' || key === 'a') this.jump('LEFT');
+        });
+
+        let touchStartX = 0, touchStartY = 0;
+        this.canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            if (!this.gameRunning || this.gamePaused) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = touchStartY - e.changedTouches[0].clientY;
+            const threshold = 30;
+            if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) return;
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                this.jump(dx > 0 ? 'RIGHT' : 'LEFT');
+            } else {
+                this.jump(dy > 0 ? 'UP' : 'DOWN');
+            }
+        }, { passive: true });
+    }
+
+    startGame() {
+        this.gameRunning = true;
+        this.gamePaused = false;
+        this.isJumping = false;
+        this.freezePhase = false;
+        this.timeFreezeTurns = 0;
+        this.score = 0;
+        this.comboStreak = 0;
+        this.time = 0;
+        this.particles = [];
+        this.floatingTexts = [];
+
+        this.currentPlatform = {
+            x: 0, y: 0, width: 56, height: 56,
+            breaking: false, breakProgress: 0,
+            type: Platforms.BASE
+        };
+
+        this.cube.x = 0; this.cube.y = 0; this.cube.rotation = 0;
+        this.cube.scaleX = 1; this.cube.scaleY = 1;
+
+        this.spawnNext();
+        document.getElementById('startScreen').classList.remove('show');
+        document.getElementById('gameStatus').classList.remove('show');
+        this.updateDisplay();
+    }
+
+    getComboMultiplier() {
+        return this.comboStreak >= 5 ? 3 : (this.comboStreak >= 2 ? 2 : 1);
+    }
+
+    isFastJumpAvailable() {
+        const timerRatioRemaining = 1 - (this.platformTimer / this.platformDuration);
+        return timerRatioRemaining >= 0.40 || this.timeFreezeTurns > 0;
+    }
+
+    spawnNext() {
+        this.activePlatforms = [];
+        this.platformTimer = 0;
+
+        if (this.timeFreezeTurns > 0) this.timeFreezeTurns--;
+
+        const directions = [
+            { dir: 'UP', x: 0, y: -this.gridCellSize },
+            { dir: 'RIGHT', x: this.gridCellSize, y: 0 },
+            { dir: 'DOWN', x: 0, y: this.gridCellSize },
+            { dir: 'LEFT', x: -this.gridCellSize, y: 0 }
+        ];
+        const shuffled = [...directions].sort(() => Math.random() - 0.5);
+        const jitter = this.score > 15 ? (Math.random() - 0.5) * 8 : 0;
+
+        // Check for special Freeze Phase condition
+        if (this.score > 0 && this.score % 7 === 0 && !this.freezePhase && this.timeFreezeTurns <= 0) {
+            this.freezePhase = true;
+            this.platformDuration = 1.6; 
+            
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.WRONG);
+            return;
+        }
+
+        this.freezePhase = false;
+        this.platformDuration = Math.max(0.45, 1.55 - this.score * 0.022);
+
+        const isDoubleSafeMode = Math.random() < 0.35 && this.score > 3;
+
+        if (isDoubleSafeMode) {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.RIGHT);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.BONUS);
+            this.createPlatformNode(shuffled[2].dir, shuffled[2].x, shuffled[2].y, jitter, Platforms.WRONG);
+        } else {
+            this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.RIGHT);
+            this.createPlatformNode(shuffled[1].dir, shuffled[1].x, shuffled[1].y, jitter, Platforms.WRONG);
+        }
+    }
+
+    createPlatformNode(dir, vectorX, vectorY, jitter, type) {
+        const baseNode = {
+            dir: dir,
+            x: this.currentPlatform.x + vectorX + jitter,
+            y: this.currentPlatform.y + vectorY + jitter,
+            width: 56, height: 56,
+            type: type
+        };
+        // Inject runtime context customizations if provided by type rules
+        Object.assign(baseNode, type.onSpawn(this));
+        this.activePlatforms.push(baseNode);
+    }
+
+    jump(direction) {
+        if (!this.gameRunning || this.gamePaused || this.isJumping) return;
+
+        if (this.freezePhase) {
+            this.gameOver(false, "You Moved!");
+            return;
+        }
+
+        const targetPlatform = this.activePlatforms.find(p => p.dir === direction);
+
+        if (!targetPlatform) {
+            this.screenShake = 4;
+            return;
+        }
+
+        this.isJumping = true;
+        this.currentPlatform.breaking = true;
+
+        const startX = this.cube.x;
+        const startY = this.cube.y;
+        const targetX = targetPlatform.x;
+        const targetY = targetPlatform.y;
+
+        let progress = 0;
+        const duration = 0.12;
+
+        this.cube.scaleX = ['LEFT', 'RIGHT'].includes(direction) ? 1.3 : 0.7;
+        this.cube.scaleY = ['LEFT', 'RIGHT'].includes(direction) ? 0.7 : 1.3;
+
+        const animate = () => {
+            progress += 0.016 / duration;
+
+            if (progress >= 1) {
+                this.cube.x = targetX; this.cube.y = targetY;
+                this.cube.scaleX = 1; this.cube.scaleY = 1;
+                this.currentPlatform = targetPlatform;
+                
+                // Process decoupled landing mechanics via type definition
+                const result = targetPlatform.type.onLanding(this, targetPlatform);
+
+                if (result.isGameOver) {
+                    this.isJumping = false;
+                    this.gameOver(false);
+                    return;
+                }
+
+                if (result.resetCombo) {
+                    this.comboStreak = 0;
+                } else {
+                    this.comboStreak++;
+                }
+
+                this.score += result.pointYield;
+
+                if (result.label) {
+                    this.triggerFloatingText(this.cube.x, this.cube.y, result.label, result.popupColor);
+                }
+
+                if (this.isFastJumpAvailable() && targetPlatform.type !== Platforms.BONUS) {
+                    this.createParticles(this.cube.x, this.cube.y, 15, result.popupColor);
+                }
+
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('cubeHighScore', this.highScore);
+                }
+
+                this.screenShake = this.getComboMultiplier() * 4;
+                this.createParticles(this.cube.x, this.cube.y, 8, '#FFFFFF');
+
+                const scoreValEl = document.getElementById('scoreValue');
+                scoreValEl.style.transform = 'scale(1.15)';
+                setTimeout(() => scoreValEl.style.transform = 'scale(1)', 80);
+
+                this.spawnNext();
+                this.updateDisplay();
+                this.isJumping = false;
+                return;
+            }
+
+            const t = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+            const jumpArc = Math.sin(progress * Math.PI) * 35;
+
+            this.cube.x = startX + (targetX - startX) * t;
+            this.cube.y = startY + (targetY - startY) * t - jumpArc;
+            this.cube.rotation += 0.2;
+
+            requestAnimationFrame(animate);
+        };
+
+        animate();
+    }
+
+    triggerFloatingText(x, y, text, color) {
+        this.floatingTexts.push({
+            x: x, y: y - 28, text: text, color: color,
+            tilt: (Math.random() - 0.5) * 0.4, alpha: 1, scale: 0.4, life: 1.0   
+        });
+    }
+
+    createParticles(x, y, count, color = '#FFFFFF') {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            this.particles.push({
+                x, y,
+                vx: Math.cos(angle) * (1.8 + Math.random() * 3.5),
+                vy: Math.sin(angle) * (1.8 + Math.random() * 3.5),
+                life: 1, size: 1.5 + Math.random() * 2, color
+            });
+        }
+    }
+
+    update() {
+        if (!this.gameRunning || this.gamePaused) return;
+
+        this.time += 0.016;
+        if (this.timeFreezeTurns === 0) this.platformTimer += 0.022;
+
+        if (this.platformTimer >= this.platformDuration) {
+            if (this.freezePhase) {
+                this.score += 5;
+                this.createParticles(this.cube.x, this.cube.y, 35, Platforms.RIGHT.strokeColor);
+                this.triggerFloatingText(this.cube.x, this.cube.y, "SURVIVED! +5", Platforms.RIGHT.strokeColor);
+                this.freezePhase = false;
+                this.spawnNext();
+                this.updateDisplay();
+                return;
+            } else {
+                this.gameOver(true);
+                return;
+            }
+        }
+
+        if (this.currentPlatform && this.currentPlatform.breaking) {
+            this.currentPlatform.breakProgress += 0.04;
+            if (this.currentPlatform.breakProgress > 1) this.currentPlatform = null;
+        }
+
+        this.particles.forEach(p => {
+            p.life -= 0.028; p.x += p.vx; p.y += p.vy;
+            p.vx *= 0.95; p.vy *= 0.95;
+        });
+        this.particles = this.particles.filter(p => p.life > 0);
+
+        this.floatingTexts.forEach(t => {
+            t.life -= 0.024; t.y -= 0.9;      
+            if (t.scale < 1) t.scale += 0.15; 
+            t.alpha = Math.max(0, t.life);
+        });
+        this.floatingTexts = this.floatingTexts.filter(t => t.life > 0);
+
+        this.cube.scaleX += (1 - this.cube.scaleX) * 0.2;
+        this.cube.scaleY += (1 - this.cube.scaleY) * 0.2;
+
+        if (this.screenShake > 0) this.screenShake *= 0.82;
+
+        this.updateDisplay();
+    }
+
+    gameOver(wasTimeout = true, customizedMsg = null) {
+        this.gameRunning = false;
+        const explosionColor = wasTimeout ? '#FFFFFF' : this.colors.wrong;
+        this.createParticles(this.cube.x, this.cube.y, 30, explosionColor);
+
+        document.getElementById('gameStatus').classList.add('show');
+        document.getElementById('comboBadge').classList.remove('active');
+
+        if (customizedMsg) {
+            document.getElementById('statusTitle').textContent = customizedMsg;
+        } else if (!wasTimeout) {
+            document.getElementById('statusTitle').textContent = 'Trap Triggered';
+        } else {
+            document.getElementById('statusTitle').textContent = this.score >= this.highScore ? 'New Horizon' : 'Stalled';
+        }
+        document.getElementById('statusMessage').textContent = `Score ${this.score}  ·  Best ${this.highScore}`;
+    }
+
+    updateDisplay() {
+        document.getElementById('scoreValue').textContent = this.score;
+        let progress = Math.max(0, 1 - this.platformTimer / this.platformDuration);
+        if (this.timeFreezeTurns > 0) progress = 1.0; 
+        
+        const timerBarEl = document.getElementById('timerFill');
+        timerBarEl.style.transform = `scaleX(${progress})`;
+        timerBarEl.style.background = this.timeFreezeTurns > 0 ? this.colors.bonus : (this.freezePhase ? this.colors.wrong : "rgba(255,255,255,0.8)");
+
+        const comboBadge = document.getElementById('comboBadge');
+        if (this.timeFreezeTurns > 0) {
+            comboBadge.textContent = `⚡ TIME FROZEN (${this.timeFreezeTurns})`;
+            comboBadge.style.color = this.colors.bonus;
+            comboBadge.classList.add('active');
+        } else if (this.comboStreak >= 5) {
+            comboBadge.textContent = `3X TRIPLE STREAK`;
+            comboBadge.style.color = '#F6AD55';
+            comboBadge.classList.add('active');
+        } else if (this.comboStreak >= 2) {
+            comboBadge.textContent = `2X DOUBLE STREAK`;
+            comboBadge.style.color = '#F6E05E';
+            comboBadge.classList.add('active');
+        } else {
+            comboBadge.classList.remove('active');
+        }
+    }
+
+    worldToScreen(x, y) {
+        return {
+            x: x - this.cube.x + this.canvas.width / 2,
+            y: y - this.cube.y + this.canvas.height / 2
+        };
+    }
+
+    drawPlatform(p, alpha = 1) {
+        const ctx = this.ctx;
+        const pos = this.worldToScreen(p.x, p.y);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.type.fillColor;
+        ctx.strokeStyle = p.type.strokeColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(pos.x - 28, pos.y - 28, 56, 56, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    draw() {
+        const ctx = this.ctx;
+        ctx.fillStyle = this.freezePhase ? '#140507' : this.colors.bg;
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw grid lines
+        ctx.strokeStyle = this.colors.grid;
+        ctx.lineWidth = 1;
+        const offsetX = -(this.cube.x % 40), offsetY = -(this.cube.y % 40);
+        for (let x = offsetX; x < this.canvas.width; x += 40) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.canvas.height); ctx.stroke();
+        }
+        for (let y = offsetY; y < this.canvas.height; y += 40) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+        }
+
+        let shakeX = 0, shakeY = 0;
+        if (this.screenShake > 0) {
+            shakeX = (Math.random() - 0.5) * this.screenShake;
+            shakeY = (Math.random() - 0.5) * this.screenShake;
+        }
+
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+
+        if (this.currentPlatform) {
+            this.drawPlatform(this.currentPlatform, 1 - (this.currentPlatform.breakProgress || 0));
+        }
+
+        const pulse = Math.sin(this.time * 6) * 0.12 + 0.88;
+        this.activePlatforms.forEach(p => this.drawPlatform(p, pulse));
+
+        if (this.freezePhase) {
+            ctx.save();
+            ctx.fillStyle = this.colors.wrong;
+            ctx.font = "800 20px 'Inter', system-ui, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("⚠️ FREEZE! DO NOT MOVE!", this.canvas.width / 2, 120);
+            ctx.restore();
+        }
+
+        // Draw structural connection context lines dynamically based on type configurations
+        if (!this.isJumping) {
+            const cubeScreen = this.worldToScreen(this.cube.x, this.cube.y);
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 8]);
+            this.activePlatforms.forEach(p => {
+                const targetScreen = this.worldToScreen(p.x, p.y);
+                ctx.strokeStyle = p.type.lineColor;
+                ctx.beginPath(); ctx.moveTo(cubeScreen.x, cubeScreen.y); ctx.lineTo(targetScreen.x, targetScreen.y); ctx.stroke();
+            });
+            ctx.setLineDash([]);
+        }
+
+        // Draw Player
+        ctx.save();
+        ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+        ctx.rotate(this.cube.rotation);
+        ctx.scale(this.cube.scaleX, this.cube.scaleY);
+        ctx.fillStyle = this.colors.player;
+        ctx.strokeStyle = this.colors.playerStroke;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.roundRect(-15, -15, 30, 30, 3); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        // Particles
+        this.particles.forEach(p => {
+            const pos = this.worldToScreen(p.x, p.y);
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2); ctx.fill();
+        });
+
+        // Floating popup texts
+        this.floatingTexts.forEach(t => {
+            const pos = this.worldToScreen(t.x, t.y);
+            ctx.save(); ctx.translate(pos.x, pos.y); ctx.rotate(t.tilt); 
+            ctx.globalAlpha = t.alpha; ctx.fillStyle = t.color;
+            ctx.font = `700 ${Math.floor(18 * t.scale)}px 'Inter', system-ui, sans-serif`;
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(t.text, 0, 0); ctx.restore();
+        });
+
+        ctx.restore();
+    }
+
+    gameLoop() {
+        const loop = () => {
+            this.update(); this.draw();
+            requestAnimationFrame(loop);
+        };
+        loop();
+    }
+}
+
+const canvas = document.getElementById('gameCanvas');
+const gameInstance = new CubeGame(canvas);
+window.gameInstance = gameInstance;
+</script>
+</body>
+</html>
