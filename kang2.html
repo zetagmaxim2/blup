@@ -422,6 +422,7 @@ class CubeGame {
         this.floatingTexts = []; 
         this.screenShake = 0;
         this.time = 0;
+        this.lastTime = performance.now(); // Track real-world clock time
         this.platformTimer = 0;
         this.platformDuration = 1.7; 
 
@@ -496,6 +497,7 @@ class CubeGame {
         this.score = 0;
         this.comboStreak = 0;
         this.time = 0;
+        this.lastTime = performance.now(); // Reset clock on game start
         this.particles = [];
         this.floatingTexts = [];
 
@@ -730,11 +732,14 @@ class CubeGame {
         }
     }
 
-    update() {
+    update(dt) {
         if (!this.gameRunning || this.gamePaused) return;
 
-        this.time += 0.016;
-        if (this.timeFreezeTurns === 0) this.platformTimer += 0.022;
+        // Use actual elapsed real-world time
+        this.time += dt;
+        if (this.timeFreezeTurns === 0) {
+            this.platformTimer += dt; // The timer now accurately scales to 1 second per second!
+        }
 
         if (this.platformTimer >= this.platformDuration) {
             if (this.freezePhase) {
@@ -756,28 +761,34 @@ class CubeGame {
         }
 
         if (this.currentPlatform && this.currentPlatform.breaking) {
-            this.currentPlatform.breakProgress += 0.05;
+            // Scale animations to frame rate as well
+            this.currentPlatform.breakProgress += 3.1 * dt; 
             if (this.currentPlatform.breakProgress > 1) this.currentPlatform = null;
         }
 
-        // Damp scale values smoothly back to idle baseline values
-        this.cube.scaleX += (1 - this.cube.scaleX) * 0.16;
-        this.cube.scaleY += (1 - this.cube.scaleY) * 0.16;
+        // Smoothly damp scale values using time-corrected interpolation
+        const easeFactor = 1 - Math.pow(0.001, dt); // Framerate-independent lerp
+        this.cube.scaleX += (1 - this.cube.scaleX) * easeFactor;
+        this.cube.scaleY += (1 - this.cube.scaleY) * easeFactor;
 
         this.particles.forEach(p => {
-            p.life -= 0.03; p.x += p.vx; p.y += p.vy;
-            p.vx *= 0.94; p.vy *= 0.94;
+            p.life -= 1.8 * dt; 
+            p.x += p.vx * (dt / 0.016); // Scale velocity to original 60fps design feel
+            p.y += p.vy * (dt / 0.016);
+            p.vx *= Math.pow(0.94, dt / 0.016); 
+            p.vy *= Math.pow(0.94, dt / 0.016);
         });
         this.particles = this.particles.filter(p => p.life > 0);
 
         this.floatingTexts.forEach(t => {
-            t.life -= 0.025; t.y -= 1.0;      
-            if (t.scale < 1) t.scale += 0.18; 
+            t.life -= 1.5 * dt; 
+            t.y -= 60 * dt;      
+            if (t.scale < 1) t.scale += 10 * dt; 
             t.alpha = Math.max(0, t.life);
         });
         this.floatingTexts = this.floatingTexts.filter(t => t.life > 0);
 
-        if (this.screenShake > 0) this.screenShake *= 0.80;
+        if (this.screenShake > 0) this.screenShake *= Math.pow(0.80, dt / 0.016);
 
         this.updateDisplay();
     }
@@ -1005,17 +1016,29 @@ class CubeGame {
     }
 
     gameLoop() {
-        const loop = () => {
-            this.update(); this.draw();
+        const loop = (timestamp) => {
+            // Calculate delta time in seconds (defaults to ~0.016s if it's the first frame)
+            if (!timestamp) timestamp = performance.now();
+            let dt = (timestamp - this.lastTime) / 1000;
+            
+            // Cap dt to prevent massive jumps if the user leaves the tab and comes back
+            if (dt > 0.1) dt = 0.1; 
+            
+            this.lastTime = timestamp;
+
+            this.update(dt); 
+            this.draw();
             requestAnimationFrame(loop);
         };
-        loop();
+        requestAnimationFrame(loop);
     }
 }
 
-const canvas = document.getElementById('gameCanvas');
-const gameInstance = new CubeGame(canvas);
-window.gameInstance = gameInstance;
+// Initialize game on page load
+window.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('gameCanvas');
+    window.gameInstance = new CubeGame(canvas);
+});
 </script>
 </body>
 </html>
