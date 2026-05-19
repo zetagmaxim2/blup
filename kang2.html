@@ -560,9 +560,9 @@ class CubeGame {
         this.freezePhase = false;
         
         // Highly Forgiving Adaptive Grace Timer Equation (Caps smoothly at 0.65s floor)
-        this.platformDuration = Math.max(0.85, 1.75 - (this.score * 0.016));
+        this.platformDuration = Math.max(0.95, 1.75 - (this.score * 0.008)); 
 
-        const roll = Math.random();
+    const roll = Math.random();
         
         if (this.score > 4 && roll < 0.12 && !this.hasShield) {
             this.createPlatformNode(shuffled[0].dir, shuffled[0].x, shuffled[0].y, jitter, Platforms.SHIELD);
