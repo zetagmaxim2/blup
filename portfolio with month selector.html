@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PORTFOLIO">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Portfolio Empire</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ececec;
+            -webkit-font-smoothing: antialiased;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* ============================================
+           LAYOUT
+           ============================================ */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: env(safe-area-inset-top);
+            background: #0a0a0a;
+        }
+
+        .header {
+            padding: 46px 20px 16px;
+            border-bottom: 1px solid #1a1a1a;
+            background: #0a0a0a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            color: #ff6b35;
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            margin: 0;
+            animation: slideInUp 0.6s ease-out 0.1s both;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-subtitle {
+            font-size: 10px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: slideInUp 0.6s ease-out 0.2s both;
+        }
+
+        .rank-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: rgba(255, 107, 53, 0.15);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #ff6b35;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .rank-badge.rank-up {
+            animation: rankUpPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes rankUpPulse {
+            0% {
+                transform: scale(1);
+                background: rgba(255, 107, 53, 0.15);
+            }
+            50% {
+                transform: scale(1.15);
+                background: rgba(255, 107, 53, 0.3);
+            }
+            100% {
+                transform: scale(1);
+                background: rgba(255, 107, 53, 0.15);
+            }
+        }
+
+        .rank-icon {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+        }
+
+        .content {
+            flex: 1;
+            padding: 16px 20px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* ============================================
+           CARDS
+           ============================================ */
+        .card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.2s; }
+        .card:nth-child(2) { animation-delay: 0.3s; }
+        .card:nth-child(3) { animation-delay: 0.4s; }
+        .card:nth-child(4) { animation-delay: 0.5s; }
+        .card:nth-child(5) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-sm {
+            padding: 12px;
+        }
+
+        /* ============================================
+           STREAK & PROGRESS
+           ============================================ */
+        .streak-xp-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .streak-card {
+            text-align: center;
+        }
+
+        .streak-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 8px;
+        }
+
+        .streak-icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            color: #ff6b35;
+            animation: streakBurn 2s ease-in-out infinite;
+        }
+
+        @keyframes streakBurn {
+            0%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 0px rgba(255, 107, 53, 0));
+            }
+            50% {
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.4));
+            }
+        }
+
+        .streak-number {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #ff6b35;
+            line-height: 1;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .streak-number.increment {
+            animation: streakBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes streakBounce {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .streak-label {
+            font-size: 11px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+
+        .xp-card {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .xp-label {
+            font-size: 11px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .xp-bar {
+            height: 6px;
+            background: #242424;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #ffb347);
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+
+        .xp-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .xp-text {
+            font-size: 11px;
+            color: #ff6b35;
+            font-weight: 600;
+        }
+
+        /* ============================================
+           STOCK DISPLAY
+           ============================================ */
+        .stock-display {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #ff6b35;
+            border-opacity: 0.2;
+            animation: stockPulse 0.6s ease-out;
+        }
+
+        @keyframes stockPulse {
+            from {
+                opacity: 0;
+                border-color: transparent;
+            }
+            to {
+                opacity: 1;
+                border-color: #ff6b35;
+            }
+        }
+
+        .stock-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .stock-label {
+            font-size: 11px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stock-label-icon {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+            color: #888888;
+        }
+
+        .stock-value {
+            font-size: 36px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            color: #ff6b35;
+            line-height: 1;
+            margin-bottom: 6px;
+            transition: all 0.4s ease;
+        }
+
+        .stock-value.update {
+            animation: valuePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes valuePop {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .stock-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #666666;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* ============================================
+           INPUT SECTION
+           ============================================ */
+        .input-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 12px 12px;
+            border-radius: 6px;
+            border: 1px solid #242424;
+            background: #0a0a0a;
+            color: #ececec;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input[type="number"]::placeholder {
+            color: #666666;
+        }
+
+        input[type="number"]:focus {
+            border-color: #ff6b35;
+            background: #1a1a1a;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        button {
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: none;
+            background: #ff6b35;
+            color: #0a0a0a;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        button:active {
+            background: #e55a24;
+            transform: scale(0.92);
+        }
+
+        button svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+        }
+
+        /* ============================================
+           MONTH SELECTOR
+           ============================================ */
+        .month-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .month-nav-btn {
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #242424;
+            background: #141414;
+            color: #ff6b35;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+        }
+
+        .month-nav-btn:active {
+            background: #242424;
+            transform: scale(0.92);
+        }
+
+        .month-nav-btn svg {
+            width: 12px;
+            height: 12px;
+            stroke-width: 2.5;
+        }
+
+        .month-display {
+            font-size: 12px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* ============================================
+           DAYS INFO
+           ============================================ */
+        .days-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .info-box {
+            background: rgba(255, 107, 53, 0.08);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .info-icon {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+            color: #888888;
+        }
+
+        .info-label {
+            color: #888888;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff6b35;
+            font-family: 'Courier New', monospace;
+            transition: all 0.4s ease;
+        }
+
+        .info-value.update {
+            animation: numberPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes numberPop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ============================================
+           LUCKY DEPOSIT POPUP
+           ============================================ */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.6);
+            background: #141414;
+            border: 2px solid #ff6b35;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            z-index: 1000;
+            max-width: 280px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .popup.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+            animation: popupBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popupBounce {
+            0% {
+                transform: translate(-50%, -50%) scale(0.6) rotateZ(-5deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.05) rotateZ(2deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotateZ(0deg);
+                opacity: 1;
+            }
+        }
+
+        .popup-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            color: #ff6b35;
+            stroke-width: 2;
+            animation: iconFlip 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes iconFlip {
+            0% {
+                transform: rotateY(90deg) scale(0);
+                opacity: 0;
+            }
+            100% {
+                transform: rotateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .popup-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 6px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .popup-text {
+            font-size: 13px;
+            color: #ececec;
+            margin-bottom: 12px;
+        }
+
+        .popup-bonus {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ff6b35;
+            font-family: 'Courier New', monospace;
+            animation: bonusPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        @keyframes bonusPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ============================================
+           HISTORY
+           ============================================ */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255, 107, 53, 0.05);
+            border-left: 2px solid #ff6b35;
+            border-radius: 4px;
+            font-size: 12px;
+            animation: slideInLeft 0.4s ease-out;
+        }
+
+        .history-date {
+            color: #888888;
+            font-weight: 500;
+        }
+
+        .history-calc {
+            color: #666666;
+            font-family: 'Courier New', monospace;
+            margin: 0 8px;
+        }
+
+        .history-value {
+            color: #ff6b35;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* ============================================
+           CHALLENGES
+           ============================================ */
+        .challenge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            background: rgba(255, 107, 53, 0.05);
+            border: 1px solid rgba(255, 107, 53, 0.15);
+            animation: challengeSlide 0.4s ease-out;
+        }
+
+        @keyframes challengeSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .challenge-icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
+            color: #ff6b35;
+            flex-shrink: 0;
+            animation: challengePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes challengePulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .challenge-text {
+            flex: 1;
+            color: #888888;
+        }
+
+        .challenge-badge {
+            font-size: 10px;
+            padding: 3px 6px;
+            background: #ff6b35;
+            color: #0a0a0a;
+            border-radius: 3px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ============================================
+           EMPTY STATE
+           ============================================ */
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666666;
+            font-size: 13px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            stroke-width: 2;
+            color: #ff6b35;
+            opacity: 0.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ============================================
+           XP POP
+           ============================================ */
+        .xp-pop {
+            position: fixed;
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff6b35;
+            font-family: 'Courier New', monospace;
+            pointer-events: none;
+            z-index: 999;
+            animation: xpFloat 1.2s ease-out forwards;
+        }
+
+        @keyframes xpFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(0.8);
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 480px) {
+            .content {
+                padding: 12px 16px;
+                gap: 12px;
+            }
+
+            .card {
+                padding: 14px;
+            }
+
+            .stock-value {
+                font-size: 32px;
+            }
+
+            .input-section {
+                gap: 8px;
+            }
+
+            input {
+                padding: 11px 10px;
+                font-size: 13px;
+            }
+
+            button {
+                padding: 11px 14px;
+                font-size: 12px;
+            }
+
+            .month-selector {
+                gap: 6px;
+            }
+
+            .month-nav-btn {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            .month-display {
+                font-size: 11px;
+                min-width: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+              
+                <div>
+                    <h1>Sunburn</h1>
+                    <div class="header-subtitle">Dumbire</div>
+                </div>
+            </div>
+            <div class="rank-badge" id="rankDisplay">
+                <svg class="rank-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span id="rankText">Rookie</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <div class="content">
+            
+            <!-- Streak & XP -->
+            <div class="streak-xp-row">
+                <div class="card card-sm streak-card">
+                    <div class="streak-icon-wrapper">
+                        <svg class="streak-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657L13.414 22.9a2 2 0 01-2.828 0l-.36-.36a2 2 0 00-2.828 0L7.07 20.07a2 2 0 01-2.828 0m9.758-9.758l-2.828 2.828m0 0a2 2 0 11-2.828-2.829m2.828 2.829L9.172 9.172m0 0a2 2 0 00-2.828 0L6.343 9.9a2 2 0 010 2.828m3.534-3.534l2.828 2.828M9 9A3 3 0 1115 9m0 0a3 3 0 01-6 0m6 0a3 3 0 11-6 0" />
+                        </svg>
+                    </div>
+                    <div class="streak-number" id="streakCount">0</div>
+                    <div class="streak-label">Day Streak</div>
+                </div>
+
+                <div class="card card-sm xp-card">
+                    <div class="xp-label">Rank Progress</div>
+                    <div class="xp-bar">
+                        <div class="xp-fill" id="xpFill" style="width: 0%"></div>
+                    </div>
+                    <div class="xp-text" id="xpText">0/500 XP</div>
+                </div>
+            </div>
+
+            <!-- Month Selector -->
+            <div class="card card-sm">
+                <div class="month-selector">
+                    <button class="month-nav-btn" onclick="changeMonth(-1)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div class="month-display" id="monthDisplay">June 2026</div>
+                    <button class="month-nav-btn" onclick="changeMonth(1)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stock Display -->
+            <div class="card stock-display" id="stockCard" style="display: none;">
+                <div class="stock-header">
+                    <svg class="stock-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <span class="stock-label">Today's Value</span>
+                </div>
+                <div class="stock-value" id="stockValue">$0.00</div>
+                <div class="stock-details">
+                    <span id="inputDisplay">—</span>
+                    <span>÷</span>
+                    <span id="daysDisplay">—</span>
+                </div>
+            </div>
+
+            <!-- Days Info -->
+            <div class="days-info">
+                <div class="info-box card card-sm">
+                    <div class="info-header">
+                        <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="info-label">Days Left</span>
+                    </div>
+                    <div class="info-value" id="daysLeft">—</div>
+                </div>
+                <div class="info-box card card-sm">
+                    <div class="info-header">
+                        <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="info-label">Total</span>
+                    </div>
+                    <div class="info-value" id="totalDeposits">$0</div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="card">
+                <div class="input-section">
+                    <input 
+                        type="number" 
+                        id="inputValue" 
+                        placeholder="Enter amount"
+                        inputmode="decimal"
+                        step="0.01"
+                    >
+                    <button onclick="handleDeposit()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Invest
+                    </button>
+                </div>
+            </div>
+
+            <!-- Challenge -->
+            <div class="card card-sm" id="challengeCard" style="display: none;">
+                <div class="challenge">
+                    <svg class="challenge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span class="challenge-text" id="challengeText">Loading...</span>
+                    <span class="challenge-badge" id="challengeReward">+50 XP</span>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="card" id="historyCard" style="display: none;">
+                <div style="font-size: 12px; color: #888888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600;">Recent Deposits</div>
+                <div class="history-list" id="historyList"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty" id="emptyState">
+                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <p>Make your first deposit to start your empire</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Lucky Deposit Popup -->
+    <div class="popup" id="luckyPopup">
+        <svg class="popup-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div class="popup-title" id="popupTitle">Lucky Deposit!</div>
+        <div class="popup-text" id="popupText">Extra bonus</div>
+        <div class="popup-bonus" id="popupBonus">+50 XP</div>
+    </div>
+
+    <script>
+        let gameState = {
+            entries: [],
+            xp: 0,
+            rank: 0,
+            streak: 0,
+            lastDepositDate: null,
+            selectedMonthOffset: 0 // 0 = current month, 1 = next month, 2 = month after, etc.
+        };
+
+        const RANKS = [
+            { name: 'Rookie', xpNeeded: 0 },
+            { name: 'Trader', xpNeeded: 500 },
+            { name: 'Analyst', xpNeeded: 1200 },
+            { name: 'Strategist', xpNeeded: 2100 },
+            { name: 'Tycoon', xpNeeded: 3200 },
+            { name: 'Mogul', xpNeeded: 4500 }
+        ];
+
+        const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        function changeMonth(delta) {
+            gameState.selectedMonthOffset += delta;
+            gameState.selectedMonthOffset = Math.max(0, gameState.selectedMonthOffset);
+            saveGame();
+            render();
+        }
+
+        function getTargetMonth() {
+            const today = new Date();
+            const targetDate = new Date(today.getFullYear(), today.getMonth() + gameState.selectedMonthOffset, 28);
+            return targetDate;
+        }
+
+        function getMonthDisplayName() {
+            const target = getTargetMonth();
+            return `${MONTH_NAMES[target.getMonth()]} ${target.getFullYear()}`;
+        }
+
+        function calculateDaysRemaining() {
+            const today = new Date();
+            const targetDate = getTargetMonth();
+            
+            const daysLeft = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+            return Math.max(daysLeft, 1);
+        }
+
+        function getTodayKey() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        function calculateStock(inputNum) {
+            const daysRemaining = calculateDaysRemaining();
+            return (inputNum / daysRemaining).toFixed(2);
+        }
+
+        function checkStreak() {
+            const today = getTodayKey();
+            const lastDeposit = gameState.lastDepositDate;
+            
+            if (!lastDeposit) {
+                gameState.streak = 1;
+                gameState.lastDepositDate = today;
+                return { isNewDay: true, streakBroken: false };
+            }
+
+            const lastDate = new Date(lastDeposit);
+            const todayDate = new Date(today);
+            const diffTime = todayDate - lastDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return { isNewDay: false, streakBroken: false };
+            } else if (diffDays === 1) {
+                gameState.streak++;
+                gameState.lastDepositDate = today;
+                return { isNewDay: true, streakBroken: false };
+            } else {
+                gameState.streak = 1;
+                gameState.lastDepositDate = today;
+                return { isNewDay: true, streakBroken: true };
+            }
+        }
+
+        function addXP(amount) {
+            gameState.xp += amount;
+            
+            // XP pop animation
+            const popup = document.createElement('div');
+            popup.className = 'xp-pop';
+            popup.textContent = `+${amount} XP`;
+            popup.style.left = '50%';
+            popup.style.top = '40%';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1200);
+
+            updateRank();
+        }
+
+        function updateRank() {
+            let newRank = 0;
+            let rankedUp = false;
+            
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (gameState.xp >= RANKS[i].xpNeeded) {
+                    if (gameState.rank !== i) {
+                        rankedUp = true;
+                    }
+                    newRank = i;
+                    break;
+                }
+            }
+            gameState.rank = newRank;
+            
+            if (rankedUp) {
+                const badge = document.getElementById('rankDisplay');
+                badge.classList.add('rank-up');
+                setTimeout(() => badge.classList.remove('rank-up'), 600);
+            }
+        }
+
+        function showLuckyPopup(title, text, bonus) {
+            const popup = document.getElementById('luckyPopup');
+            document.getElementById('popupTitle').textContent = title;
+            document.getElementById('popupText').textContent = text;
+            document.getElementById('popupBonus').textContent = `+${bonus} XP`;
+
+            popup.classList.add('show');
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 2500);
+        }
+
+        function handleDeposit() {
+            const inputEl = document.getElementById('inputValue');
+            const inputValue = inputEl.value.trim();
+
+            if (!inputValue || isNaN(inputValue) || parseFloat(inputValue) <= 0) {
+                alert('Enter a valid amount');
+                return;
+            }
+
+            const today = getTodayKey();
+            const numValue = parseFloat(inputValue);
+            const stockValue = calculateStock(numValue);
+            const daysRemaining = calculateDaysRemaining();
+
+            // Check streak
+            const streakInfo = checkStreak();
+            if (streakInfo.isNewDay && !streakInfo.streakBroken) {
+                addXP(100);
+            } else if (streakInfo.isNewDay && streakInfo.streakBroken) {
+                addXP(50);
+            }
+
+            // Lucky bonus
+            let bonusXP = 0;
+            const luck = Math.random();
+            if (luck < 0.15) {
+                bonusXP = 200;
+                showLuckyPopup('JACKPOT!', 'Legendary deposit!', bonusXP);
+            } else if (luck < 0.30) {
+                bonusXP = 100;
+                showLuckyPopup('Lucky Deposit!', 'Bonus XP awarded!', bonusXP);
+            }
+
+            addXP(bonusXP);
+
+            // Streak milestone bonus
+            if (gameState.streak % 7 === 0 && gameState.streak > 0) {
+                const milestoneBonus = gameState.streak * 50;
+                addXP(milestoneBonus);
+                showLuckyPopup(`${gameState.streak}-Day Streak!`, 'Milestone reached!', milestoneBonus);
+            }
+
+            const newEntry = {
+                date: today,
+                input: numValue,
+                stock: parseFloat(stockValue),
+                daysRemaining: daysRemaining
+            };
+
+            gameState.entries = gameState.entries.filter(e => e.date !== today);
+            gameState.entries.unshift(newEntry);
+
+            inputEl.value = '';
+            saveGame();
+            render();
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function saveGame() {
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const stored = localStorage.getItem('gameState');
+            if (stored) {
+                try {
+                    gameState = JSON.parse(stored);
+                    updateRank();
+                } catch (e) {
+                    console.error('Error loading game:', e);
+                }
+            }
+        }
+
+        function render() {
+            const daysRemaining = calculateDaysRemaining();
+            const today = getTodayKey();
+            const todayEntry = gameState.entries.find(e => e.date === today);
+
+            // Update month display
+            document.getElementById('monthDisplay').textContent = getMonthDisplayName();
+
+            // Update streak
+            const streakElement = document.getElementById('streakCount');
+            if (parseInt(streakElement.textContent) !== gameState.streak) {
+                streakElement.classList.remove('increment');
+                void streakElement.offsetWidth;
+                streakElement.classList.add('increment');
+            }
+            streakElement.textContent = gameState.streak;
+
+            // Update XP bar
+            const currentRank = RANKS[gameState.rank];
+            const nextRank = RANKS[Math.min(gameState.rank + 1, RANKS.length - 1)];
+            const xpInRank = gameState.xp - currentRank.xpNeeded;
+            const xpNeeded = nextRank.xpNeeded - currentRank.xpNeeded;
+            const xpPercent = Math.max(0, Math.min(100, (xpInRank / xpNeeded) * 100));
+            
+            document.getElementById('xpFill').style.width = xpPercent + '%';
+            document.getElementById('xpText').textContent = `${gameState.xp}/${nextRank.xpNeeded} XP`;
+            document.getElementById('rankText').textContent = currentRank.name;
+
+            // Update days left
+            const daysElement = document.getElementById('daysLeft');
+            daysElement.classList.add('update');
+            daysElement.textContent = daysRemaining;
+            setTimeout(() => daysElement.classList.remove('update'), 400);
+
+            // Update total deposits
+            const totalDeposits = gameState.entries.reduce((sum, e) => sum + e.input, 0);
+            const depositsElement = document.getElementById('totalDeposits');
+            depositsElement.classList.add('update');
+            depositsElement.textContent = '$' + totalDeposits.toFixed(2);
+            setTimeout(() => depositsElement.classList.remove('update'), 400);
+
+            // Stock display
+            if (todayEntry) {
+                document.getElementById('stockCard').style.display = 'block';
+                const stockElement = document.getElementById('stockValue');
+                stockElement.classList.add('update');
+                stockElement.textContent = '$' + parseFloat(todayEntry.stock).toFixed(2);
+                setTimeout(() => stockElement.classList.remove('update'), 400);
+                
+                document.getElementById('inputDisplay').textContent = todayEntry.input.toFixed(2);
+                document.getElementById('daysDisplay').textContent = todayEntry.daysRemaining;
+                document.getElementById('emptyState').classList.add('hidden');
+            } else {
+                document.getElementById('stockCard').style.display = 'none';
+                if (gameState.entries.length === 0) {
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+            }
+
+            // Challenge
+            const challengeCard = document.getElementById('challengeCard');
+            if (gameState.streak > 0 && gameState.streak < 7) {
+                challengeCard.style.display = 'block';
+                const daysUntil7 = 7 - gameState.streak;
+                document.getElementById('challengeText').textContent = `${daysUntil7} more days to 7-day streak!`;
+                document.getElementById('challengeReward').textContent = `+${daysUntil7 * 30} XP`;
+            } else if (gameState.streak >= 7) {
+                challengeCard.style.display = 'block';
+                const daysUntil14 = 14 - (gameState.streak % 14 || 14);
+                document.getElementById('challengeText').textContent = `${daysUntil14} days to next milestone!`;
+                document.getElementById('challengeReward').textContent = '+500 XP';
+            } else {
+                challengeCard.style.display = 'none';
+            }
+
+            // History
+            if (gameState.entries.length > 0) {
+                document.getElementById('historyCard').style.display = 'block';
+                document.getElementById('historyList').innerHTML = gameState.entries.slice(0, 5).map(e => `
+                    <div class="history-item">
+                        <span class="history-date">${formatDate(e.date)}</span>
+                        <span class="history-calc">${e.input.toFixed(2)} ÷ ${e.daysRemaining}</span>
+                        <span class="history-value">$${e.stock}</span>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('historyCard').style.display = 'none';
+            }
+        }
+
+        document.getElementById('inputValue').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleDeposit();
+            }
+        });
+
+        window.addEventListener('load', function() {
+            loadGame();
+            render();
+        });
+    </script>
+</body>
+</html>
