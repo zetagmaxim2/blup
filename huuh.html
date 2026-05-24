@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>NOO:R // CENTERED-MONO</title>
+<style>
+:root {
+    --bg-void: #0A0A0A;
+    --surface: #141414;
+    --white: #F5F5F5;
+    --gray: #7A7A7A;
+    --font-mono: 'SF Mono', 'Courier New', monospace;
+}
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    user-select: none; -webkit-user-select: none;
+}
+html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #000000; color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+body {
+    display: flex; align-items: center; justify-content: center;
+}
+.viewport {
+    position: relative;
+    width: min(100vw, 450px);
+    height: min(100vh, 820px);
+    background: var(--bg-void);
+    overflow: hidden;
+    border: 1px solid var(--surface);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.85);
+}
+@media (max-width: 600px) {
+    .viewport { width: 100vw; height: 100vh; border: none; }
+}
+canvas {
+    width: 100%; height: 100%; display: block;
+}
+
+/* HUD LAYER */
+.hud-layer {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 24px; pointer-events: none;
+    z-index: 10; display: flex; justify-content: space-between; align-items: flex-start;
+    background: linear-gradient(to bottom, #0A0A0A 0%, rgba(10,10,10,0) 100%);
+}
+.hud-meta h1 {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.3em; color: var(--gray); margin-bottom: 6px;
+}
+.v-bar-container {
+    width: 120px; height: 2px; background: rgba(255,255,255,0.08);
+    position: relative; overflow: hidden;
+}
+.v-bar-fill {
+    width: 100%; height: 100%; background: var(--white);
+    transform-origin: left; transform: scaleX(1);
+}
+.hud-metrics { text-align: right; font-family: var(--font-mono); }
+.metric-label { font-size: 8px; letter-spacing: 0.15em; color: var(--gray); }
+.metric-val { font-size: 22px; font-weight: 200; color: var(--white); }
+
+/* MOMENTUM TRACKER */
+.momentum-wrapper {
+    position: absolute; top: 85px; left: 24px; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 10;
+}
+.momentum-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em; color: var(--white); opacity: 0.5; }
+.momentum-track { width: 60px; height: 1px; background: rgba(255,255,255,0.1); }
+.momentum-fill { width: 0%; height: 100%; background: var(--white); }
+
+/* RECTILINEAR INTERACTIVE OVERLAYS */
+.screen-overlay {
+    position: absolute; inset: 0; background: var(--bg-void);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 40px; z-index: 100; transition: opacity 0.15s ease;
+    opacity: 0; pointer-events: none;
+}
+.screen-overlay.active { opacity: 1; pointer-events: auto; }
+
+.title-block { margin-bottom: 40px; }
+.title-block h2 { font-family: var(--font-mono); font-size: 32px; font-weight: 100; letter-spacing: 0.1em; }
+.title-block p { font-size: 12px; color: var(--gray); margin-top: 8px; line-height: 1.6; }
+
+.selection-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+.select-card {
+    border: 1px solid var(--surface); padding: 16px; background: var(--bg-void);
+    border-radius: 0; cursor: pointer; transition: all 0.1s ease;
+}
+.select-card:hover, .select-card.selected {
+    background: var(--surface); border-color: var(--white);
+}
+.select-card-head { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; }
+.select-card-desc { font-size: 11px; color: var(--gray); margin-top: 4px; line-height: 1.4; }
+
+/* MUTATION SCREEN */
+.mutation-screen {
+    position: absolute; inset: 0; background: var(--bg-void);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 32px; z-index: 150; opacity: 0; pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+.mutation-screen.active { opacity: 1; pointer-events: auto; }
+.mutation-title { font-family: var(--font-mono); font-size: 11px; color: var(--white); letter-spacing: 0.2em; margin-bottom: 24px; }
+.mutation-options { display: flex; flex-direction: column; gap: 12px; }
+.mutation-btn {
+    background: var(--bg-void); border: 1px solid var(--surface);
+    padding: 18px; text-align: left; cursor: pointer; color: var(--white);
+}
+.mutation-btn:hover { background: var(--surface); border-color: var(--white); }
+.mutation-name { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--white); }
+.mutation-desc { font-size: 11px; color: var(--gray); margin-top: 4px; }
+
+.action-trigger {
+    background: var(--white); color: var(--bg-void); border: none; padding: 16px 32px;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+    align-self: flex-start;
+}
+.action-trigger:hover { background: #FFFFFF; }
+
+.touch-zone {
+    position: absolute; inset: 0; z-index: 5; pointer-events: auto;
+}
+</style>
+</head>
+<body>
+
+<div class="viewport">
+    <div class="hud-layer">
+        <div class="hud-meta">
+            <h1 id="hud-classname">NEURAL_UNIT</h1>
+            <div class="v-bar-container">
+                <div class="v-bar-fill" id="hud-hp-bar"></div>
+            </div>
+        </div>
+        <div class="hud-metrics">
+            <div class="metric-label">SECTOR_CLEARED</div>
+            <div class="metric-val" id="hud-sector">00</div>
+        </div>
+    </div>
+
+    <div class="momentum-wrapper">
+        <div class="momentum-label">MOMENTUM</div>
+        <div class="momentum-track"><div class="momentum-fill" id="hud-momentum"></div></div>
+    </div>
+
+    <canvas id="stage"></canvas>
+    <div class="touch-zone" id="touch-input-surface"></div>
+
+    
