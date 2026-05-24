@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Noo:r // Defense Matrix</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #030304;
+    color: #E2E8F0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+body {
+    touch-action: none;
+}
+
+.game-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: #050507;
+}
+
+.game-area {
+    position: relative;
+    width: min(100vw, 480px);
+    height: min(100vh, 850px);
+    border-radius: 32px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: #040406;
+    box-shadow: 0 50px 120px -30px rgba(0,0,0,0.9);
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* TOP METRICS GRAPHIC INTERFACE */
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    padding: 24px 24px 12px 24px;
+    background: linear-gradient(to bottom, rgba(4,4,6,0.95), rgba(4,4,6,0));
+    pointer-events: none;
+}
+
+.stat-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(226, 232, 240, 0.4);
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 200;
+    line-height: 1;
+    color: #FFFFFF;
+}
+
+.stat-value.quantum {
+    color: #00E5FF;
+    text-shadow: 0 0 10px rgba(0,229,255,0.4);
+}
+
+.stat-right {
+    text-align: right;
+    align-items: flex-end;
+}
+
+/* PREMIUM BOTTOM APP SELECTOR MATRIX */
+.bottom-dock {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 20px 20px 32px 20px;
+    background: linear-gradient(to top, rgba(4,4,6,0.98) 50%, rgba(4,4,6,0));
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dock-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.tower-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 10px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tower-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.tower-card.selected {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: #FFFFFF;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.tower-card.disabled {
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+.tower-icon {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 6px;
+    position: relative;
+}
+
+.tower-name {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(226, 232, 240, 0.8);
+    margin-bottom: 2px;
+}
+
+.tower-cost {
+    font-size: 9px;
+    font-weight: 700;
+    color: #00E5FF;
+}
+
+/* OVERLAYS & STATE SYSTEMS */
+.game-status {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 4, 6, 0.92);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 500;
+}
+
+.game-status.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.game-status h2 {
+    font-size: 42px;
+    font-weight: 200;
+    letter-spacing: -0.04em;
+    margin-bottom: 12px;
+    color: #FFFFFF;
+}
+
+.game-status p {
+    color: rgba(226, 232, 240, 0.5);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+    max-width: 280px;
+}
+
+.start-btn {
+    padding: 14px 44px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #040406;
+    background: #FFFFFF;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 0 12px 30px -5px rgba(255,255,255,0.25);
+    transition: all 0.2s ease;
+}
+
+.start-btn:hover {
+    background: #E2E8F0;
+    transform: translateY(-2px);
+    box-shadow: 0 18px 35px -5px rgba(255,255,255,0.35);
+}
+
+.wave-banner {
+    position: absolute;
+    top: 90px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
+    z-index: 50;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: #FF0080;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wave-banner.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+@media (max-width: 768px) {
+    .game-area { width: 100vw; height: 100vh; border-radius: 0; border: none; }
+    .bottom-dock { padding-bottom: 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="game-area">
+        
+        <!-- HUD ELEMENTS -->
+        <div class="top-bar">
+            <div class="stat-group">
+                <span class="stat-label">Matrix Integrity</span>
+                <span class="stat-value" id="hpValue">20</span>
+            </div>
+            <div class="stat-group stat-right">
+                <span class="stat-label">Quantum Nodes</span>
+                <span class="stat-value quantum" id="moneyValue">150</span>
+            </div>
+        </div>
+
+        <div class="wave-banner" id="waveBanner">Wave 1 Generated</div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- MODULE CARD CONTROL SYSTEM -->
+        <div class="bottom-dock">
+            <div class="dock-row">
+                <div class="tower-card" id="card_laser" onclick="gameInstance.selectTowerType('laser')">
+                    <div class="tower-icon" id="icon_laser"></div>
+                    <span class="tower-name">Laser</span>
+                    <span class="tower-cost">100</span>
+                </div>
+                <div class="tower-card" id="card_pulse" onclick="gameInstance.selectTowerType('pulse')">
+                    <div class="tower-icon" id="icon_pulse"></div>
+                    <span class="tower-name">Pulse</span>
+                    <span class="tower-cost">125</span>
+                </div>
+                <div class="tower-card" id="card_sniper" onclick="gameInstance.selectTowerType('sniper')">
+                    <div class="tower-icon" id="icon_sniper"></div>
+                    <span class="tower-name">Sniper</span>
+                    <span class="tower-cost">175</span>
+                </div>
+                <div class="tower-card" id="card_freeze" onclick="gameInstance.selectTowerType('freeze')">
+                    <div class="tower-icon" id="icon_freeze"></div>
+                    <span class="tower-name">Freeze</span>
+                    <span class="tower-cost">150</span>
+                </div>
+                <div class="tower-card" id="card_missile" onclick="gameInstance.selectTowerType('missile')">
+                    <div class="tower-icon" id="icon_missile"></div>
+                    <span class="tower-name">Missile</span>
+                    <span class="tower-cost">250</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP GATEWAY INITIAL SETUP OVERLAY -->
+        <div class="game-status show" id="startScreen">
+            <h2>Noo:r</h2>
+            <p>Deploy abstract geometric defense mechanisms. Purge incoming anomalies along the vector grid path.</p>
+            <button class="start-btn" onclick="gameInstance.startGame()">INITIALIZE MATRIX</button>
+        </div>
+
+        <!-- GAME END / OVERLAY -->
+        <div class="game-status" id="gameStatus">
+            <h2 id="statusTitle">Matrix Collapsed</h2>
+            <p id="statusMessage">Wave cleared: 0</p>
+            <button class="start-btn" onclick="gameInstance.startGame()">RE-ENGAGE SYSTEM</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ============================================================================
+// DATA CONFIGURATIONS: TOWERS & ENEMIES
+// ============================================================================
+const TOWER_CONFIG = {
+    laser:   { cost: 100, range: 100, fireRate: 0.02, color: '#FFFFFF', name: 'Laser Prism' },
+    pulse:   { cost: 125, range: 85,  fireRate: 1.2,  color: '#FF0080', name: 'Pulse Ring' },
+    sniper:  { cost: 175, range: 220, fireRate: 2.0,  color: '#FFEA00', name: 'Sniper Monolith' },
+    freeze:  { cost: 150, range: 90,  fireRate: 0.8,  color: '#00E5FF', name: 'Freeze Cube' },
+    missile: { cost: 250, range: 140, fireRate: 1.6,  color: '#FF6F00', name: 'Missile Core' }
+};
+
+const ENEMY_TYPES = {
+    drone:    { speed: 75,  hp: 35,   reward: 15, size: 6,  color: '#FFFFFF', shape: 'sphere' },
+    tank:     { speed: 32,  hp: 190,  reward: 35, size: 12, color: '#00E5FF', shape: 'cube', thick: true },
+    splitter: { speed: 55,  hp: 75,   reward: 25, size: 9,  color: '#FF0080', shape: 'diamond' },
+    phantom:  { speed: 45,  hp: 50,   reward: 30, size: 8,  color: 'rgba(189, 0, 255, 0.45)', shape: 'ghost' },
+    swarm:    { speed: 110, hp: 16,   reward: 8,  size: 4,  color: '#FF6F00', shape: 'particle' }
+};
+
+// ============================================================================
+// ARCHITECTURE ENGINE LABELS
+// ============================================================================
+class GeometricTD {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        
+        this.dimensions = { width: 480, height: 850 };
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+
+        // Hard State Architecture Properties
+        this.gameActive = false;
+        this.hp = 20;
+        this.money = 150;
+        this.currentWave = 0;
+        
+        // Vectors Pools
+        this.towers = [];
+        this.enemies = [];
+        this.projectiles = [];
+        this.particles = [];
+        this.floatingTexts = [];
+        this.wavesPool = [];
+
+        // Dynamic Input Selections
+        this.selectedTowerType = null;
+        this.screenShake = 0;
+        this.waveTimer = 0;
+        this.isWaveActive = false;
+
+        // Custom Static Path Layout Mapping
+        this.gridSize = 40;
+        this.gridOffsetTop = 130;
+        this.pathPoints = [
+            { x: 60,  y: 160 },
+            { x: 420, y: 160 },
+            { x: 420, y: 320 },
+            { x: 60,  y: 320 },
+            { x: 60,  y: 520 },
+            { x: 420, y: 520 },
+            { x: 420, y: 680 },
+            { x: 200, y: 680 },
+            { x: 200, y: 800 }
+        ];
+
+        this.buildableTiles = [];
+        this.generateGridSystem();
+        this.setupInputHandlers();
+        this.drawIcons();
+        
+        this.lastTime = performance.now();
+        this.gameLoop();
+    }
+
+    resize() {
+        const container = this.canvas.parentElement;
+        this.canvas.width = container.clientWidth;
+        this.canvas.height = container.clientHeight;
+        this.scaleX = this.canvas.width / this.dimensions.width;
+        this.scaleY = this.canvas.height / this.dimensions.height;
+    }
+
+    generateGridSystem() {
+        this.buildableTiles = [];
+        // Map modular functional square coordinates across visual spaces away from path lines
+        for (let x = 40; x < this.dimensions.width - 40; x += 50) {
+            for (let y = 180; y < this.dimensions.height - 180; y += 50) {
+                if (!this.checkPointNearPath(x + 25, y + 25, 38)) {
+                    this.buildableTiles.push({
+                        x: x + 5, y: y + 5, size: 40, occupied: null, hover: false
+                    });
+                }
+            }
+        }
+    }
+
+    checkPointNearPath(px, py, maxDistance) {
+        for (let i = 0; i < this.pathPoints.length - 1; i++) {
+            const p1 = this.pathPoints[i];
+            const p2 = this.pathPoints[i+1];
+            
+            // Calculate distance from point to segment lines
+            const A = px - p1.x;
+            const B = py - p1.y;
+            const C = p2.x - p1.x;
+            const D = p2.y - p1.y;
+
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            let param = -1;
+            if (lenSq !== 0) param = dot / lenSq;
+
+            let xx, yy;
+            if (param < 0) {
+                xx = p1.x; yy = p1.y;
+            } else if (param > 1) {
+                xx = p2.x; yy = p2.y;
+            } else {
+                xx = p1.x + param * C;
+                yy = p1.y + param * D;
+            }
+
+            const dx = px - xx;
+            const dy = py - yy;
+            if (Math.sqrt(dx * dx + dy * dy) < maxDistance) return true;
+        }
+        return false;
+    }
+
+    setupInputHandlers() {
+        const processAction = (clientX, clientY) => {
+            if (!this.gameActive || !this.selectedTowerType) return;
+            
+            const rect = this.canvas.getBoundingClientRect();
+            const clickX = (clientX - rect.left) / this.scaleX;
+            const clickY = (clientY - rect.top) / this.scaleY;
+
+            const tile = this.buildableTiles.find(t => 
+                clickX >= t.x && clickX <= t.x + t.size &&
+                clickY >= t.y && clickY <= t.y + t.size
+            );
+
+            if (tile && !tile.occupied) {
+                const spec = TOWER_CONFIG[this.selectedTowerType];
+                if (this.money >= spec.cost) {
+                    this.money -= spec.cost;
+                    tile.occupied = {
+                        type: this.selectedTowerType,
+                        x: tile.x + tile.size / 2,
+                        y: tile.y + tile.size / 2,
+                        range: spec.range,
+                        color: spec.color,
+                        fireCooldown: 0,
+                        pulseProgress: 0,
+                        rot: 0
+                    };
+                    this.createExplosionParticles(tile.x + tile.size/2, tile.y + tile.size/2, 20, spec.color);
+                    this.triggerText(tile.x + tile.size/2, tile.y, `DEPLOYED`, '#FFFFFF');
+                    
+                    // Auto reset select if shift key missing or layout constraints require it
+                    this.selectTowerType(null);
+                    this.updateUI();
+                } else {
+                    this.screenShake = 6;
+                    this.triggerText(clickX, clickY, "INSUFFICIENT NODES", '#FF0080');
+                }
+            }
+        };
+
+        this.canvas.addEventListener('click', (e) => processAction(e.clientX, e.clientY));
+        this.canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) processAction(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+    }
+
+    selectTowerType(type) {
+        if (this.selectedTowerType === type) {
+            this.selectedTowerType = null;
+        } else {
+            this.selectedTowerType = type;
+        }
+        
+        document.querySelectorAll('.tower-card').forEach(c => c.classList.remove('selected'));
+        if (this.selectedTowerType) {
+            const activeCard = document.getElementById(`card_${this.selectedTowerType}`);
+            if (activeCard) activeCard.classList.add('selected');
+        }
+    }
+
+    startGame() {
+        this.hp = 20;
+        this.money = 200;
+        this.currentWave = 0;
+        this.towers = [];
+        this.enemies = [];
+        this.projectiles = [];
+        this.particles = [];
+        this.floatingTexts = [];
+        this.isWaveActive = false;
+        this.waveTimer = 0;
+
+        this.generateGridSystem();
+        this.selectTowerType(null);
+
+        document.getElementById('startScreen').classList.remove('show');
+        document.getElementById('gameStatus').classList.remove('show');
+        
+        this.updateUI();
+        this.gameActive = true;
+
+        this.generateNextWavePattern();
+    }
+
+    generateNextWavePattern() {
+        this.currentWave++;
+        this.isWaveActive = true;
+        
+        const banner = document.getElementById('waveBanner');
+        banner.textContent = `GENERATE WAVE ${this.currentWave}`;
+        banner.classList.add('active');
+        setTimeout(() => banner.classList.remove('active'), 2500);
+
+        // Core Wave Composition Math Generator
+        const totalCount = 6 + this.currentWave * 4;
+        let waveList = [];
+
+        for (let i = 0; i < totalCount; i++) {
+            let type = 'drone';
+            const roll = Math.random();
+
+            if (this.currentWave >= 2 && roll < 0.25) type = 'swarm';
+            if (this.currentWave >= 3 && roll > 0.25 && roll < 0.50) type = 'splitter';
+            if (this.currentWave >= 4 && roll > 0.50 && roll < 0.70) type = 'phantom';
+            if (this.currentWave >= 5 && roll > 0.70) type = 'tank';
+
+            // Scale structural health attributes cleanly
+            const baseSpec = ENEMY_TYPES[type];
+            waveList.push({
+                type: type,
+                hp: baseSpec.hp * (1 + this.currentWave * 0.22),
+                speed: baseSpec.speed,
+                reward: baseSpec.reward,
+                size: baseSpec.size,
+                color: baseSpec.color,
+                shape: baseSpec.shape,
+                thick: baseSpec.thick || false,
+                spawnDelay: i * (1.2 - Math.min(0.8, this.currentWave * 0.06)) * 1000
+            });
+        }
+
+        const startTime = performance.now();
+        waveList.forEach(e => {
+            setTimeout(() => {
+                if (!this.gameActive || this.currentWave !== this.currentWave) return;
+                this.spawnEnemyNode(e);
+            }, e.spawnDelay);
+        });
+    }
+
+    spawnEnemyNode(spec, customX = null, customY = null, pathIndex = 0) {
+        this.enemies.push({
+            type: spec.type,
+            x: customX !== null ? customX : this.pathPoints[0].x,
+            y: customY !== null ? customY : this.pathPoints[0].y,
+            hp: spec.hp,
+            maxHp: spec.hp,
+            speed: spec.speed,
+            reward: spec.reward,
+            size: spec.size,
+            color: spec.color,
+            shape: spec.shape,
+            thick: spec.thick,
+            pathTargetIndex: pathIndex + 1,
+            frozenTimer: 0,
+            slowFactor: 1.0
+        });
+    }
+
+    updateUI() {
+        document.getElementById('hpValue').textContent = Math.max(0, this.hp);
+        document.getElementById('moneyValue').textContent = this.money;
+
+        // Visual validation feedback loops logic for premium design layout card states
+        Object.keys(TOWER_CONFIG).forEach(key => {
+            const card = document.getElementById(`card_${key}`);
+            if (card) {
+                if (this.money < TOWER_CONFIG[key].cost) {
+                    card.classList.add('disabled');
+                } else {
+                    card.classList.remove('disabled');
+                }
+            }
+        });
+    }
+
+    triggerText(x, y, msg, color = '#FFFFFF') {
+        this.floatingTexts.push({
+            x: x, y: y, text: msg, color: color, alpha: 1.0, life: 1.0
+        });
+    }
+
+    createExplosionParticles(x, y, count, color = '#FFFFFF') {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 1.0 + Math.random() * 4.0;
+            this.particles.push({
+                x: x, y: y,
+                vx: Math.cos(angle) * velocity,
+                vy: Math.sin(angle) * velocity,
+                size: 1.5 + Math.random() * 2.0,
+                color: color,
+                alpha: 1.0,
+                life: 0.6 + Math.random() * 0.4
+            });
+        }
+    }
+
+    gameOver() {
+        this.gameActive = false;
+        document.getElementById('gameStatus').classList.add('show');
+        document.getElementById('statusTitle').textContent = 'Matrix Extinguished';
+        document.getElementById('statusMessage').textContent = `System Stalled At Quantum Level ${this.currentWave}`;
+    }
+
+    // ============================================================================
+    // STATE LOGIC MACHINE UPDATE LOOPS
+    // ============================================================================
+    update(dt) {
+        if (!this.gameActive) return;
+
+        // Process Screen Shake damping 
+        if (this.screenShake > 0) this.screenShake *= Math.pow(0.85, dt / 0.016);
+
+        // Update Floating System Tags Engine
+        this.floatingTexts.forEach(t => {
+            t.life -= dt;
+            t.y -= 25 * dt;
+            t.alpha = Math.max(0, t.life);
+        });
+        this.floatingTexts = this.floatingTexts.filter(t => t.life > 0);
+
+        // Update Kinetics Particle Arrays
+        this.particles.forEach(p => {
+            p.life -= dt;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha = Math.max(0, p.life / 1.0);
+        });
+        this.particles = this.particles.filter(p => p.life > 0);
+
+        // Update Active Targets Iterations
+        this.enemies.forEach(e => {
+            if (e.frozenTimer > 0) {
+                e.frozenTimer -= dt;
+                e.slowFactor = 0.45;
+            } else {
+                e.slowFactor = 1.0;
+            }
+
+            const target = this.pathPoints[e.pathTargetIndex];
+            const dx = target.x - e.x;
+            const dy = target.y - e.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const moveStep = e.speed * e.slowFactor * dt;
+
+            if (dist <= moveStep) {
+                e.x = target.x;
+                e.y = target.y;
+                e.pathTargetIndex++;
+                if (e.pathTargetIndex >= this.pathPoints.length) {
+                    // Escape sequence penalty loops inside matrix
+                    this.hp--;
+                    this.screenShake = 14;
+                    e.garbage = true;
+                    this.updateUI();
+                    if (this.hp <= 0) this.gameOver();
+                }
+            } else {
+                e.x += (dx / dist) * moveStep;
+                e.y += (dy / dist) * moveStep;
+            }
+        });
+        this.enemies = this.enemies.filter(e => !e.garbage);
+
+        // Update Defenses Operations Machine
+        this.buildableTiles.forEach(tile => {
+            if (!tile.occupied) return;
+            const t = tile.occupied;
+            t.rot += 0.4 * dt;
+            if (t.fireCooldown > 0) t.fireCooldown -= dt;
+
+            // Search Strategy Filter (First Target inside perimeter reach parameters)
+            let targetsInRange = this.enemies.filter(e => {
+                const dx = e.x - t.x;
+                const dy = e.y - t.y;
+                return Math.sqrt(dx * dx + dy * dy) <= t.range;
+            });
+
+            if (targetsInRange.length === 0) {
+                if (t.type === 'pulse') t.pulseProgress = 0;
+                return;
+            }
+
+            // Lock structural focal target point
+            let primaryTarget = targetsInRange[0];
+
+            // Execute Unique Strategy Modular Scripts depending on abstract tower structure
+            if (t.type === 'laser') {
+                // Precise continuous processing stream array
+                primaryTarget.hp -= 40 * dt;
+                ctxLaserBeamLineDrawRequest(this.ctx, t.x, t.y, primaryTarget.x, primaryTarget.y, t.color);
+                if (primaryTarget.hp <= 0) this.killEnemy(primaryTarget);
+            } else if (t.type === 'pulse') {
+                t.pulseProgress += 3.5 * dt;
+                if (t.pulseProgress >= 1.0) {
+                    t.pulseProgress = 0;
+                }
+                if (t.fireCooldown <= 0) {
+                    t.fireCooldown = TOWER_CONFIG.pulse.fireRate;
+                    targetsInRange.forEach(e => {
+                        e.hp -= 22;
+                        if (e.hp <= 0) this.killEnemy(e);
+                    });
+                    this.createExplosionParticles(t.x, t.y, 8, t.color);
+                }
+            } else if (t.fireCooldown <= 0) {
+                if (t.type === 'sniper') {
+                    t.fireCooldown = TOWER_CONFIG.sniper.fireRate;
+                    primaryTarget.hp -= 85;
+                    this.projectiles.push({
+                        type: 'ray', sx: t.x, sy: t.y, tx: primaryTarget.x, ty: primaryTarget.y, alpha: 1.0, color: t.color
+                    });
+                    if (primaryTarget.hp <= 0) this.killEnemy(primaryTarget);
+                } else if (t.type === 'freeze') {
+                    t.fireCooldown = TOWER_CONFIG.freeze.fireRate;
+                    targetsInRange.forEach(e => {
+                        e.frozenTimer = 2.5; 
+                        e.hp -= 8;
+                        this.createExplosionParticles(e.x, e.y, 4, t.color);
+                        if (e.hp <= 0) this.killEnemy(e);
+                    });
+                } else if (t.type === 'missile') {
+                    t.fireCooldown = TOWER_CONFIG.missile.fireRate;
+                    this.projectiles.push({
+                        type: 'missile',
+                        x: t.x, y: t.y,
+                        target: primaryTarget,
+                        speed: 190,
+                        color: t.color
+                    });
+                }
+            }
+        });
+
+        // Update Projectiles trajectories pathways mechanics
+        this.projectiles.forEach(p => {
+            if (p.type === 'ray') {
+                p.alpha -= 4.0 * dt;
+            } else if (p.type === 'missile') {
+                if (p.target.garbage || !this.enemies.includes(p.target)) {
+                    // Retarget immediately to minimize loss steps
+                    if (this.enemies.length > 0) p.target = this.enemies[0];
+                    else { p.garbage = true; return; }
+                }
+                const dx = p.target.x - p.x;
+                const dy = p.target.y - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const step = p.speed * dt;
+
+                if (dist <= step) {
+                    // Detonation blast parameters mapping sequence arrays
+                    p.garbage = true;
+                    this.createExplosionParticles(p.x, p.y, 16, p.color);
+                    this.enemies.forEach(e => {
+                        const ex = e.x - p.x;
+                        const ey = e.y - p.y;
+                        if (Math.sqrt(ex * ex + ey * ey) <= 45) {
+                            e.hp -= 40;
+                            if (e.hp <= 0) this.killEnemy(e);
+                        }
+                    });
+                } else {
+                    p.x += (dx / dist) * step;
+                    p.y += (dy / dist) * step;
+                    // Leave visual minimalist trails trace
+                    if (Math.random() < 0.45) {
+                        this.particles.push({
+                            x: p.x, y: p.y, vx: 0, vy: 0, size: 1.5, color: '#FF6F00', alpha: 0.8, life: 0.3
+                        });
+                    }
+                }
+            }
+        });
+        this.projectiles = this.projectiles.filter(p => !p.garbage && (p.type !== 'ray' || p.alpha > 0));
+
+        // Wave End Conditions Validation Checkers loops
+        if (this.isWaveActive && this.enemies.length === 0) {
+            this.isWaveActive = false;
+            this.money += 75; // Wave clearance bonus
+            this.updateUI();
+            setTimeout(() => {
+                if (this.gameActive) this.generateNextWavePattern();
+            }, 4000);
+        }
+    }
+
+    killEnemy(e) {
+        if (e.garbage) return;
+        e.garbage = true;
+        this.money += e.reward;
+        this.createExplosionParticles(e.x, e.y, 14, e.color);
+        this.triggerText(e.x, e.y - 10, `+${e.reward}`, '#00E5FF');
+        this.updateUI();
+
+        // Handle modular feature parsing unique properties like Splitter division matrix arrays
+        if (e.type === 'splitter') {
+            this.triggerText(e.x, e.y, "SPLIT", '#FF0080');
+            const subSpec = ENEMY_TYPES.drone;
+            setTimeout(() => {
+                if (!this.gameActive) return;
+                this.spawnEnemyNode(subSpec, e.x - 8, e.y, e.pathTargetIndex - 1);
+                this.spawnEnemyNode(subSpec, e.x + 8, e.y, e.pathTargetIndex - 1);
+            }, 50);
+        }
+    }
+
+    // ============================================================================
+    // ADVANCED CANVAS RENDERING RASTER LAYER SYSTEM
+    // ============================================================================
+    draw() {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.scale(this.scaleX, this.scaleY);
+
+        // Core Dark Slate Space Field Layout Rendering Reset
+        ctx.fillStyle = '#040406';
+        ctx.fillRect(0, 0, this.dimensions.width, this.dimensions.height);
+
+        // Screen Shake structural implementation shifts
+        if (this.screenShake > 0) {
+            const sx = (Math.random() - 0.5) * this.screenShake;
+            const sy = (Math.random() - 0.5) * this.screenShake;
+            ctx.translate(sx, sy);
+        }
+
+        // 1. Draw Geometric Tech Ambient Vector Space Grid Lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < this.dimensions.width; x += 30) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.dimensions.height); ctx.stroke();
+        }
+        for (let y = 0; y < this.dimensions.height; y += 30) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.dimensions.width, y); ctx.stroke();
+        }
+
+        // 2. Draw Futuristic Thin Path Layout System
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 16;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(this.pathPoints[0].x, this.pathPoints[0].y);
+        for (let i = 1; i < this.pathPoints.length; i++) {
+            ctx.lineTo(this.pathPoints[i].x, this.pathPoints[i].y);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 12]);
+        ctx.beginPath();
+        ctx.moveTo(this.pathPoints[0].x, this.pathPoints[0].y);
+        for (let i = 1; i < this.pathPoints.length; i++) {
+            ctx.lineTo(this.pathPoints[i].x, this.pathPoints[i].y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset immediately
+
+        // 3. Draw Modular Square Building Tiles Slots Map
+        this.buildableTiles.forEach(t => {
+            ctx.fillStyle = 'rgba(255,255,255, 0.01)';
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(t.x, t.y, t.size, t.size, 6);
+            ctx.fill();
+            ctx.stroke();
+        });
+
+        // 4. Draw Array Structures (Towers) Deployed inside grid systems map
+        this.buildableTiles.forEach(t => {
+            if (!t.occupied) return;
+            const tower = t.occupied;
+            
+            ctx.save();
+            ctx.translate(tower.x, tower.y);
+
+            // Subtle Glow Layer for active operational mechanisms
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = tower.color;
+
+            if (tower.type === 'laser') {
+                // Laser Tower = thin vertical prism 
+                ctx.fillStyle = tower.color;
+                ctx.beginPath();
+                ctx.moveTo(0, -14);
+                ctx.lineTo(8, 10);
+                ctx.lineTo(-8, 10);
+                ctx.closePath();
+                ctx.fill();
+                // Draw a core node inside prism
+                ctx.fillStyle = '#040406';
+                ctx.beginPath(); ctx.arc(0, 2, 2.5, 0, Math.PI*2); ctx.fill();
+
+            } else if (tower.type === 'pulse') {
+                // Pulse Tower = circular ring emitting expanding energy waves
+                ctx.strokeStyle = tower.color;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.stroke();
+                
+                ctx.fillStyle = tower.color;
+                ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+
+                if (tower.pulseProgress > 0) {
+                    ctx.save();
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = tower.color;
+                    ctx.globalAlpha = 1.0 - tower.pulseProgress;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, tower.pulseProgress * tower.range, 0, Math.PI*2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+            } else if (tower.type === 'sniper') {
+                // Sniper Tower = sharp triangular monolith
+                ctx.rotate(tower.rot);
+                ctx.strokeStyle = tower.color;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(0, -15);
+                ctx.lineTo(10, 12);
+                ctx.lineTo(-10, 12);
+                ctx.closePath();
+                ctx.stroke();
+                // Core dot element block
+                ctx.fillStyle = tower.color;
+                ctx.beginPath(); ctx.arc(0, -3, 3, 0, Math.PI*2); ctx.fill();
+
+            } else if (tower.type === 'freeze') {
+                // Freeze Tower = translucent cyan cube emitting icy particles
+                ctx.rotate(tower.rot * 0.5);
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
+                ctx.strokeStyle = tower.color;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.roundRect(-10, -10, 20, 20, 3);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = tower.color;
+                ctx.beginPath(); ctx.roundRect(-3, -3, 6, 6, 1); ctx.fill();
+
+            } else if (tower.type === 'missile') {
+                // Missile Tower = minimal floating launcher with tiny trails
+                ctx.rotate(tower.rot);
+                ctx.strokeStyle = tower.color;
+                ctx.lineWidth = 2;
+                // Double bracket structure silhouette layout
+                ctx.beginPath(); ctx.moveTo(-9, -10); ctx.lineTo(-9, 10); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(9, -10); ctx.lineTo(9, 10); ctx.stroke();
+                ctx.fillStyle = tower.color;
+                ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill();
+            }
+
+            ctx.restore();
+        });
+
+        // 5. Draw Active Kinetic Anomalies (Enemies Matrix Mapping)
+        this.enemies.forEach(e => {
+            ctx.save();
+            ctx.translate(e.x, e.y);
+
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = e.color;
+            ctx.fillStyle = e.color;
+            ctx.strokeStyle = e.color;
+
+            if (e.shape === 'sphere') {
+                // Drone = small glowing sphere
+                ctx.beginPath(); ctx.arc(0, 0, e.size, 0, Math.PI * 2); ctx.fill();
+            } else if (e.shape === 'cube') {
+                // Tank = large heavy cube with thick outline
+                ctx.lineWidth = e.thick ? 3.5 : 1.5;
+                ctx.fillStyle = '#040406';
+                ctx.beginPath();
+                ctx.roundRect(-e.size, -e.size, e.size*2, e.size*2, 4);
+                ctx.fill();
+                ctx.stroke();
+                // Core interior system status indicator glow dot element
+                ctx.fillStyle = e.color;
+                ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI*2); ctx.fill();
+            } else if (e.shape === 'diamond') {
+                // Splitter = diamond-shaped enemy
+                ctx.beginPath();
+                ctx.moveTo(0, -e.size);
+                ctx.lineTo(e.size, 0);
+                ctx.lineTo(0, e.size);
+                ctx.lineTo(-e.size, 0);
+                ctx.closePath();
+                ctx.fill();
+            } else if (e.shape === 'ghost') {
+                // Phantom = semi-transparent ghost-like shape
+                ctx.globalAlpha = 0.45;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(0, -2, e.size, Math.PI, 0, false);
+                ctx.lineTo(e.size, e.size);
+                ctx.lineTo(-e.size, e.size);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (e.shape === 'particle') {
+                // Swarm = tiny fast particles traveling in groups
+                ctx.beginPath();
+                ctx.arc(0, 0, e.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Health Status Micro Line Bars Layer Map Overlay
+            if (e.hp < e.maxHp) {
+                const bw = e.size * 2;
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.fillRect(-e.size, -e.size - 8, bw, 2);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(-e.size, -e.size - 8, bw * (e.hp / e.maxHp), 2);
+            }
+
+            ctx.restore();
+        });
+
+        // 6. Draw Flight Path Weapon Vectors (Projectiles Core Pass)
+        this.projectiles.forEach(p => {
+            ctx.save();
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = p.color;
+
+            if (p.type === 'ray') {
+                ctx.strokeStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(p.sx, p.sy); ctx.lineTo(p.tx, p.ty); ctx.stroke();
+            } else if (p.type === 'missile') {
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.restore();
+        });
+
+        // 7. Render Particle Effects Engine (Screen Layer Compositing Blends)
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        this.particles.forEach(p => {
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        });
+        ctx.restore();
+
+        // 8. Floating Value Pop Indicator Tags Layers
+        this.floatingTexts.forEach(t => {
+            ctx.save();
+            ctx.globalAlpha = t.alpha;
+            ctx.fillStyle = t.color;
+            ctx.font = "900 10px 'Inter', system-ui, sans-serif";
+            ctx.textAlign = 'center';
+            ctx.letterSpacing = "0.05em";
+            ctx.fillText(t.text, t.x, t.y);
+            ctx.restore();
+        });
+
+        ctx.restore();
+    }
+
+    // ============================================================================
+    // UTILITY ISOLATED LOGIC ANIMATION DRAW CHANNELS
+    // ============================================================================
+    gameLoop(timestamp) {
+        if (!timestamp) timestamp = performance.now();
+        let dt = (timestamp - this.lastTime) / 1000;
+        if (dt > 0.1) dt = 0.1; // Execution safeguard boundary locks
+        this.lastTime = timestamp;
+
+        this.update(dt);
+        this.draw();
+
+        requestAnimationFrame((t) => this.gameLoop(t));
+    }
+
+    drawIcons() {
+        // Generates programmatic inline micro vector graphics patterns straight into DOM selectors dock cards
+        this.renderCardIconTemplate('icon_laser', '#FFFFFF', (ctx) => {
+            ctx.moveTo(10, 2); ctx.lineTo(16, 16); ctx.lineTo(4, 16); ctx.closePath(); ctx.fill();
+        });
+        this.renderCardIconTemplate('icon_pulse', '#FF0080', (ctx) => {
+            ctx.lineWidth = 2; ctx.arc(10, 10, 6, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(10, 10, 2, 0, Math.PI*2); ctx.fill();
+        });
+        this.renderCardIconTemplate('icon_sniper', '#FFEA00', (ctx) => {
+            ctx.lineWidth = 1.5; ctx.moveTo(10, 2); ctx.lineTo(17, 17); ctx.lineTo(3, 17); ctx.closePath(); ctx.stroke();
+        });
+        this.renderCardIconTemplate('icon_freeze', '#00E5FF', (ctx) => {
+            ctx.fillRect(4, 4, 12, 12);
+        });
+        this.renderCardIconTemplate('icon_missile', '#FF6F00', (ctx) => {
+            ctx.fillRect(3, 3, 3, 14); ctx.fillRect(14, 3, 3, 14);
+            ctx.beginPath(); ctx.arc(10, 10, 3, 0, Math.PI*2); ctx.fill();
+        });
+    }
+
+    renderCardIconTemplate(targetId, color, drawCallback) {
+        const el = document.getElementById(targetId);
+        if (!el) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = 20; canvas.height = 20;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = color; ctx.strokeStyle = color;
+        ctx.beginPath();
+        drawCallback(ctx);
+        el.appendChild(canvas);
+    }
+}
+
+function ctxLaserBeamLineDrawRequest(ctx, sx, sy, tx, ty, color) {
+    ctx.save();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1.2;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = color;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.restore();
+}
+
+// Global initialization entry loop call on content validation phase completions
+window.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('gameCanvas');
+    window.gameInstance = new GeometricTD(canvas);
+});
+</script>
+</body>
+</html>
