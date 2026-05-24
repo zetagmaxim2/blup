@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>NOO:R // MONO-GRID</title>
+<style>
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    user-select: none; -webkit-user-select: none;
+}
+body {
+    width: 100%; height: 100vh; overflow: hidden;
+    background: #000000; color: #F5F5F5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    display: flex; align-items: center; justify-content: center;
+}
+.viewport {
+    position: relative;
+    width: min(100vw, 420px);
+    height: min(100vh, 800px);
+    background: #0A0A0A;
+    overflow: hidden;
+    border: 1px solid #141414;
+}
+canvas {
+    width: 100%; height: 100%; display: block;
+}
+
+/* MONOCHROME MINIMAL UI */
+.hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 24px; pointer-events: none;
+    display: flex; justify-content: space-between; font-family: monospace;
+}
+.hud-title { font-size: 11px; letter-spacing: 0.3em; color: #7A7A7A; font-weight: bold; }
+.hud-hp { font-size: 11px; letter-spacing: 0.1em; color: #F5F5F5; margin-top: 4px; }
+.hud-sector { text-align: right; }
+.sector-lbl { font-size: 8px; letter-spacing: 0.15em; color: #7A7A7A; }
+.sector-val { font-size: 20px; color: #F5F5F5; font-weight: 200; }
+
+/* RECTILINEAR SCREENS */
+.screen {
+    position: absolute; inset: 0; background: #0A0A0A;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 32px; z-index: 100; pointer-events: none; opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.screen.active { opacity: 1; pointer-events: auto; }
+
+.screen h2 { font-family: monospace; font-size: 24px; font-weight: 100; letter-spacing: 0.1em; margin-bottom: 24px; }
+.screen p { font-size: 11px; color: #7A7A7A; line-height: 1.6; margin-bottom: 32px; }
+
+.cards { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+.card {
+    border: 1px solid #141414; padding: 14px; background: #0A0A0A;
+    cursor: pointer; transition: all 0.1s ease;
+}
+.card:hover, .card.selected { border-color: #F5F5F5; background: #141414; }
+.card-title { font-family: monospace; font-size: 11px; font-weight: 700; color: #F5F5F5; }
+.card-desc { font-size: 10px; color: #7A7A7A; margin-top: 4px; }
+
+.btn {
+    background: #F5F5F5; color: #0A0A0A; border: none; padding: 14px 28px;
+    font-family: monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.15em; cursor: pointer; text-transform: uppercase;
+    align-self: flex-start;
+}
+.btn:hover { background: #FFFFFF; }
+</style>
+</head>
+<body>
+
+<div class="viewport">
+    <div class="hud">
+        <div>
+            <div id="hud-name" class="hud-title">SYSTEM_INIT</div>
+            <div id="hud-hp" class="hud-hp">HP: ■■■■■</div>
+        </div>
+        <div class="hud-sector">
+            <div class="sector-lbl">SECTOR</div>
+            <div class="sector-val" id="hud-depth">01</div>
+        </div>
+    </div>
+
+    <canvas id="gridStage"></canvas>
+
+    <div class="screen active" id="scr-start">
+        <h2>NOO:R</h2>
+        <p>PURE MONOCHROME GRID INTERFACE.<br>Swipe or use WASD to instantly step/strike. Enemies telegraph intentions via framed crosshairs.</p>
+        <div class="cards">
+            <div class="card selected" data-type="warrior">
+                <div class="card-title">WARRIOR // CLEAVE</div>
+                <div class="card-desc">Slashes all immediate adjacent perpendicular tiles on action step. (5 HP)</div>
+            </div>
+            <div class="card" data-type="rogue">
+                <div class="card-title">ROGUE // DASH</div>
+                <div class="card-desc">Pierces exactly 2 tiles forward instantly. Kill steps reset turn limits. (4 HP)</div>
+            </div>
+            <div class="card" data-type="mage">
+                <div class="card-title">MAGE // BEAM</div>
+                <div class="card-desc">Projects a 3-tile structural light beam forward. Stuns targets. (4 HP)</div>
+            </div>
+        </div>
+        <button class="btn" id="run-start">ENGAGE</button>
+    </div>
+
+    <div class="screen" id="scr-upgrade">
+        <h2>UPGRADE //</h2>
+        <div class="cards" id="upgrade-options"></div>
+    </div>
+
+    <div class="screen" id="scr-death">
+        <h2 style="color: #F5F5F5;">SYSTEM_FAILURE</h2>
+        <p id="death-info">Core link severed at depth sector.</p>
+        <button class="btn" id="run-restart">REBOOT</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gridStage');
+const ctx = canvas.getContext('2d');
+const viewport = document.querySelector('.viewport');
+
+// Spatial Grid Metrics Architecture
+const GRID_W = 7;
+const GRID_H = 9;
+let cellSize = 0;
+let offsetX = 0;
+let offsetY = 0;
+
+let currentClass = 'warrior';
+let isLooping = false;
+let depth = 1;
+let camShake = 0;
+let pulseTimer = 0;
+
+// Game State Storage Arrays
+let player = { x: 3, y: 7, hp: 5, maxHp: 5 };
+let enemies = [];
+let indicators = [];
+let particles = [];
+let activePerks = new Set();
+
+const PERK_POOL = [
+    { id: 'blast', name: "EXPLOSIVE_STEP", desc: "Every step leaves a terminal blast pattern." },
+    { id: 'leech', name: "REPAIR_MATRIX", desc: "Clearing 6 targets repairs 1 structural HP unit." },
+    { id: 'overdrive', name: "FORCE_OVERDRIVE", desc: "Gain massive screen impact shockwaves on kill execution." }
+];
+
+function resizeEngineLayout() {
+    canvas.width = viewport.clientWidth * window.devicePixelRatio;
+    canvas.height = viewport.clientHeight * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    
+    cellSize = Math.floor(viewport.clientWidth / GRID_W);
+    offsetX = (viewport.clientWidth - (GRID_W * cellSize)) / 2;
+    offsetY = (viewport.clientHeight - (GRID_H * cellSize)) / 2;
+}
+window.addEventListener('resize', resizeEngineLayout);
+resizeEngineLayout();
+
+// Screen State Transitions Buttons
+document.querySelectorAll('.card').forEach(c => {
+    c.addEventListener('click', () => {
+        document.querySelectorAll('.card').forEach(el => el.classList.remove('selected'));
+        c.classList.add('selected');
+        currentClass = c.getAttribute('data-type');
+    });
+});
+
+document.getElementById('run-start').addEventListener('click', () => {
+    document.getElementById('scr-start').classList.remove('active');
+    bootGameSession();
+});
+
+document.getElementById('run-restart').addEventListener('click', () => {
+    document.getElementById('scr-death').classList.remove('active');
+    document.getElementById('scr-start').classList.add('active');
+});
+
+function bootGameSession() {
+    player.x = 3; player.y = 7;
+    depth = 1;
+    activePerks.clear();
+    
+    if(currentClass === 'warrior') { player.hp = 5; player.maxHp = 5; }
+    else { player.hp = 4; player.maxHp = 4; }
+
+    document.getElementById('hud-name').textContent = currentClass.toUpperCase() + ' //';
+    buildSectorLayout();
+    isLooping = true;
+    updateHudDisplay();
+}
+
+function buildSectorLayout() {
+    enemies = [];
+    indicators = [];
+    particles = [];
+
+    document.getElementById('hud-depth').textContent = depth < 10 ? '0' + depth : depth;
+
+    // Direct Procedural Generation Volume Scaling
+    let count = 2 + Math.min(4, Math.floor(depth * 0.6));
+    let types = ['striker', 'ranger', 'splitter'];
+
+    for (let i = 0; i < count; i++) {
+        let ex, ey;
+        let valid = false;
+        while (!valid) {
+            ex = 1 + Math.floor(Math.random() * (GRID_W - 2));
+            ey = 1 + Math.floor(Math.random() * (GRID_H - 5)); // Keep enemies toward top initially
+            if (!enemies.some(e => e.x === ex && e.y === ey)) valid = true;
+        }
+        enemies.push({
+            x: ex, y: ey,
+            type: types[Math.floor(Math.random() * types.length)],
+            hp: 2, maxHp: 2,
+            intentX: null, intentY: null,
+            stuned: false
+        });
+    }
+    computeEnemyIntentions();
+}
+
+// Fixed Instant Precision Grid Input Pipeline
+function executePlayerActionStep(dx, dy) {
+    if (!isLooping) return;
+
+    let targetX = player.x + dx;
+    let targetY = player.y + dy;
+
+    // Hard Level Bounds Walls Check
+    if (targetX < 1 || targetX >= GRID_W - 1 || targetY < 1 || targetY >= GRID_H - 1) return;
+
+    // Process Spatial Changes Instantly
+    let prevX = player.x;
+    let prevY = player.y;
+    
+    if (currentClass === 'rogue') {
+        // Double Step Forward Penetration Mechanics
+        player.x = Math.max(1, Math.min(GRID_W - 2, player.x + dx * 2));
+        player.y = Math.max(1, Math.min(GRID_H - 2, player.y + dy * 2));
+    } else {
+        player.x = targetX;
+        player.y = targetY;
+    }
+
+    // Resolve Instant Structural Strike Windows
+    processCombatResolutions(dx, dy, prevX, prevY);
+    
+    if (activePerks.has('blast')) {
+        executeTileExplosion(prevX, prevY);
+    }
+
+    // Check Sector Cleared Rules Prior to Enemy Turn Processing
+    if (enemies.length === 0) {
+        advanceSectorProgress();
+        return;
+    }
+
+    processEnemyReactions();
+    computeEnemyIntentions();
+    updateHudDisplay();
+}
+
+function processCombatResolutions(dx, dy, oldX, oldY) {
+    let tilesHit = [];
+
+    if (currentClass === 'warrior') {
+        // Cross Cleave Strike Pattern Area
+        tilesHit = [
+            {x: player.x, y: player.y},
+            {x: player.x + 1, y: player.y},
+            {x: player.x - 1, y: player.y},
+            {x: player.x, y: player.y + 1},
+            {x: player.x, y: player.y - 1}
+        ];
+    } else if (currentClass === 'rogue') {
+        // Trace line path between departure and landing coordinates
+        tilesHit = [
+            {x: oldX, y: oldY},
+            {x: oldX + dx, y: oldY + dy},
+            {x: player.x, y: player.y}
+        ];
+    } else if (currentClass === 'mage') {
+        // Long Linear Forward Beam Projection Channel
+        tilesHit = [
+            {x: player.x, y: player.y},
+            {x: player.x + dx, y: player.y + dy},
+            {x: player.x + dx * 2, y: player.y + dy * 2},
+            {x: player.x + dx * 3, y: player.y + dy * 3}
+        ];
+    }
+
+    // Flash Hit Confirmation Paths Instantly
+    tilesHit.forEach(tile => {
+        indicators.push({ type: 'strike-flash', x: tile.x, y: tile.y, duration: 0.12 });
+    });
+
+    let killedSomething = false;
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        let hit = tilesHit.some(t => t.x === e.x && t.y === e.y);
+
+        if (hit) {
+            e.hp -= 2;
+            camShake = 8;
+            spawnDebrisParticles(e.x, e.y, 8);
+
+            if (currentClass === 'mage') e.stuned = true;
+
+            if (e.hp <= 0) {
+                killedSomething = true;
+                if (e.type === 'splitter') {
+                    // Instantly spawn two weak sub-units adjacent to death location
+                    spawnSubEnemy(e.x - 1, e.y);
+                    spawnSubEnemy(e.x + 1, e.y);
+                }
+                enemies.splice(i, 1);
+            }
+        }
+    }
+
+    if (killedSomething && activePerks.has('overdrive')) {
+        camShake = 24;
+    }
+}
+
+function spawnSubEnemy(x, y) {
+    if (x < 1 || x >= GRID_W - 1 || y < 1 || y >= GRID_H - 1) return;
+    if (enemies.some(e => e.x === x && e.y === y)) return;
+    enemies.push({ x: x, y: y, type: 'striker', hp: 1, maxHp: 1, intentX: null, intentY: null, stuned: false });
+}
+
+function executeTileExplosion(x, y) {
+    indicators.push({ type: 'strike-flash', x: x, y: y, duration: 0.2 });
+    for(let i = enemies.length - 1; i >= 0; i--) {
+        if (enemies[i].x === x && enemies[i].y === y) {
+            enemies[i].hp -= 1;
+            if(enemies[i].hp <= 0) enemies.splice(i, 1);
+        }
+    }
+}
+
+// Dynamic Predictive Turn Loop Processing Engine
+function processEnemyReactions() {
+    enemies.forEach(e => {
+        if (e.stuned) {
+            e.stuned = false;
+            return;
+        }
+
+        // Execute Pre-planned movement paths computed on previous frame
+        if (e.intentX !== null && e.intentY !== null) {
+            e.x = e.intentX;
+            e.y = e.intentY;
+        }
+
+        // Check damage resolution overlaps post movement updates
+        if (e.x === player.x && e.y === player.y) {
+            player.hp--;
+            camShake = 16;
+            spawnDebrisParticles(player.x, player.y, 12);
+            if (player.hp <= 0) killPlayerSession();
+        }
+    });
+}
+
+function computeEnemyIntentions() {
+    enemies.forEach(e => {
+        if (e.stuned) {
+            e.intentX = e.x; e.intentY = e.y;
+            return;
+        }
+
+        let dx = Math.sign(player.x - e.x);
+        let dy = Math.sign(player.y - e.y);
+
+        let tx = e.x;
+        let ty = e.y;
+
+        if (e.type === 'striker' || e.type === 'splitter') {
+            // Relentless pursuit movement vectors
+            if (Math.abs(player.x - e.x) > Math.abs(player.y - e.y)) tx += dx; 
+            else ty += dy;
+        } 
+        else if (e.type === 'ranger') {
+            // Maintains optimal combat lines while applying distance vectors
+            if (VMath_dist(e.x, e.y, player.x, player.y) < 3) {
+                tx -= dx; ty -= dy; // Move away to hold range
+            } else {
+                if (Math.random() > 0.5) tx += dx; else ty += dy;
+            }
+        }
+
+        // Confine pre-calculated positions strictly within level walls
+        e.intentX = Math.max(1, Math.min(GRID_W - 2, tx));
+        e.intentY = Math.max(1, Math.min(GRID_H - 2, ty));
+    });
+}
+
+// Vector Distance Short Form Helper
+function VMath_dist(x1, y1, x2, y2) {
+    return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+}
+
+function advanceSectorProgress() {
+    depth++;
+    if (depth % 3 === 0) {
+        isLooping = false;
+        triggerUpgradeChoiceDisplay();
+    } else {
+        buildSectorLayout();
+    }
+    updateHudDisplay();
+}
+
+function triggerUpgradeChoiceDisplay() {
+    const box = document.getElementById('upgrade-options');
+    box.innerHTML = '';
+    
+    let picks = [...PERK_POOL].sort(() => 0.5 - Math.random()).slice(0, 2);
+    picks.forEach(p => {
+        let div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<div class="card-title">${p.name}</div><div class="card-desc">${p.desc}</div>`;
+        div.addEventListener('click', () => {
+            activePerks.add(p.id);
+            document.getElementById('scr-upgrade').classList.remove('active');
+            buildSectorLayout();
+            isLooping = true;
+        });
+        box.appendChild(div);
+    });
+    document.getElementById('scr-upgrade').classList.add('active');
+}
+
+function killPlayerSession() {
+    isLooping = false;
+    document.getElementById('death-info').textContent = `Core link severed at depth sector: 0${depth}. Run terminated.`;
+    document.getElementById('scr-death').classList.add('active');
+}
+
+function updateHudDisplay() {
+    let str = "HP: ";
+    for (let i = 0; i < player.maxHp; i++) {
+        str += (i < player.hp) ? "■" : "▢";
+    }
+    document.getElementById('hud-hp').textContent = str;
+}
+
+// Particle Generation Factory Routine
+function spawnDebrisParticles(gx, gy, amt) {
+    let px = offsetX + gx * cellSize + cellSize / 2;
+    let py = offsetY + gy * cellSize + cellSize / 2;
+    for (let i = 0; i < amt; i++) {
+        particles.push({
+            x: px, y: py,
+            vx: (Math.random() - 0.5) * 160,
+            vy: (Math.random() - 0.5) * 160,
+            life: 0.25
+        });
+    }
+}
+
+// Input Interaction Hooks Pipeline Mapping
+window.addEventListener('keydown', e => {
+    let dx = 0, dy = 0;
+    if (e.key.toLowerCase() === 'w') dy = -1;
+    if (e.key.toLowerCase() === 's') dy = 1;
+    if (e.key.toLowerCase() === 'a') dx = -1;
+    if (e.key.toLowerCase() === 'd') dx = 1;
+    if (dx !== 0 || dy !== 0) executePlayerActionStep(dx, dy);
+});
+
+let tStartX = 0, tStartY = 0;
+window.addEventListener('touchstart', e => {
+    tStartX = e.touches[0].clientX;
+    tStartY = e.touches[0].clientY;
+}, { passive: true });
+
+window.addEventListener('touchend', e => {
+    let dx = e.changedTouches[0].clientX - tStartX;
+    let dy = e.changedTouches[0].clientY - tStartY;
+    if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+        if (Math.abs(dx) > Math.abs(dy)) executePlayerActionStep(dx > 0 ? 1 : -1, 0);
+        else executePlayerActionStep(0, dy > 0 ? 1 : -1);
+    }
+}, { passive: true });
+
+// Core Engine Engine Tick Loops Functions
+let lastTime = performance.now();
+function stepEngine(now) {
+    let dt = (now - lastTime) / 1000;
+    lastTime = now;
+
+    pulseTimer += dt * 8;
+
+    // Tick UI Animations Systems
+    for (let i = indicators.length - 1; i >= 0; i--) {
+        indicators[i].duration -= dt;
+        if (indicators[i].duration <= 0) indicators.splice(i, 1);
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    renderEngineView();
+    requestAnimationFrame(stepEngine);
+}
+
+// Absolute Monochrome Structural Vector Rendering Core
+function renderEngineView() {
+    ctx.fillStyle = '#0A0A0A';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    if (camShake > 0) {
+        ctx.translate((Math.random() - 0.5) * camShake, (Math.random() - 0.5) * camShake);
+        camShake *= 0.8;
+        if (camShake < 0.2) camShake = 0;
+    }
+
+    // DRAW UNIFORM STATIC STRUCTURAL BACKGROUND GRID FLOOR
+    ctx.fillStyle = '#141414';
+    for (let c = 1; c < GRID_W - 1; c++) {
+        for (let r = 1; r < GRID_H - 1; r++) {
+            ctx.fillRect(offsetX + c * cellSize + 2, offsetY + r * cellSize + 2, cellSize - 4, cellSize - 4);
+        }
+    }
+
+    // DRAW INTENTION RADAR CROSSHAIRS TELEMETRY LABELS
+    if (isLooping) {
+        enemies.forEach(e => {
+            if (e.intentX !== null && e.intentY !== null && !e.stuned) {
+                let flashOpacity = 0.15 + Math.abs(Math.sin(pulseTimer)) * 0.25;
+                ctx.strokeStyle = `rgba(255, 255, 255, ${flashOpacity})`;
+                ctx.lineWidth = 1;
+                ctx.strokeRect(offsetX + e.intentX * cellSize + 4, offsetY + e.intentY * cellSize + 4, cellSize - 8, cellSize - 8);
+            }
+        });
+    }
+
+    // DRAW RECTILINEAR STRIKE FLASH OVERLAYS
+    indicators.forEach(ind => {
+        if (ind.type === 'strike-flash') {
+            ctx.fillStyle = '#F5F5F5';
+            ctx.fillRect(offsetX + ind.x * cellSize + 1, offsetY + ind.y * cellSize + 1, cellSize - 2, cellSize - 2);
+        }
+    });
+
+    // DRAW GEOMETRIC ASSYMETRIC DISTINCT ENEMY ASSETS UNITS
+    enemies.forEach(e => {
+        let cx = offsetX + e.x * cellSize + cellSize / 2;
+        let cy = offsetY + e.y * cellSize + cellSize / 2;
+        let rSize = cellSize - 16;
+
+        ctx.strokeStyle = '#7A7A7A';
+        ctx.lineWidth = 2;
+        // Base hollow bounding framework (▢)
+        ctx.strokeRect(offsetX + e.x * cellSize + 8, offsetY + e.y * cellSize + 8, rSize, rSize);
+
+        // Core interior signature geometries
+        ctx.beginPath();
+        if (e.type === 'striker') {
+            // Perpendicular interior lines cross hair profile
+            ctx.moveTo(cx - 4, cy); ctx.lineTo(cx + 4, cy);
+            ctx.moveTo(cx, cy - 4); ctx.lineTo(cx, cy + 4);
+        } else if (e.type === 'ranger') {
+            // High-contrast interior target square frame core
+            ctx.fillStyle = '#7A7A7A';
+            ctx.fillRect(cx - 3, cy - 3, 6, 6);
+        } else if (e.type === 'splitter') {
+            // Horizontal bar segregation matrix indicator layout
+            ctx.moveTo(cx - 6, cy - 2); ctx.lineTo(cx + 6, cy - 2);
+            ctx.moveTo(cx - 6, cy + 2); ctx.lineTo(cx + 6, cy + 2);
+        }
+        ctx.stroke();
+    });
+
+    // DRAW SOLID WHITE HIGHER ARCHETYPE PLAYER MODULE
+    if (isLooping) {
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(offsetX + player.x * cellSize + 8, offsetY + player.y * cellSize + 8, cellSize - 16, cellSize - 16);
+    }
+
+    // DRAW SIMULATED DISPERSION PARTICLES CHANNELS
+    ctx.fillStyle = '#7A7A7A';
+    particles.forEach(p => {
+        ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+    });
+
+    ctx.restore();
+}
+
+requestAnimationFrame(stepEngine);
+</script>
+</body>
+</html>
