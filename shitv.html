@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Noo:r — Refined Tactical Crawler</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #040406;
+    color: #E2E8F0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+body {
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-container {
+    position: relative;
+    width: min(100vw, 480px);
+    height: min(100vh, 850px);
+    border-radius: 32px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    background: #06060A;
+    box-shadow: 0 50px 120px -30px rgba(0,0,0,0.95);
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* PREMIUM UI OVERLAYS */
+.hud-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 28px 24px;
+    background: linear-gradient(to bottom, rgba(6,6,10,0.95), rgba(6,6,10,0));
+    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 100;
+}
+
+.hud-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.character-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.hp-container {
+    width: 140px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.hp-bar {
+    width: 100%;
+    height: 100%;
+    background: #FFFFFF;
+    transform-origin: left;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hud-right {
+    text-align: right;
+}
+
+.stat-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(226, 232, 240, 0.3);
+}
+
+.stat-value {
+    font-size: 26px;
+    font-weight: 200;
+    color: #FFFFFF;
+}
+
+.ability-dock {
+    position: absolute;
+    bottom: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 14px;
+    padding: 10px 20px;
+    background: rgba(10, 10, 16, 0.6);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    z-index: 100;
+    pointer-events: none;
+}
+
+.ability-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.01);
+}
+.ability-icon.active {
+    color: #FFF;
+    border-color: rgba(255,255,255,0.2);
+}
+
+/* SCREEN STATES */
+.screen-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #06060A;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 500;
+}
+
+.screen-state.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.screen-state h2 {
+    font-size: 36px;
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    color: #FFFFFF;
+}
+
+.screen-state p {
+    color: rgba(226, 232, 240, 0.35);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+    max-width: 290px;
+}
+
+.class-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 44px;
+    width: 100%;
+    max-width: 280px;
+}
+
+.class-card {
+    padding: 16px;
+    background: rgba(255,255,255,0.01);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.25s ease;
+}
+
+.class-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 4px;
+}
+
+.class-card-desc {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+}
+
+.class-card:hover {
+    border-color: rgba(255,255,255,0.15);
+}
+
+.class-card.selected {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: #FFFFFF;
+}
+
+.action-btn {
+    padding: 16px 44px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #06060A;
+    background: #FFFFFF;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 0 14px 35px -5px rgba(255,255,255,0.15);
+    transition: transform 0.2s ease;
+}
+.action-btn:hover { transform: translateY(-2px); }
+
+@media (max-width: 768px) {
+    .game-container { width: 100vw; height: 100vh; border-radius: 0; border: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="game-container">
+    
+    <!-- HUD LAYER -->
+    <div class="hud-layer">
+        <div class="hud-left">
+            <div class="character-badge" id="hudClass">Warrior</div>
+            <div class="hp-container">
+                <div class="hp-bar" id="hudHp"></div>
+            </div>
+        </div>
+        <div class="hud-right">
+            <div class="stat-label">Depth Room</div>
+            <div class="stat-value" id="hudRoom">1</div>
+        </div>
+    </div>
+
+    <!-- ABILITY DISPLAY DOCK -->
+    <div class="ability-dock">
+        <div class="ability-icon active" id="skill1">⚔️</div>
+        <div class="ability-icon active" id="skill2">🛡️</div>
+        <div class="ability-icon" id="skill3">🧪</div>
+    </div>
+
+    <canvas id="dungeonCanvas"></canvas>
+
+    <!-- CLASS SELECTION SCREEN -->
+    <div class="screen-state show" id="startScreen">
+        <h2>Noo:r</h2>
+        <p style="margin-bottom: 20px;">A tactical dungeon grid loop. Move using WASD or Tap-Swipes.</p>
+        
+        <div class="class-selector">
+            <div class="class-card selected" id="card-warrior" onclick="selectClass('warrior')">
+                <div class="class-card-title" style="color: #E05353;">WARRIOR</div>
+                <div class="class-card-desc">Heavy Cleave attack handles close range clumps. 5 HP.</div>
+            </div>
+            <div class="class-card" id="card-rogue" onclick="selectClass('rogue')">
+                <div class="class-card-title" style="color: #56B296;">ROGUE</div>
+                <div class="class-card-desc">3-Cell Dash strike shifts position and slices ahead. 4 HP.</div>
+            </div>
+            <div class="class-card" id="card-mage" onclick="selectClass('mage')">
+                <div class="class-card-title" style="color: #A78BFA;">MAGE</div>
+                <div class="class-card-desc">3-Cell Piercing Star beam that stuns enemies in place. 4 HP.</div>
+            </div>
+        </div>
+
+        <button class="action-btn" onclick="startGame()">DESCEND</button>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div class="screen-state" id="gameOverScreen">
+        <h2 id="endTitle">Returned to Dust</h2>
+        <p id="endSubtitle">Chambers Cleared: 0</p>
+        <button class="action-btn" onclick="showStartScreen()">AWAKEN</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('dungeonCanvas');
+const ctx = canvas.getContext('2d');
+
+let currentClass = 'warrior';
+let gameActive = false;
+let roomNumber = 1;
+
+const CELL_SIZE = 52; 
+const GRID_COLS = 7;
+const GRID_ROWS = 9;
+
+let originX = 0;
+let originY = 0;
+
+let player = {
+    gridX: 3, gridY: 7,
+    x: 0, y: 0,
+    hp: 5, maxHp: 5,
+    color: '#E05353',
+    accentColor: '#E05353',
+    auraColor: 'rgba(224, 83, 83, 0.08)',
+    weaponType: 'slash',
+    isDashing: false,
+    dashTimer: 0
+};
+
+let enemies = [];
+let items = []; // For health potions
+let particles = [];
+let floatingTexts = [];
+let structuralDecorations = []; 
+let weaponVisuals = [];
+let enemyIntendedMoves = []; 
+
+let comboCounter = 0;
+let comboTimer = 0;
+let frameFreezeTimer = 0;
+let screenShake = 0;
+let timeClock = 0;
+let lastFrameTime = performance.now();
+
+const HERO_CONFIGS = {
+    warrior: { name: 'Warrior', color: '#E2E6EA', accent: '#E05353', aura: 'rgba(224, 83, 83, 0.1)', weapon: 'slash', hp: 5, icon: '⚔️' },
+    rogue: { name: 'Rogue', color: '#D1EAE2', accent: '#56B296', aura: 'rgba(86, 178, 150, 0.12)', weapon: 'dash', hp: 4, icon: '🗡️' },
+    mage: { name: 'Mage', color: '#EBE5F7', accent: '#A78BFA', aura: 'rgba(167, 139, 250, 0.15)', weapon: 'bolt', hp: 4, icon: '🔮' }
+};
+
+function resizeCanvas() {
+    const container = document.querySelector('.game-container');
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    originX = (canvas.width - (GRID_COLS * CELL_SIZE)) / 2;
+    originY = (canvas.height - (GRID_ROWS * CELL_SIZE)) / 2;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function selectClass(type) {
+    currentClass = type;
+    document.querySelectorAll('.class-card').forEach(card => card.classList.remove('selected'));
+    document.getElementById(`card-${type}`).classList.add('selected');
+}
+
+function showStartScreen() {
+    document.getElementById('gameOverScreen').classList.remove('show');
+    document.getElementById('startScreen').classList.add('show');
+}
+
+function startGame() {
+    document.getElementById('startScreen').classList.remove('show');
+    document.getElementById('gameOverScreen').classList.remove('show');
+    
+    const cfg = HERO_CONFIGS[currentClass];
+    player.hp = cfg.hp;
+    player.maxHp = cfg.hp;
+    player.color = cfg.color;
+    player.accentColor = cfg.accent;
+    player.auraColor = cfg.aura;
+    player.weaponType = cfg.weapon;
+    player.gridX = 3;
+    player.gridY = 7;
+    player.x = originX + player.gridX * CELL_SIZE + CELL_SIZE/2;
+    player.y = originY + player.gridY * CELL_SIZE + CELL_SIZE/2;
+    
+    const hudBadge = document.getElementById('hudClass');
+    const hpBar = document.getElementById('hudHp');
+    hudBadge.textContent = cfg.name;
+    hudBadge.style.color = cfg.accent;
+    hpBar.style.backgroundColor = cfg.accent;
+    
+    document.getElementById('skill1').textContent = cfg.icon;
+    
+    roomNumber = 1;
+    comboCounter = 0;
+    generateChamber();
+    gameActive = true;
+}
+
+function generateChamber() {
+    enemies = [];
+    items = [];
+    structuralDecorations = [];
+    particles = [];
+    weaponVisuals = [];
+    
+    document.getElementById('hudRoom').textContent = roomNumber;
+    
+    structuralDecorations.push({ x: 1, y: 1, type: 'torch', color: '#E06B53', pulse: 0 });
+    structuralDecorations.push({ x: 5, y: 1, type: 'torch', color: '#E06B53', pulse: Math.PI });
+    structuralDecorations.push({ x: 3, y: 4, type: 'elevator_rune', active: false });
+
+    let enemyCount = 3 + Math.min(4, Math.floor(roomNumber / 2));
+    if (roomNumber % 5 === 0) {
+        spawnEnemy('guardian', 3, 2);
+    } else {
+        const types = ['knight', 'wisp', 'brute', 'spider'];
+        for (let i = 0; i < enemyCount; i++) {
+            let tx = 1 + Math.floor(Math.random() * 5);
+            let ty = 1 + Math.floor(Math.random() * 4);
+            if (tx === player.gridX && ty === player.gridY) { tx += 1; }
+            
+            let selectedType = types[Math.floor(Math.random() * types.length)];
+            spawnEnemy(selectedType, tx, ty);
+        }
+    }
+    calculateEnemyIntentions();
+}
+
+function spawnEnemy(type, gx, gy) {
+    let e = {
+        type: type,
+        gridX: gx, gridY: gy,
+        x: originX + gx * CELL_SIZE + CELL_SIZE/2,
+        y: originY + gy * CELL_SIZE + CELL_SIZE/2,
+        hp: 1, maxHp: 1, isStunned: false,
+        color: '#8A94A6', accent: '#FF5555', size: 16
+    };
+    
+    if (type === 'knight') { e.hp = 2; e.maxHp = 2; e.color = '#383C45'; e.accent = '#E2B05C'; e.size = 17; }
+    if (type === 'wisp') { e.hp = 1; e.color = '#526E7D'; e.accent = '#6EC5E9'; e.size = 11; }
+    if (type === 'brute') { e.hp = 4; e.maxHp = 4; e.color = '#25212E'; e.accent = '#9B4F96'; e.size = 23; }
+    if (type === 'spider') { e.hp = 1; e.color = '#332727'; e.accent = '#E05370'; e.size = 10; }
+    if (type === 'guardian') { e.hp = 12; e.maxHp = 12; e.color = '#191924'; e.accent = '#FFD700'; e.size = 34; }
+    
+    enemies.push(e);
+}
+
+// --- CONTROLS INPUT PIPELINE ---
+window.addEventListener('keydown', e => {
+    if(!gameActive || frameFreezeTimer > 0) return;
+    let dx = 0, dy = 0;
+    if(e.key.toLowerCase() === 'w' || e.key === 'ArrowUp') dy = -1;
+    if(e.key.toLowerCase() === 's' || e.key === 'ArrowDown') dy = 1;
+    if(e.key.toLowerCase() === 'a' || e.key === 'ArrowLeft') dx = -1;
+    if(e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') dx = 1;
+    
+    if(dx !== 0 || dy !== 0) attemptPlayerMove(dx, dy);
+});
+
+let touchX = 0, touchY = 0;
+window.addEventListener('touchstart', e => {
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+}, { passive: true });
+
+window.addEventListener('touchend', e => {
+    if(!gameActive || frameFreezeTimer > 0) return;
+    let dx = e.changedTouches[0].clientX - touchX;
+    let dy = e.changedTouches[0].clientY - touchY;
+    if(Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+        if(Math.abs(dx) > Math.abs(dy)) {
+            attemptPlayerMove(dx > 0 ? 1 : -1, 0);
+        } else {
+            attemptPlayerMove(0, dy > 0 ? 1 : -1);
+        }
+    }
+}, { passive: true });
+
+function attemptPlayerMove(dx, dy) {
+    if(player.isDashing) return;
+    
+    let targetX = player.gridX + dx;
+    let targetY = player.gridY + dy;
+    
+    // Bounds check
+    if(targetX < 1 || targetX >= GRID_COLS - 1 || targetY < 1 || targetY >= GRID_ROWS - 1) return;
+    
+    player.gridX = targetX;
+    player.gridY = targetY;
+    player.isDashing = true;
+    player.dashTimer = 0.10;
+    
+    executeCombatAction(dx, dy);
+    checkItemPickups();
+    processEnemyTurns();
+    calculateEnemyIntentions();
+}
+
+function checkItemPickups() {
+    for (let i = items.length - 1; i >= 0; i--) {
+        if (items[i].gridX === player.gridX && items[i].gridY === player.gridY) {
+            if (player.hp < player.maxHp) {
+                player.hp = Math.min(player.maxHp, player.hp + 1);
+                createFloatingText(player.x, player.y, "+1 HEALTH", '#FFFFFF');
+                createParticleBurst(player.x, player.y, '#FFFFFF', 12);
+                items.splice(i, 1);
+            }
+        }
+    }
+}
+
+// --- COMBAT BALANCING ENGINES ---
+function executeCombatAction(dx, dy) {
+    let pTargetX = originX + player.gridX * CELL_SIZE + CELL_SIZE/2;
+    let pTargetY = originY + player.gridY * CELL_SIZE + CELL_SIZE/2;
+    let baseDamage = 2;
+    let pointsToCheck = [];
+    let applyStun = false;
+
+    if (player.weaponType === 'slash') {
+        // Warrior: Close broad cross clear
+        pointsToCheck = [
+            {gx: player.gridX, gy: player.gridY},
+            {gx: player.gridX + 1, gy: player.gridY},
+            {gx: player.gridX - 1, gy: player.gridY},
+            {gx: player.gridX, gy: player.gridY + 1},
+            {gx: player.gridX, gy: player.gridY - 1}
+        ];
+        weaponVisuals.push({ type: 'radial', color: player.accentColor, x: pTargetX, y: pTargetY, radius: 10, maxRadius: 54, alpha: 0.8 });
+    } 
+    else if (player.weaponType === 'dash') {
+        // Rogue: Long 3-cell linear dash slicing path
+        baseDamage = 2;
+        pointsToCheck = [
+            {gx: player.gridX, gy: player.gridY},
+            {gx: player.gridX + dx, gy: player.gridY + dy},
+            {gx: player.gridX - dx, gy: player.gridY - dy}
+        ];
+        weaponVisuals.push({ type: 'trail', color: player.accentColor, x1: player.x, y1: player.y, x2: pTargetX, y2: pTargetY, alpha: 0.8 });
+    } 
+    else if (player.weaponType === 'bolt') {
+        // Mage: Long range piercing ray that stuns targets
+        baseDamage = 2;
+        applyStun = true;
+        pointsToCheck = [
+            {gx: player.gridX, gy: player.gridY},
+            {gx: player.gridX + dx, gy: player.gridY + dy},
+            {gx: player.gridX + dx * 2, gy: player.gridY + dy * 2},
+            {gx: player.gridX + dx * 3, gy: player.gridY + dy * 3}
+        ];
+        let tVisualX = originX + (player.gridX + dx * 3) * CELL_SIZE + CELL_SIZE/2;
+        let tVisualY = originY + (player.gridY + dy * 3) * CELL_SIZE + CELL_SIZE/2;
+        weaponVisuals.push({ type: 'ray', color: player.accentColor, x1: pTargetX, y1: pTargetY, x2: tVisualX, y2: tVisualY, alpha: 0.9 });
+    }
+
+    let hitsLanded = 0;
+
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        let en = enemies[i];
+        let isHit = pointsToCheck.some(pt => pt.gx === en.gridX && pt.gy === en.gridY);
+        
+        if (isHit) {
+            en.hp -= baseDamage;
+            hitsLanded++;
+            if (applyStun) en.isStunned = true;
+            
+            createParticleBurst(en.x, en.y, en.accent, 10);
+            
+            if (en.hp <= 0) {
+                comboCounter++;
+                comboTimer = 1.8; 
+                createFloatingText(en.x, en.y, `+${comboCounter}X`, player.accentColor);
+                
+                // Potion Drops Dropchance Config (35%)
+                if (Math.random() < 0.35) {
+                    items.push({ gridX: en.gridX, gridY: en.gridY });
+                }
+                enemies.splice(i, 1);
+            } else {
+                createFloatingText(en.x, en.y, applyStun ? `STUN -${baseDamage}` : `-${baseDamage}`, 'rgba(255,255,255,0.6)');
+            }
+        }
+    }
+
+    if (hitsLanded > 0) {
+        frameFreezeTimer = 0.05; 
+        screenShake = 6 + (comboCounter * 1.5);
+    }
+
+    // Chamber clear checks
+    if (enemies.length === 0) {
+        let elevator = structuralDecorations.find(d => d.type === 'elevator_rune');
+        if(elevator) elevator.active = true;
+        
+        if (player.gridX === 3 && player.gridY === 4) {
+            roomNumber++;
+            screenShake = 12;
+            generateChamber();
+        }
+    }
+}
+
+function processEnemyTurns() {
+    enemies.forEach(en => {
+        // Check if stun skips the action turn window
+        if (en.isStunned) {
+            en.isStunned = false; // Break out of stun loop for next frame
+            return;
+        }
+
+        let ex = en.gridX;
+        let ey = en.gridY;
+        let dx = Math.sign(player.gridX - ex);
+        let dy = Math.sign(player.gridY - ey);
+        
+        // Dynamic Tracking Logic: Enemies aggressively move towards the target now
+        if (en.type === 'spider') {
+            if (Math.abs(player.gridX - ex) > Math.abs(player.gridY - ey)) ex += dx; else ey += dy;
+        } else if (en.type === 'brute') {
+            if (Math.random() > 0.3) {
+                if (Math.abs(player.gridX - ex) > Math.abs(player.gridY - ey)) ex += dx; else ey += dy;
+            }
+        } else {
+            // standard relentless tracking paths
+            if (Math.random() > 0.2) {
+                if (Math.random() > 0.5) ex += dx; else ey += dy;
+            }
+        }
+
+        en.gridX = Math.max(1, Math.min(GRID_COLS - 2, ex));
+        en.gridY = Math.max(1, Math.min(GRID_ROWS - 2, ey));
+        
+        en.x = originX + en.gridX * CELL_SIZE + CELL_SIZE/2;
+        en.y = originY + en.gridY * CELL_SIZE + CELL_SIZE/2;
+
+        if (en.gridX === player.gridX && en.gridY === player.gridY) {
+            player.hp--;
+            screenShake = 15;
+            comboCounter = 0; 
+            createParticleBurst(player.x, player.y, '#FF3B30', 14);
+            createFloatingText(player.x, player.y, "-1 HP", '#FF3B30');
+            
+            if (player.hp <= 0) {
+                gameActive = false;
+                document.getElementById('endSubtitle').textContent = `Chambers Cleared: ${roomNumber - 1}`;
+                document.getElementById('gameOverScreen').classList.add('show');
+            }
+        }
+    });
+}
+
+function calculateEnemyIntentions() {
+    enemyIntendedMoves = [];
+    enemies.forEach(en => {
+        if (en.isStunned) return; // Stunned entities display zero telemetry paths
+        
+        let ex = en.gridX;
+        let ey = en.gridY;
+        let dx = Math.sign(player.gridX - ex);
+        let dy = Math.sign(player.gridY - ey);
+
+        if (Math.abs(player.gridX - ex) > Math.abs(player.gridY - ey)) ex += dx; else ey += dy;
+        
+        enemyIntendedMoves.push({
+            color: en.accent,
+            gx: Math.max(1, Math.min(GRID_COLS - 2, ex)),
+            gy: Math.max(1, Math.min(GRID_ROWS - 2, ey))
+        });
+    });
+}
+
+// --- FX GENERATION CODES ---
+function createParticleBurst(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        let angle = Math.random() * Math.PI * 2;
+        let speed = 0.6 + Math.random() * 2.2;
+        particles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            alpha: 1,
+            size: 1 + Math.random() * 1.8,
+            color: color
+        });
+    }
+}
+
+function createFloatingText(x, y, str, color) {
+    floatingTexts.push({
+        x: x, y: y - 14, text: str, color: color, alpha: 1, speedY: -0.4
+    });
+}
+
+// --- ENGINE SIMULATION LOOP ---
+function updateSimulation(dt) {
+    if (frameFreezeTimer > 0) {
+        frameFreezeTimer -= dt;
+        return; 
+    }
+
+    timeClock += dt;
+
+    if (comboCounter > 0) {
+        comboTimer -= dt;
+        if (comboTimer <= 0) comboCounter = 0;
+    }
+    
+    let targetX = originX + player.gridX * CELL_SIZE + CELL_SIZE/2;
+    let targetY = originY + player.gridY * CELL_SIZE + CELL_SIZE/2;
+    player.x += (targetX - player.x) * 0.28;
+    player.y += (targetY - player.y) * 0.28;
+    
+    if (player.isDashing) {
+        player.dashTimer -= dt;
+        if(player.dashTimer <= 0) player.isDashing = false;
+    }
+
+    particles.forEach((p, idx) => {
+        p.x += p.vx; p.y += p.vy;
+        p.alpha -= 1.8 * dt;
+        if(p.alpha <= 0) particles.splice(idx, 1);
+    });
+
+    floatingTexts.forEach((t, idx) => {
+        t.y += t.speedY;
+        t.alpha -= 1.2 * dt;
+        if(t.alpha <= 0) floatingTexts.splice(idx, 1);
+    });
+
+    weaponVisuals.forEach((wv, idx) => {
+        if (wv.type === 'radial') wv.radius += (wv.maxRadius - wv.radius) * 0.25;
+        wv.alpha -= 3.5 * dt;
+        if(wv.alpha <= 0) weaponVisuals.splice(idx, 1);
+    });
+
+    structuralDecorations.forEach(d => {
+        if(d.type === 'torch') d.pulse += dt * 3.5;
+    });
+
+    if (screenShake > 0) screenShake *= 0.84;
+    if (screenShake < 0.1) screenShake = 0;
+    
+    document.getElementById('hudHp').style.transform = `scaleX(${Math.max(0, player.hp / player.maxHp)})`;
+}
+
+function renderScene() {
+    ctx.fillStyle = '#06060A';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    if (screenShake > 0) {
+        ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+    }
+
+    // FLOOR CHANNELS
+    for (let c = 0; c < GRID_COLS; c++) {
+        for (let r = 0; r < GRID_ROWS; r++) {
+            let rx = originX + c * CELL_SIZE;
+            let ry = originY + r * CELL_SIZE;
+            if (c === 0 || c === GRID_COLS - 1 || r === 0 || r === GRID_ROWS - 1) {
+                ctx.fillStyle = '#050508';
+                ctx.fillRect(rx, ry, CELL_SIZE, CELL_SIZE);
+            } else {
+                ctx.fillStyle = '#0B0B12';
+                ctx.fillRect(rx + 1, ry + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+            }
+        }
+    }
+
+    // RECOVERY HEALTH DROPS LOBBY LAYER
+    items.forEach(it => {
+        let ix = originX + it.gridX * CELL_SIZE + CELL_SIZE/2;
+        let iy = originY + it.gridY * CELL_SIZE + CELL_SIZE/2;
+        
+        let breath = Math.sin(timeClock * 6) * 2;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.beginPath(); ctx.arc(ix, iy, 12 + breath, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = "700 14px 'Inter', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('+', ix, iy - 1);
+    });
+
+    // WARNING PATH OVERLAYS
+    if (gameActive && frameFreezeTimer <= 0) {
+        enemyIntendedMoves.forEach(move => {
+            let mx = originX + move.gx * CELL_SIZE;
+            let my = originY + move.gy * CELL_SIZE;
+            ctx.strokeStyle = move.color + '22';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(mx + 4, my + 4, CELL_SIZE - 8, CELL_SIZE - 8);
+        });
+    }
+
+    // ENVIRONMENT LIGHTING ELEMENTS
+    structuralDecorations.forEach(d => {
+        let dx = originX + d.x * CELL_SIZE + CELL_SIZE/2;
+        let dy = originY + d.y * CELL_SIZE + CELL_SIZE/2;
+        
+        if (d.type === 'torch') {
+            let flick = Math.sin(d.pulse) * 1.5;
+            let grad = ctx.createRadialGradient(dx, dy, 1, dx, dy, 18 + flick);
+            grad.addColorStop(0, 'rgba(224, 107, 83, 0.12)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(dx, dy, 18 + flick, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = d.color;
+            ctx.beginPath(); ctx.arc(dx, dy, 2, 0, Math.PI * 2); ctx.fill();
+        } else if (d.type === 'elevator_rune') {
+            ctx.strokeStyle = d.active ? '#FFFFFF' : 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(dx - 12, dy - 12, 24, 24, 3); ctx.stroke();
+        }
+    });
+
+    // COMBAT ENGAGEMENT VECTOR GRAPHICS
+    weaponVisuals.forEach(wv => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, wv.alpha);
+        ctx.strokeStyle = wv.color || '#FFFFFF';
+        ctx.lineWidth = 3;
+
+        if (wv.type === 'radial') {
+            ctx.beginPath(); ctx.arc(wv.x, wv.y, wv.radius, 0, Math.PI * 2); ctx.stroke();
+        } else if (wv.type === 'trail') {
+            ctx.beginPath(); ctx.moveTo(wv.x1, wv.y1); ctx.lineTo(wv.x2, wv.y2); ctx.stroke();
+        } else if (wv.type === 'ray') {
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(wv.x1, wv.y1); ctx.lineTo(wv.x2, wv.y2); ctx.stroke();
+        }
+        ctx.restore();
+    });
+
+    // DRAW ATTACKING SYSTEM MONSTERS
+    enemies.forEach(en => {
+        ctx.save();
+        
+        if (en.isStunned) {
+            ctx.strokeStyle = '#A78BFA';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(en.x - en.size/2 - 4, en.y - en.size/2 - 4, en.size + 8, en.size + 8);
+        }
+
+        if (en.type === 'wisp') {
+            let pulseSize = en.size + Math.sin(timeClock * 5) * 1.5;
+            let grad = ctx.createRadialGradient(en.x, en.y, 1, en.x, en.y, pulseSize);
+            grad.addColorStop(0, 'rgba(110, 197, 233, 0.2)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(en.x, en.y, pulseSize, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = en.color;
+            ctx.beginPath(); ctx.arc(en.x, en.y, en.size/2, 0, Math.PI * 2); ctx.fill();
+        } else if (en.type === 'brute') {
+            ctx.fillStyle = en.color;
+            ctx.beginPath(); ctx.roundRect(en.x - en.size/2, en.y - en.size/2, en.size, en.size, 4); ctx.fill();
+            ctx.fillStyle = en.accent;
+            ctx.fillRect(en.x - 5, en.y - 3, 10, 1.5);
+        } else if (en.type === 'guardian') {
+            ctx.fillStyle = en.color;
+            ctx.beginPath(); ctx.roundRect(en.x - en.size/2, en.y - en.size/2, en.size, en.size, 6); ctx.fill();
+            ctx.strokeStyle = en.accent;
+            ctx.beginPath(); ctx.arc(en.x, en.y, 6 + Math.sin(timeClock * 3), 0, Math.PI*2); ctx.stroke();
+        } else {
+            ctx.fillStyle = en.color;
+            ctx.beginPath(); ctx.roundRect(en.x - 6, en.y - 10, 12, 20, 3); ctx.fill();
+            ctx.fillStyle = en.accent;
+            ctx.fillRect(en.x - 2.5, en.y - 4, 1, 1); ctx.fillRect(en.x + 1.5, en.y - 4, 1, 1);
+        }
+        ctx.restore();
+    });
+
+    // DRAW ACTIVE AVATAR HERO
+    ctx.save();
+    let charGrad = ctx.createRadialGradient(player.x, player.y, 2, player.x, player.y, 34);
+    charGrad.addColorStop(0, player.auraColor);
+    charGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = charGrad;
+    ctx.beginPath(); ctx.arc(player.x, player.y, 34, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = player.color;
+    ctx.beginPath(); ctx.roundRect(player.x - 7, player.y - 9, 14, 18, 2); ctx.fill();
+    
+    ctx.strokeStyle = player.accentColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if(player.weaponType === 'slash') {
+        ctx.moveTo(player.x + 7, player.y + 1); ctx.lineTo(player.x + 14, player.y - 5);
+    } else if (player.weaponType === 'dash') {
+        ctx.moveTo(player.x - 9, player.y + 2); ctx.lineTo(player.x - 13, player.y - 2);
+        ctx.moveTo(player.x + 9, player.y + 2); ctx.lineTo(player.x + 13, player.y - 2);
+    } else {
+        let floatOffset = Math.sin(timeClock * 5) * 2;
+        ctx.fillStyle = player.accentColor;
+        ctx.arc(player.x + 10, player.y - 6 + floatOffset, 2, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // SPARK PARTICLES
+    ctx.save();
+    particles.forEach(p => {
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+
+    // OVERHEAD TEXT DATA SYSTEMS
+    ctx.save();
+    if (gameActive && comboCounter >= 2) {
+        ctx.fillStyle = player.accentColor + '77';
+        ctx.font = "700 9px 'Inter', sans-serif";
+        ctx.letterSpacing = "0.25em";
+        ctx.textAlign = 'center';
+        ctx.fillText(`CHAIN ${comboCounter}X`, player.x, player.y - 22);
+    }
+    
+    floatingTexts.forEach(t => {
+        ctx.save();
+        ctx.globalAlpha = t.alpha;
+        ctx.fillStyle = t.color;
+        ctx.font = "700 9px 'Inter', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.fillText(t.text, t.x, t.y);
+        ctx.restore();
+    });
+    ctx.restore();
+
+    // FILMIC VIGNETTE FRAMEWORK
+    let vignette = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.width*0.1, canvas.width/2, canvas.height/2, canvas.height * 0.6);
+    vignette.addColorStop(0, 'rgba(4, 4, 6, 0)');
+    vignette.addColorStop(0.6, 'rgba(4, 4, 6, 0.35)');
+    vignette.addColorStop(1, 'rgba(6, 6, 10, 0.98)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.restore();
+}
+
+function executionLoop() {
+    let now = performance.now();
+    let dt = (now - lastFrameTime) / 1000;
+    if(dt > 0.1) dt = 0.1;
+    lastFrameTime = now;
+
+    if (gameActive) updateSimulation(dt);
+    renderScene();
+    requestAnimationFrame(executionLoop);
+}
+
+requestAnimationFrame(executionLoop);
+</script>
+</body>
+</html>
