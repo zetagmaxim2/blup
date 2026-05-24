@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>NOO:R // KINETIC-VECTOR</title>
+<style>
+:root {
+    --bg-void: #030305;
+    --panel-blur: rgba(5, 5, 8, 0.65);
+    --border-glow: rgba(255, 255, 255, 0.04);
+    --font-mono: 'SF Mono', 'Courier New', monospace;
+}
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    user-select: none; -webkit-user-select: none;
+}
+html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #000; color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+body {
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at center, #0a0a12 0%, #020204 100%);
+}
+.viewport {
+    position: relative;
+    width: min(100vw, 450px);
+    height: min(100vh, 820px);
+    background: var(--bg-void);
+    overflow: hidden;
+    border: 1px solid var(--border-glow);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.85);
+}
+@media (max-width: 600px) {
+    .viewport { width: 100vw; height: 100vh; border: none; }
+}
+canvas {
+    width: 100%; height: 100%; display: block;
+}
+
+/* PREMIUM CORE UI SYSTEM */
+.hud-layer {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 24px; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(3,3,5,0.9) 0%, rgba(3,3,5,0) 100%);
+    z-index: 10; display: flex; justify-content: space-between; align-items: flex-start;
+}
+.hud-meta h1 {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.3em; color: rgba(255,255,255,0.4); margin-bottom: 6px;
+}
+.v-bar-container {
+    width: 120px; height: 2px; background: rgba(255,255,255,0.08);
+    position: relative; overflow: hidden;
+}
+.v-bar-fill {
+    width: 100%; height: 100%; background: #fff;
+    transform-origin: left; transform: scaleX(1);
+}
+.hud-metrics { text-align: right; font-family: var(--font-mono); }
+.metric-label { font-size: 8px; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); }
+.metric-val { font-size: 22px; font-weight: 200; color: #fff; }
+
+/* MOMENTUM METER */
+.momentum-wrapper {
+    position: absolute; top: 85px; left: 24px; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 10;
+}
+.momentum-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em; color: #0ff; opacity: 0.7; }
+.momentum-track { width: 60px; height: 1px; background: rgba(0,255,255,0.1); }
+.momentum-fill { width: 0%; height: 100%; background: #0ff; box-shadow: 0 0 8px #0ff; }
+
+/* RECTILINEAR INTERACTIVE OVERLAYS */
+.screen-overlay {
+    position: absolute; inset: 0; background: var(--bg-void);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 40px; z-index: 100; transition: opacity 0.4s cubic-bezier(0.15, 0.85, 0.35, 1);
+    opacity: 0; pointer-events: none;
+}
+.screen-overlay.active { opacity: 1; pointer-events: auto; }
+
+.title-block { margin-bottom: 40px; }
+.title-block h2 { font-family: var(--font-mono); font-size: 32px; font-weight: 100; letter-spacing: 0.1em; }
+.title-block p { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 8px; line-height: 1.6; }
+
+.selection-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+.select-card {
+    border: 1px solid rgba(255,255,255,0.06); padding: 16px; background: rgba(255,255,255,0.01);
+    border-radius: 4px; cursor: pointer; transition: all 0.2s ease;
+}
+.select-card:hover, .select-card.selected {
+    background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.4);
+}
+.select-card-head { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; }
+.select-card-desc { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; line-height: 1.4; }
+
+/* ROGUELIKE MUTATION CHOICE OVERLAY */
+.mutation-screen {
+    position: absolute; inset: 0; background: rgba(3,3,5,0.95);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 32px; z-index: 150; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.mutation-screen.active { opacity: 1; pointer-events: auto; }
+.mutation-title { font-family: var(--font-mono); font-size: 11px; color: #a78bfa; letter-spacing: 0.2em; margin-bottom: 24px; }
+.mutation-options { display: flex; flex-direction: column; gap: 12px; }
+.mutation-btn {
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+    padding: 18px; border-radius: 4px; text-align: left; cursor: pointer; color: #fff;
+    transition: all 0.2s ease;
+}
+.mutation-btn:hover { background: rgba(167,139,250,0.08); border-color: #a78bfa; }
+.mutation-name { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: #fff; }
+.mutation-desc { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+.action-trigger {
+    background: #fff; color: #000; border: none; padding: 16px 32px;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+    align-self: flex-start; transition: opacity 0.2s ease;
+}
+.action-trigger:hover { opacity: 0.9; }
+
+/* TOUCH VIRTUAL JOYSTICK ZONE */
+.touch-zone {
+    position: absolute; inset: 0; z-index: 5; pointer-events: auto; display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="viewport">
+    <!-- HUD -->
+    <div class="hud-layer">
+        <div class="hud-meta">
+            <h1 id="hud-classname">NEURAL_UNIT</h1>
+            <div class="v-bar-container">
+                <div class="v-bar-fill" id="hud-hp-bar"></div>
+            </div>
+        </div>
+        <div class="hud-metrics">
+            <div class="metric-label">SECTOR_CLEARED</div>
+            <div class="metric-val" id="hud-sector">00</div>
+        </div>
+    </div>
+
+    <!-- MOMENTUM METER -->
+    <div class="momentum-wrapper">
+        <div class="momentum-label">MOMENTUM</div>
+        <div class="momentum-track"><div class="momentum-fill" id="hud-momentum"></div></div>
+    </div>
+
+    <canvas id="stage"></canvas>
+    <div class="touch-zone" id="touch-input-surface"></div>
+
+    <!-- START SCREEN -->
+    <div class="screen-overlay active" id="ui-start">
+        <div class="title-block">
+            <h2>NOO:R</h2>
+            <p>CRITICAL ENGINE OVERHAUL // KINETIC VECTOR LOOP<br>Flick-swipe or drag to dash-attack. WASD supported. Aggression yields momentum.</p>
+        </div>
+        <div class="selection-grid">
+            <div class="select-card selected" data-class="warrior">
+                <div class="select-card-head"><span style="color:#e05353">⚡ WARRIOR [V1.04]</span><span>5 HP</span></div>
+                <div class="select-card-desc">Kinetic shockwave slams on positional change. Generates parry screens. Cleaves near-space.</div>
+            </div>
+            <div class="select-card" data-class="rogue">
+                <div class="select-card-head"><span style="color:#56b296">⚡ ROGUE [V3.11]</span><span>4 HP</span></div>
+                <div class="select-card-desc">Hyper-mobility pierce vector. Eliminating a target instantly resets dash execution thresholds.</div>
+            </div>
+            <div class="select-card" data-class="mage">
+                <div class="select-card-head"><span style="color:#a78bfa">⚡ MAGE [V2.88]</span><span>4 HP</span></div>
+                <div class="select-card-desc">Deploys localized gravitational stasis wells. Attacks project piercing phase-beams.</div>
+            </div>
+        </div>
+        <button class="action-trigger" id="btn-initiate">INITIATE DESCENT</button>
+    </div>
+
+    <!-- UPGRADE SYSTEM (MUTATION) -->
+    <div class="mutation-screen" id="ui-mutation">
+        <div class="mutation-title">// SYNAPTIC MUTATION AVAILABLE</div>
+        <div class="mutation-options" id="mutation-anchor"></div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div class="screen-overlay" id="ui-death">
+        <div class="title-block">
+            <h2 style="color:#e05353">SYSTEM_PURGED</h2>
+            <p id="death-summary">Sector Loop terminated at Depth 00.</p>
+        </div>
+        <button class="action-trigger" id="btn-restart">REBOOT SYNAPSE</button>
+    </div>
+</div>
+
+<script>
+/**
+ * NOO:R KINETIC-VECTOR ENGINE
+ * HIGH-PERFORMANCE PROTOTYPE CORE ENGINE
+ */
+
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+const viewport = document.querySelector('.viewport');
+
+// Global Parameters
+const BASE_W = 450;
+const BASE_H = 820;
+let scaleFactor = 1;
+
+// Engine Core Variables
+let activeClass = 'warrior';
+let isRunning = false;
+let globalTime = 0;
+let depthSector = 1;
+let hitStopFrames = 0;
+let globalTimeScale = 1.0;
+let globalShake = 0;
+let momentum = 0; 
+
+// Entities
+let avatar;
+let entities = [];
+let indicators = [];
+let graphicalParticles = [];
+let floatingTexts = [];
+let levelThreatHazards = [];
+
+// Configuration Collections
+const MUTATION_POOL = [
+    { id: 'dash_exp', name: "NITRO_SURGE", desc: "Dashes produce kinetic explosions dealing 1 DMG.", weight: 1 },
+    { id: 'chain_lt', name: "CONDUCTIVE_STRIKE", desc: "Attacks chain electric bolts across nearby targets.", weight: 1 },
+    { id: 'vamp_hit', name: "BLOOD_FRACTION", desc: "Defeating 8 enemies fully restores 1 Structural Integrity Unit (HP).", weight: 1 },
+    { id: 'time_slow', name: "CHRONO_STALL", desc: "Defeating an enemy slows environmental processing by 50% for 1 second.", weight: 1 },
+    { id: 'glass_cannon', name: "OVERCLOCK_CORE", desc: "Gain +1 Base Damage. Instantly consume 1 maximum core point.", weight: 1 }
+];
+
+const CLASS_PROFILES = {
+    warrior: { color: '#E2E6EA', accent: '#e05353', hp: 5, aura: 'rgba(224, 83, 83, 0.15)' },
+    rogue: { color: '#D1EAE2', accent: '#56b296', hp: 4, aura: 'rgba(86, 178, 150, 0.18)' },
+    mage: { color: '#EBE5F7', accent: '#a78bfa', hp: 4, aura: 'rgba(167, 139, 250, 0.22)' }
+};
+
+// Vector System Math Helpers
+const VMath = {
+    len: (x, y) => Math.sqrt(x*x + y*y),
+    dist: (x1, y1, x2, y2) => Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)),
+    norm: (x, y) => { let l = Math.sqrt(x*x + y*y); return l === 0 ? {x:0, y:0} : {x: x/l, y: y/l}; },
+    lerp: (v0, v1, t) => (1 - t) * v0 + t * v1
+};
+
+// Initialization Pipeline
+function setupCanvasMetrics() {
+    const w = viewport.clientWidth;
+    const h = viewport.clientHeight;
+    canvas.width = w * window.devicePixelRatio;
+    canvas.height = h * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    scaleFactor = w / BASE_W;
+}
+window.addEventListener('resize', setupCanvasMetrics);
+setupCanvasMetrics();
+
+// Class Interaction Handlers
+document.querySelectorAll('.select-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.select-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        activeClass = card.getAttribute('data-class');
+    });
+});
+
+document.getElementById('btn-initiate').addEventListener('click', () => {
+    document.getElementById('ui-start').classList.remove('active');
+    initializeGameSession();
+});
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+    document.getElementById('ui-death').classList.remove('active');
+    document.getElementById('ui-start').classList.add('active');
+});
+
+// Avatar Vector Entity Model
+class NeuralAvatar {
+    constructor(cls) {
+        this.classType = cls;
+        const profile = CLASS_PROFILES[cls];
+        this.x = BASE_W / 2;
+        this.y = BASE_H * 0.75;
+        this.radius = 11;
+        this.hp = profile.hp;
+        this.maxHp = profile.hp;
+        this.color = profile.color;
+        this.accent = profile.accent;
+        this.aura = profile.aura;
+        
+        // Kinematics Vector State
+        this.vx = 0; this.vy = 0;
+        this.tx = this.x; this.ty = this.y;
+        this.isDashing = false;
+        this.dashProgress = 0;
+        this.dashDuration = 0.18;
+        this.dashStartX = 0; this.dashStartY = 0;
+        
+        // Perks Tracker Array
+        this.activeMutations = new Set();
+        this.killStreakCounter = 0;
+        this.iframe = 0;
+    }
+
+    triggerDashVector(dx, dy) {
+        if (this.isDashing && this.classType !== 'rogue') return; 
+        
+        let targetDistance = 110; 
+        if (this.classType === 'rogue') targetDistance = 140;
+        if (this.classType === 'mage') targetDistance = 90;
+
+        this.dashStartX = this.x;
+        this.dashStartY = this.y;
+        this.tx = this.x + dx * targetDistance;
+        this.ty = this.y + dy * targetDistance;
+
+        // Level Boundary Checks
+        this.tx = Math.max(30, Math.min(BASE_W - 30, this.tx));
+        this.ty = Math.max(80, Math.min(BASE_H - 40, this.ty));
+
+        this.isDashing = true;
+        this.dashProgress = 0;
+        this.iframe = 0.25;
+
+        executeKineticStrike(this, this.tx, this.ty);
+    }
+
+    update(dt) {
+        if (this.iframe > 0) this.iframe -= dt;
+
+        if (this.isDashing) {
+            this.dashProgress += dt / this.dashDuration;
+            if (this.dashProgress >= 1) {
+                this.x = this.tx;
+                this.y = this.ty;
+                this.isDashing = false;
+                this.postDashTrigger();
+            } else {
+                // Smooth Vector Interp Profile
+                let t = Math.sin(this.dashProgress * Math.PI / 2);
+                this.x = VMath.lerp(this.dashStartX, this.tx, t);
+                this.y = VMath.lerp(this.dashStartY, this.ty, t);
+            }
+        }
+    }
+
+    postDashTrigger() {
+        if (this.classType === 'warrior') {
+            createShockwave(this.x, this.y, 75, this.accent, 2);
+        }
+    }
+
+    draw() {
+        ctx.save();
+        // Reactive Aura Blend Space
+        let auraPulse = 30 + Math.sin(globalTime * 8) * 6;
+        let auraGrad = ctx.createRadialGradient(this.x, this.y, 2, this.x, this.y, auraPulse);
+        auraGrad.addColorStop(0, this.aura);
+        auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = auraGrad;
+        ctx.beginPath(); ctx.arc(this.x, this.y, auraPulse, 0, Math.PI*2); ctx.fill();
+
+        // Mechanical core representation
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = this.accent;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        if (this.classType === 'warrior') {
+            ctx.roundRect(this.x - 9, this.y - 9, 18, 18, 2);
+        } else if (this.classType === 'rogue') {
+            ctx.moveTo(this.x, this.y - 12);
+            ctx.lineTo(this.x + 10, this.y + 8);
+            ctx.lineTo(this.x - 10, this.y + 8);
+            ctx.closePath();
+        } else {
+            ctx.arc(this.x, this.y, 9, 0, Math.PI*2);
+        }
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+    }
+}
+
+// Complex Unpredictable AI System Architecture
+class NonLinearThreat {
+    constructor(type, x, y) {
+        this.type = type;
+        this.x = x; this.y = y;
+        this.vx = 0; this.vy = 0;
+        this.radius = 12;
+        this.hp = 2;
+        this.maxHp = 2;
+        this.color = '#fff';
+        this.accent = '#ff3355';
+        this.stateTimer = 0;
+        this.aiPhase = 'idle';
+        this.stasisTimer = 0;
+
+        // Specific configuration injects
+        if (type === 'sniper') {
+            this.hp = 2; this.color = '#2c3e50'; this.accent = '#ff3b30'; this.radius = 10;
+        } else if (type === 'cube') {
+            this.hp = 4; this.color = '#34495e'; this.accent = '#f1c40f'; this.radius = 15;
+        } else if (type === 'assassin') {
+            this.hp = 1; this.color = '#111'; this.accent = '#a78bfa'; this.radius = 9;
+            this.aiPhase = 'stealth';
+        }
+    }
+
+    processIntelligence(dt) {
+        if (this.stasisTimer > 0) {
+            this.stasisTimer -= dt;
+            return; 
+        }
+
+        this.stateTimer += dt;
+        let distToPlayer = VMath.dist(this.x, this.y, avatar.x, avatar.y);
+        let vecDir = VMath.norm(avatar.x - this.x, avatar.y - this.y);
+
+        if (this.type === 'sniper') {
+            // Strategic withdrawal spacing architecture
+            if (distToPlayer < 180) {
+                this.x -= vecDir.x * 45 * dt;
+                this.y -= vecDir.y * 45 * dt;
+            }
+            if (this.stateTimer > 2.2) {
+                this.fireTelegraphedRay();
+                this.stateTimer = 0;
+            }
+        } 
+        else if (this.type === 'cube') {
+            // Relentless Vector Tracking Charging Pressure
+            let speedModifier = (this.hp < this.maxHp) ? 110 : 60;
+            this.x += vecDir.x * speedModifier * dt;
+            this.y += vecDir.y * speedModifier * dt;
+        }
+        else if (this.type === 'assassin') {
+            if (this.aiPhase === 'stealth') {
+                this.x += vecDir.x * 25 * dt;
+                this.y += vecDir.y * 25 * dt;
+                if (distToPlayer < 120 && this.stateTimer > 1.5) {
+                    this.aiPhase = 'strike';
+                    this.stateTimer = 0;
+                    // Ambush teleport system
+                    this.x = avatar.x - vecDir.x * 40;
+                    this.y = avatar.y - vecDir.y * 40;
+                    createParticleExplosion(this.x, this.y, this.accent, 12);
+                }
+            } else {
+                // Active strike execute windows
+                this.x += vecDir.x * 120 * dt;
+                this.y += vecDir.y * 120 * dt;
+                if (this.stateTimer > 0.8) {
+                    this.aiPhase = 'stealth';
+                    this.stateTimer = 0;
+                }
+            }
+        }
+
+        // Enforce boundary physics fields
+        this.x = Math.max(25, Math.min(BASE_W - 25, this.x));
+        this.y = Math.max(75, Math.min(BASE_H - 35, this.y));
+
+        // Spatial overlaps with the player entity core
+        if (distToPlayer < (this.radius + avatar.radius) && avatar.iframe <= 0) {
+            inflictPlayerDamage();
+        }
+    }
+
+    fireTelegraphedRay() {
+        indicators.push({
+            type: 'laser', x1: this.x, y1: this.y, x2: avatar.x, y2: avatar.y, alpha: 1.0
+        });
+        
+        setTimeout(() => {
+            if (!isRunning) return;
+            let finalTraceDist = VMath.dist(this.x, this.y, avatar.x, avatar.y);
+            if (finalTraceDist < 35 && avatar.iframe <= 0) {
+                inflictPlayerDamage();
+            }
+            createParticleExplosion(avatar.x, avatar.y, this.accent, 8);
+        }, 400);
+    }
+
+    draw() {
+        ctx.save();
+        if (this.stasisTimer > 0) {
+            ctx.strokeStyle = '#0ff';
+            ctx.strokeRect(this.x - this.radius - 2, this.y - this.radius - 2, this.radius * 2 + 4, this.radius * 2 + 4);
+        }
+
+        ctx.fillStyle = (this.aiPhase === 'stealth') ? 'rgba(20,20,30,0.15)' : this.color;
+        ctx.strokeStyle = this.accent;
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+        if (this.type === 'cube') {
+            ctx.rect(this.x - this.radius, this.y - this.radius, this.radius*2, this.radius*2);
+        } else if (this.type === 'sniper') {
+            ctx.moveTo(this.x, this.y - this.radius);
+            ctx.lineTo(this.x + this.radius, this.y + this.radius);
+            ctx.lineTo(this.x - this.radius, this.y + this.radius);
+            ctx.closePath();
+        } else {
+            // Assassin Polygon Node Matrix
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+        }
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+    }
+}
+
+// Environmental Kinetic Elements
+class DynamicTrap {
+    constructor() {
+        this.type = Math.random() > 0.5 ? 'laser' : 'mine';
+        this.x = 60 + Math.random() * (BASE_W - 120);
+        this.y = 120 + Math.random() * (BASE_H - 240);
+        this.radius = this.type === 'mine' ? 16 : 0;
+        this.pulse = 0;
+        this.active = true;
+    }
+    update(dt) {
+        this.pulse += dt * 3.5;
+        if (this.type === 'mine') {
+            if (VMath.dist(this.x, this.y, avatar.x, avatar.y) < this.radius + avatar.radius) {
+                createShockwave(this.x, this.y, 60, '#ff7700', 1);
+                this.active = false;
+                if (avatar.iframe <= 0) inflictPlayerDamage();
+            }
+        }
+    }
+    draw() {
+        ctx.save();
+        if (this.type === 'mine') {
+            let r = 6 + Math.sin(this.pulse) * 3;
+            ctx.fillStyle = 'rgba(255,50,0,0.1)';
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#ff3b30';
+            ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI*2); ctx.fill();
+        } else {
+            // Transverse Boundary Rotational Laser Matrix
+            ctx.strokeStyle = 'rgba(255,0,50,0.15)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(this.x - 30, this.y - 30, 60, 60);
+        }
+        ctx.restore();
+    }
+}
+
+// Kinetic Hyper-Feedback Striking System Engine Loop
+function executeKineticStrike(source, targetX, targetY) {
+    indicators.push({
+        type: 'slice', x1: source.x, y1: source.y, x2: targetX, y2: targetY, alpha: 1.0, color: source.accent
+    });
+
+    // Dynamic linear interpolation segment footprint parsing
+    let lineNorm = VMath.norm(targetX - source.x, targetY - source.y);
+    let totalLength = VMath.dist(source.x, source.y, targetX, targetY);
+
+    // High damage metrics config matrix
+    let rawDamage = source.activeMutations.has('glass_cannon') ? 3 : 2;
+
+    for (let i = entities.length - 1; i >= 0; i--) {
+        let threat = entities[i];
+        
+        // Perpendicular distance calculation model vector trace
+        let pX = threat.x - source.x;
+        let pY = threat.y - source.y;
+        let dot = pX * lineNorm.x + pY * lineNorm.y;
+        
+        if (dot >= 0 && dot <= totalLength) {
+            let closeX = source.x + lineNorm.x * dot;
+            let closeY = source.y + lineNorm.y * dot;
+            let perpDist = VMath.dist(threat.x, threat.y, closeX, closeY);
+
+            if (perpDist < (threat.radius + 20)) {
+                // Hit execution pipeline
+                threat.hp -= rawDamage;
+                momentum = Math.min(100, momentum + 15);
+
+                // Velocity application vectors
+                threat.x += lineNorm.x * 40;
+                threat.y += lineNorm.y * 40;
+
+                // Hit Stop Micro-Freeze Engine Configuration Trigger
+                hitStopFrames = 4; 
+                globalShake = 12;
+
+                // Process Mutation Synergy Tree Intersects
+                if (source.activeMutations.has('dash_exp')) {
+                    createShockwave(threat.x, threat.y, 45, '#ff7700', 1);
+                }
+                if (source.activeMutations.has('chain_lt')) {
+                    triggerChainLightningMechanics(threat);
+                }
+                if (source.activeMutations.has('time_slow')) {
+                    triggerChronoStallSequence();
+                }
+
+                createParticleExplosion(threat.x, threat.y, source.accent, 14);
+
+                if (threat.hp <= 0) {
+                    source.killStreakCounter++;
+                    createFloatingText(threat.x, threat.y, `+${source.killStreakCounter} CHAIN`, source.accent);
+                    
+                    if (source.activeMutations.has('vamp_hit') && source.killStreakCounter % 8 === 0) {
+                        source.hp = Math.min(source.maxHp, source.hp + 1);
+                        createFloatingText(source.x, source.y, "CRITICAL_HEAL", '#fff');
+                    }
+                    
+                    // Core subclass trait validation
+                    if (source.classType === 'rogue') {
+                        source.isDashing = false; // Reset threshold loop parameters instantly
+                    }
+
+                    // Exploding Core Architectures
+                    if (threat.type === 'cube') {
+                        createShockwave(threat.x, threat.y, 80, '#f1c40f', 2);
+                    }
+
+                    entities.splice(i, 1);
+                } else {
+                    createFloatingText(threat.x, threat.y, `-${rawDamage}V`, '#fff');
+                    if (source.classType === 'mage') {
+                        threat.stasisTimer = 1.5; // Stasis freeze duration configuration parameters
+                    }
+                }
+            }
+        }
+    }
+
+    evaluateSectorProximityCompletion();
+}
+
+// Chain Lightning Generation Matrix Iteration Paths
+function triggerChainLightningMechanics(originThreat) {
+    let links = 0;
+    let lastTarget = originThreat;
+    
+    for (let i = 0; i < entities.length; i++) {
+        let candidate = entities[i];
+        if (candidate === originThreat) continue;
+        if (VMath.dist(lastTarget.x, lastTarget.y, candidate.x, candidate.y) < 110) {
+            candidate.hp -= 1;
+            indicators.push({ type: 'ray', x1: lastTarget.x, y1: lastTarget.y, x2: candidate.x, y2: candidate.y, alpha: 1.0, color: '#0ffff' });
+            lastTarget = candidate;
+            links++;
+            if (links >= 3) break;
+        }
+    }
+}
+
+function triggerChronoStallSequence() {
+    globalTimeScale = 0.25;
+    setTimeout(() => { globalTimeScale = 1.0; }, 800);
+}
+
+// Particle Engine Factories
+function createParticleExplosion(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        let angle = Math.random() * Math.PI * 2;
+        let speed = 2 + Math.random() * 6;
+        graphicalParticles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            alpha: 1.0,
+            decay: 1.5 + Math.random() * 2,
+            color: color,
+            radius: 1 + Math.random() * 2
+        });
+    }
+}
+
+function createShockwave(x, y, maxRadius, color, damage) {
+    indicators.push({ type: 'radial', x: x, y: y, r: 10, maxR: maxRadius, alpha: 1.0, color: color });
+    
+    // Evaluate operational boundary blast metrics against adjacent threats
+    entities.forEach(t => {
+        if (VMath.dist(x, y, t.x, t.y) < maxRadius) {
+            t.hp -= damage;
+            createParticleExplosion(t.x, t.y, color, 4);
+        }
+    });
+    
+    // Evaluate player entity location coordinates
+    if (VMath.dist(x, y, avatar.x, avatar.y) < maxRadius && avatar.iframe <= 0) {
+        inflictPlayerDamage();
+    }
+    
+    // Flush active matrix pipelines safely
+    entities = entities.filter(t => t.hp > 0);
+    evaluateSectorProximityCompletion();
+}
+
+function createFloatingText(x, y, txt, color) {
+    floatingTexts.push({ x: x, y: y, text: txt, color: color, alpha: 1.0, vy: -30 });
+}
+
+function inflictPlayerDamage() {
+    avatar.hp--;
+    momentum = Math.max(0, momentum - 40);
+    avatar.iframe = 0.6; // Extended configuration safety parameters buffer frame window
+    globalShake = 22;
+    createParticleExplosion(avatar.x, avatar.y, '#ff003c', 25);
+    
+    if (avatar.hp <= 0) {
+        terminateSession();
+    }
+}
+
+function evaluateSectorProximityCompletion() {
+    if (entities.length === 0 && isRunning) {
+        depthSector++;
+        momentum = Math.min(100, momentum + 25);
+        if (depthSector % 2 === 0) {
+            isRunning = false;
+            triggerMutationSelectionDisplay();
+        } else {
+            generateSectorLayout();
+        }
+    }
+}
+
+// Procedural Level Grid Injects Configuration Matrix
+function generateSectorLayout() {
+    entities = [];
+    levelThreatHazards = [];
+    indicators = [];
+    
+    document.getElementById('hud-sector').textContent = depthSector < 10 ? '0' + depthSector : depthSector;
+
+    // Progression Matrix Difficulty Threshold Scaling Injects
+    let spawnVolume = 3 + Math.min(6, Math.floor(depthSector * 0.8));
+    let typologies = ['cube', 'sniper', 'assassin'];
+
+    for (let i = 0; i < spawnVolume; i++) {
+        let rx = 40 + Math.random() * (BASE_W - 80);
+        let ry = 100 + Math.random() * (BASE_H * 0.5); // Isolate parameters away from spawn zone profiles
+        let pickedType = typologies[Math.floor(Math.random() * typologies.length)];
+        entities.push(new NonLinearThreat(pickedType, rx, ry));
+    }
+
+    if (depthSector > 2) {
+        let trapCount = Math.min(3, Math.floor(depthSector / 2));
+        for (let t = 0; t < trapCount; t++) {
+            levelThreatHazards.push(new DynamicTrap());
+        }
+    }
+}
+
+// Synaptic Modification Screen Control Routines
+function triggerMutationSelectionDisplay() {
+    const container = document.getElementById('mutation-anchor');
+    container.innerHTML = '';
+    
+    // Choose 3 random mutation modules from standard structural collection pools
+    let shuffled = [...MUTATION_POOL].sort(() => 0.5 - Math.random()).slice(0, 3);
+    
+    shuffled.forEach(mut => {
+        let btn = document.createElement('div');
+        btn.className = 'mutation-btn';
+        btn.innerHTML = `<div class="mutation-name">// ${mut.name}</div><div class="mutation-desc">${mut.desc}</div>`;
+        btn.addEventListener('click', () => {
+            avatar.activeMutations.add(mut.id);
+            document.getElementById('ui-mutation').classList.remove('active');
+            isRunning = true;
+            generateSectorLayout();
+        });
+        container.appendChild(btn);
+    });
+    
+    document.getElementById('ui-mutation').classList.add('active');
+}
+
+// Gesture Matrix Processing Pipeline (Swipe Engine Profiles)
+let trackingSurface = document.getElementById('touch-input-surface');
+let dragStartX = 0, dragStartY = 0;
+
+window.addEventListener('touchstart', e => {
+    dragStartX = e.touches[0].clientX;
+    dragStartY = e.touches[0].clientY;
+}, {passive:true});
+
+window.addEventListener('touchend', e => {
+    if (!isRunning || avatar.isDashing) return;
+    let deltaX = e.changedTouches[0].clientX - dragStartX;
+    let deltaY = e.changedTouches[0].clientY - dragStartY;
+    let magnitude = VMath.len(deltaX, deltaY);
+
+    if (magnitude > 25) {
+        let vectorNorm = VMath.norm(deltaX, deltaY);
+        avatar.triggerDashVector(vectorNorm.x, vectorNorm.y);
+    }
+}, {passive:true});
+
+// Keyboard Core Fallback Injects Mapping Profile
+window.addEventListener('keydown', e => {
+    if (!isRunning || avatar.isDashing) return;
+    let k = e.key.toLowerCase();
+    let dx = 0, dy = 0;
+    if (k === 'w' || k === 'arrowup') dy = -1;
+    if (k === 's' || k === 'arrowdown') dy = 1;
+    if (k === 'a' || k === 'arrowleft') dx = -1;
+    if (k === 'd' || k === 'arrowright') dx = 1;
+
+    if (dx !== 0 || dy !== 0) {
+        avatar.triggerDashVector(dx, dy);
+    }
+});
+
+function initializeGameSession() {
+    avatar = new NeuralAvatar(activeClass);
+    depthSector = 1;
+    momentum = 0;
+    document.getElementById('hud-classname').textContent = activeClass.toUpperCase() + '_UNIT //';
+    generateSectorLayout();
+    isRunning = true;
+}
+
+function terminateSession() {
+    isRunning = false;
+    document.getElementById('death-summary').textContent = `Synaptic terminal cleared ${depthSector - 1} Depth Sector sectors before termination sequence loop processing.`;
+    document.getElementById('ui-death').classList.add('active');
+}
+
+// Processing Loops Contexts Pipeline Execution Nodes
+let priorTimestamp = performance.now();
+function runEngineCoreTick(now) {
+    let dt = (now - priorTimestamp) / 1000;
+    priorTimestamp = now;
+
+    // Frame Cap Clamping Threshold Safety Nets
+    if (dt > 0.1) dt = 0.1;
+
+    if (isRunning) {
+        if (hitStopFrames > 0) {
+            hitStopFrames--;
+        } else {
+            globalTime += dt * globalTimeScale;
+            
+            // Decaying Momentum Dynamics Loop Architecture
+            momentum = Math.max(0, momentum - dt * 6);
+            document.getElementById('hud-momentum').style.width = `${momentum}%`;
+
+            let calibratedDt = dt * globalTimeScale;
+            avatar.update(calibratedDt);
+            
+            entities.forEach(threat => threat.processIntelligence(calibratedDt));
+            levelThreatHazards.forEach(trap => trap.update(calibratedDt));
+
+            // Dynamic Asset Particle Degradation Vector Operations
+            graphicalParticles.forEach((p, idx) => {
+                p.x += p.vx * globalTimeScale;
+                p.y += p.vy * globalTimeScale;
+                p.alpha -= p.decay * dt;
+                if (p.alpha <= 0) graphicalParticles.splice(idx, 1);
+            });
+
+            floatingTexts.forEach((t, idx) => {
+                t.y += t.vy * dt;
+                t.alpha -= dt * 1.5;
+                if (t.alpha <= 0) floatingTexts.splice(idx, 1);
+            });
+
+            indicators.forEach((ind, idx) => {
+                ind.alpha -= dt * 4.0; // Fast decay tracking profile configurations
+                if (ind.alpha <= 0) indicators.splice(idx, 1);
+            });
+        }
+    }
+
+    renderVisualScene();
+    requestAnimationFrame(runEngineCoreTick);
+}
+
+// Vector Space Geometry Drawing Matrix
+function renderVisualScene() {
+    ctx.clearRect(0, 0, BASE_W, BASE_H);
+    ctx.save();
+
+    // Camera Manipulation Matrix Injection Node
+    if (globalShake > 0) {
+        let sx = (Math.random() - 0.5) * globalShake;
+        let sy = (Math.random() - 0.5) * globalShake;
+        ctx.translate(sx, sy);
+        globalShake *= 0.88;
+        if (globalShake < 0.2) globalShake = 0;
+    }
+
+    // Dynamic structural vector grids background rendering
+    ctx.strokeStyle = `rgba(255,255,255,${0.015 + (momentum * 0.0004)})`;
+    ctx.lineWidth = 1;
+    let horizontalSpaceGaps = 40;
+    for (let x = 0; x < BASE_W; x += horizontalSpaceGaps) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, BASE_H); ctx.stroke();
+    }
+    for (let y = 0; y < BASE_H; y += horizontalSpaceGaps) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(BASE_W, y); ctx.stroke();
+    }
+
+    // Render active level hazards trace layers
+    levelThreatHazards.forEach(trap => trap.draw());
+
+    // Technical Vector Indicators Tracking Framework Layout
+    indicators.forEach(ind => {
+        ctx.save();
+        ctx.globalAlpha = ind.alpha;
+        if (ind.type === 'slice') {
+            ctx.strokeStyle = ind.color;
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(ind.x1, ind.y1); ctx.lineTo(ind.x2, ind.y2); ctx.stroke();
+        } 
+        else if (ind.type === 'laser') {
+            ctx.strokeStyle = '#ff3b30'; ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath(); ctx.moveTo(ind.x1, ind.y1); ctx.lineTo(ind.x2, ind.y2); ctx.stroke();
+        }
+        else if (ind.type === 'ray') {
+            ctx.strokeStyle = ind.color || '#fff'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(ind.x1, ind.y1); ctx.lineTo(ind.x2, ind.y2); ctx.stroke();
+        }
+        else if (ind.type === 'radial') {
+            ctx.strokeStyle = ind.color; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(ind.x, ind.y, VMath.lerp(10, ind.maxR, 1 - ind.alpha), 0, Math.PI*2); ctx.stroke();
+        }
+        ctx.restore();
+    });
+
+    // Render Threat Interfaces Context Matrix
+    entities.forEach(threat => threat.draw());
+
+    // Render Core Avatar Node
+    if (avatar) {
+        avatar.draw();
+        // Dynamic integration structural UI interface elements updating loops logic parameters
+        document.getElementById('hud-hp-bar').style.transform = `scaleX(${Math.max(0, avatar.hp / avatar.maxHp)})`;
+    }
+
+    // Render Assets Particles Fields
+    graphicalParticles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+    });
+
+    // Render Floating Text System Matrix Overlay Context Layers
+    floatingTexts.forEach(t => {
+        ctx.save();
+        ctx.globalAlpha = t.alpha;
+        ctx.fillStyle = t.color;
+        ctx.font = "bold 9px 'SF Mono', monospace";
+        ctx.textAlign = 'center';
+        ctx.fillText(t.text, t.x, t.y);
+        ctx.restore();
+    });
+
+    ctx.restore();
+
+    // High Premium Cinematic Chromatic Post Vignette Framing System Masks Application
+    let cGrad = ctx.createRadialGradient(BASE_W/2, BASE_H/2, BASE_W * 0.2, BASE_W/2, BASE_H/2, BASE_H * 0.6);
+    cGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    cGrad.addColorStop(0.7, 'rgba(3,3,5,0.4)');
+    cGrad.addColorStop(1, '#030305');
+    ctx.fillStyle = cGrad;
+    ctx.fillRect(0, 0, BASE_W, BASE_H);
+}
+
+// Wake and boot core engine loops configurations pipeline
+requestAnimationFrame(runEngineCoreTick);
+</script>
+</body>
+</html>
