@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shake & Stir — Menu Mocktails</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+
+  :root {
+    --gold:        #C9A84C;
+    --gold-light:  #E2C97A;
+    --gold-pale:   #F5E9C8;
+    --dark:        #0D0D0D;
+    --dark-2:      #141414;
+    --dark-card:   #1A1A1A;
+    --dark-border: #2A2A2A;
+    --cream:       #F0E6CC;
+    --muted:       #7A7055;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--cream);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 30%, rgba(201,168,76,0.08) 0%, transparent 70%);
+  }
+
+  .cover-ornament {
+    width: 170px;
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+
+  .cover-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.38em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 11vw, 100px);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--gold-light);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .cover-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(15px, 2.5vw, 24px);
+    font-style: italic;
+    color: var(--cream);
+    opacity: 0.65;
+    margin-bottom: 36px;
+    letter-spacing: 0.06em;
+  }
+
+  .cover-divider {
+    width: 110px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    margin: 0 auto 28px;
+  }
+
+  .cover-tagline {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── PAGE ── */
+  .page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 80px 28px;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .section-eyebrow {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4.5vw, 42px);
+    font-weight: 600;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
+
+  .section-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .section-rule {
+    width: 55px;
+    height: 1px;
+    background: var(--gold);
+    margin: 18px auto 0;
+    opacity: 0.55;
+  }
+
+  /* ── CATEGORY ── */
+  .category-wrap { margin-bottom: 72px; }
+
+  .category-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+
+  .category-label::before,
+  .category-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--dark-border);
+  }
+
+  .category-name {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.38em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 6px 16px;
+    border: 1px solid;
+    border-radius: 1px;
+  }
+
+  .cat-tropical  .category-name { color: #D4956A; border-color: rgba(212,149,106,0.3); }
+  .cat-petillant .category-name { color: #7AAED4; border-color: rgba(122,174,212,0.3); }
+  .cat-floral    .category-name { color: #C898D8; border-color: rgba(200,152,216,0.3); }
+  .cat-detox     .category-name { color: #7AD4A2; border-color: rgba(122,212,162,0.3); }
+  .cat-gourmand  .category-name { color: #D47A9A; border-color: rgba(212,122,154,0.3); }
+  .cat-signature .category-name { color: var(--gold-light); border-color: rgba(201,168,76,0.35); }
+
+  /* ── CARDS ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+    gap: 18px;
+  }
+
+  .card {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    padding: 26px 28px;
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .card:hover {
+    border-color: rgba(201,168,76,0.3);
+    box-shadow: 0 0 28px rgba(201,168,76,0.05);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+
+  .cat-tropical  .card::before { background: linear-gradient(to bottom, #D4956A, transparent); }
+  .cat-petillant .card::before { background: linear-gradient(to bottom, #7AAED4, transparent); }
+  .cat-floral    .card::before { background: linear-gradient(to bottom, #C898D8, transparent); }
+  .cat-detox     .card::before { background: linear-gradient(to bottom, #7AD4A2, transparent); }
+  .cat-gourmand  .card::before { background: linear-gradient(to bottom, #D47A9A, transparent); }
+  .cat-signature .card::before { background: linear-gradient(to bottom, var(--gold), transparent); }
+
+  .card-number {
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    opacity: 0.55;
+    margin-bottom: 4px;
+  }
+
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gold-light);
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+
+  .card-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  /* badges */
+  .card-badges {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .badge {
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 1px;
+  }
+
+  .badge-glass  { background: rgba(201,168,76,0.10); color: var(--gold);  border: 1px solid rgba(201,168,76,0.22); }
+  .badge-method { background: rgba(255,255,255,0.04); color: #888;         border: 1px solid rgba(255,255,255,0.09); }
+  .badge-ice    { background: rgba(122,174,212,0.08); color: #7AAED4;      border: 1px solid rgba(122,174,212,0.18); }
+
+  /* detail blocks */
+  .detail-block { margin-bottom: 13px; }
+
+  .detail-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.68;
+    margin-bottom: 7px;
+  }
+
+  .detail-list { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+
+  .detail-list li {
+    font-size: 12px;
+    color: var(--cream);
+    opacity: 0.85;
+    display: flex;
+    gap: 8px;
+    line-height: 1.45;
+  }
+
+  .qty {
+    color: var(--gold-light);
+    font-weight: 500;
+    min-width: 52px;
+    display: inline-block;
+    opacity: 0.9;
+    flex-shrink: 0;
+  }
+
+  .method-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--cream);
+    opacity: 0.72;
+  }
+
+  .garnish-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13.5px;
+    font-style: italic;
+    color: var(--cream);
+    opacity: 0.72;
+  }
+
+  .card-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--dark-border);
+    margin: 13px 0;
+  }
+
+  /* footer */
+  .menu-footer {
+    text-align: center;
+    padding: 56px 20px;
+    border-top: 1px solid var(--dark-border);
+    margin-top: 30px;
+  }
+
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .footer-tag {
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  @media (max-width: 620px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .page { padding: 36px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<section class="cover">
+  <svg class="cover-ornament" viewBox="0 0 170 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="7" y="7" width="156" height="156" stroke="#C9A84C" stroke-width="0.8" opacity="0.4"/>
+    <rect x="15" y="15" width="140" height="140" stroke="#C9A84C" stroke-width="0.35" opacity="0.25"/>
+    <path d="M78 36 L92 36 L98 106 L72 106 Z" fill="none" stroke="#C9A84C" stroke-width="1.2"/>
+    <line x1="72" y1="52" x2="98" y2="52" stroke="#C9A84C" stroke-width="0.8" opacity="0.7"/>
+    <path d="M74 106 Q85 126 85 133 Q85 126 96 106Z" fill="rgba(201,168,76,0.18)" stroke="#C9A84C" stroke-width="0.8"/>
+    <circle cx="48" cy="72" r="1.8" fill="#C9A84C" opacity="0.45"/>
+    <circle cx="124" cy="86" r="1.4" fill="#C9A84C" opacity="0.38"/>
+    <circle cx="57" cy="112" r="1" fill="#C9A84C" opacity="0.3"/>
+    <circle cx="118" cy="52" r="1.2" fill="#C9A84C" opacity="0.38"/>
+    <path d="M7 23 L23 23 M7 7 L7 23" stroke="#C9A84C" stroke-width="1" opacity="0.55"/>
+    <path d="M163 23 L147 23 M163 7 L163 23" stroke="#C9A84C" stroke-width="1" opacity="0.55"/>
+    <path d="M7 147 L23 147 M7 163 L7 147" stroke="#C9A84C" stroke-width="1" opacity="0.55"/>
+    <path d="M163 147 L147 147 M163 163 L163 147" stroke="#C9A84C" stroke-width="1" opacity="0.55"/>
+  </svg>
+  <p class="cover-eyebrow">Shake & Stir — Mixologie Sans Alcool</p>
+  <h1 class="cover-title">MOCKTAILS</h1>
+  <p class="cover-subtitle">30 Créations d'Exception</p>
+  <div class="cover-divider"></div>
+  <p class="cover-tagline">Marrakech · Casablanca · Maroc</p>
+</section>
+
+<!-- MENU -->
+<main class="page">
+
+  <header class="section-header">
+    <span class="section-eyebrow">Notre Carte</span>
+    <h2 class="section-title">L'Art de la Création Sans Alcool</h2>
+    <p class="section-sub">Chaque recette conçue pour shaker ou verre à mélange</p>
+    <div class="section-rule"></div>
+  </header>
+
+  <!-- ══ CAT 1 — TROPICAL ══ -->
+  <div class="category-wrap cat-tropical">
+    <div class="category-label"><span class="category-name">🌴 Évasion Tropicale</span></div>
+    <div class="cards-grid">
+
+      <!-- 01 -->
+      <div class="card">
+        <div class="card-number">N° 01</div>
+        <div class="card-name">Mango Tango</div>
+        <div class="card-tagline">Mangue, ananas & sirop de passion</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons pilés</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de mangue</li>
+            <li><span class="qty">60 ml</span> Jus d'ananas</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">15 ml</span> Sirop de grenadine</li>
+            <li><span class="qty">20 ml</span> Purée de mangue</li>
+            <li><span class="qty">Top</span> Eau gazeuse</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Verser jus mangue, ananas, citron, grenadine et purée mangue dans le shaker avec glace. Shaker vigoureusement 12 sec. Double-filtrer sur glaçons pilés. Allonger d'eau gazeuse.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche de mangue sur le bord · feuille de menthe · pique dorée</p>
+        </div>
+      </div>
+
+      <!-- 02 -->
+      <div class="card">
+        <div class="card-number">N° 02</div>
+        <div class="card-name">Ananas Royale</div>
+        <div class="card-tagline">Ananas frappé, citron & sirop vanille</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">90 ml</span> Jus d'ananas</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de vanille</li>
+            <li><span class="qty">15 ml</span> Sirop d'ananas</li>
+            <li><span class="qty">20 ml</span> Purée d'ananas</li>
+            <li><span class="qty">Top</span> Sprite</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker jus ananas, citron, sirop vanille, sirop ananas et purée avec glace 10 sec. Filtrer sur glaçons frais. Compléter au Sprite versé délicatement sur le dos d'une cuillère.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Rondelle d'ananas sur le bord · feuille de menthe · poudre de noix de coco</p>
+        </div>
+      </div>
+
+      <!-- 03 -->
+      <div class="card">
+        <div class="card-number">N° 03</div>
+        <div class="card-name">Tropical Sunrise</div>
+        <div class="card-tagline">Orange, mangue & grenadine en coucher de soleil</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker + Build</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus d'orange</li>
+            <li><span class="qty">40 ml</span> Jus de mangue</li>
+            <li><span class="qty">15 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Purée de mangue</li>
+            <li><span class="qty">15 ml</span> Sirop de grenadine</li>
+            <li><span class="qty">Top</span> Lemonade</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker orange, mangue, citron et purée mangue avec glace 10 sec. Filtrer sur glaçons. Allonger à la lemonade. Faire couler la grenadine sur le dos d'une cuillère pour créer l'effet sunrise en deux couches de couleur.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Demi-rondelle d'orange · tranche de mangue · paille noire</p>
+        </div>
+      </div>
+
+      <!-- 04 -->
+      <div class="card">
+        <div class="card-number">N° 04</div>
+        <div class="card-name">Coco Passion</div>
+        <div class="card-tagline">Ananas, purée coco & fruit de la passion</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Rocks</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons pilés</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">70 ml</span> Jus d'ananas</li>
+            <li><span class="qty">30 ml</span> Jus d'orange</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">25 ml</span> Purée coco</li>
+            <li><span class="qty">20 ml</span> Purée passion fruit</li>
+            <li><span class="qty">15 ml</span> Sirop de sucre</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker tous les ingrédients avec glaçons énergiquement 15 sec. Les purées donnent une texture épaisse et crémeuse. Double-filtrer sur glaçons pilés. Servir immédiatement.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche d'ananas · zeste d'orange · poudre de coco sur la surface</p>
+        </div>
+      </div>
+
+      <!-- 05 -->
+      <div class="card">
+        <div class="card-number">N° 05</div>
+        <div class="card-name">Island Breeze</div>
+        <div class="card-tagline">Pamplemousse, mangue & sirop blue curacao</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Collins</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">70 ml</span> Jus de pamplemousse</li>
+            <li><span class="qty">50 ml</span> Jus de mangue</li>
+            <li><span class="qty">15 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop blue curacao</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Tonic</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker pamplemousse, mangue, citron, blue curacao et sirop sucre avec glace 12 sec. Le sirop blue curacao donne une belle couleur turquoise. Filtrer sur glace fraîche. Allonger au tonic sans remuer.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Twist de pamplemousse · tranche de mangue · paille transparente</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CAT 2 — PÉTILLANT ══ -->
+  <div class="category-wrap cat-petillant">
+    <div class="category-label"><span class="category-name">✦ Effervescence & Fraîcheur</span></div>
+    <div class="cards-grid">
+
+      <!-- 06 -->
+      <div class="card">
+        <div class="card-number">N° 06</div>
+        <div class="card-name">Virgin Mule</div>
+        <div class="card-tagline">Citron vif, sirop de menthe & bulles de ginger</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Build + Stir</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">40 ml</span> Jus de citron frais</li>
+            <li><span class="qty">20 ml</span> Sirop de menthe</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">15 ml</span> Sirop de citron</li>
+            <li><span class="qty">Top</span> Eau gazeuse</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Verser jus citron, sirop menthe, sirop citron et sirop sucre directement dans le verre sur glaçons. Remuer 5 tours avec la cuillère bar. Allonger à l'eau gazeuse. Poser la menthe fraîche sur le dessus sans remuer.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Bouquet de menthe fraîche · rondelle de citron · paille en kraft</p>
+        </div>
+      </div>
+
+      <!-- 07 -->
+      <div class="card">
+        <div class="card-number">N° 07</div>
+        <div class="card-name">Sparkling Berry</div>
+        <div class="card-tagline">Framboise, fraise & tonic pétillant</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Flûte à Champagne</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Servi sans glace</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">50 ml</span> Jus de framboise</li>
+            <li><span class="qty">30 ml</span> Jus de fraises</li>
+            <li><span class="qty">15 ml</span> Jus de citron</li>
+            <li><span class="qty">15 ml</span> Sirop de raspberry</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Tonic</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker jus framboise, fraises, citron et sirops sur glace 10 sec. Double-filtrer dans la flûte préalablement réfrigérée. Verser le tonic en filet le long de la paroi. Servir sans glaçons pour conserver les bulles fines.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Framboise et fraise fraîches sur le bord · sucre rose sur la moitié du bord</p>
+        </div>
+      </div>
+
+      <!-- 08 -->
+      <div class="card">
+        <div class="card-number">N° 08</div>
+        <div class="card-name">Citrus Fizz</div>
+        <div class="card-tagline">Orange, pamplemousse & sprite pétillant</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Collins</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">60 ml</span> Jus d'orange</li>
+            <li><span class="qty">50 ml</span> Jus de pamplemousse</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">15 ml</span> Sirop de citron</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Sprite</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker les trois jus avec les sirops et glace 10 sec. Filtrer sur glaçons frais dans le Collins. Allonger au Sprite versé sur le dos d'une cuillère. Exprimer un zeste d'orange sur la surface avant de servir.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Twist d'orange exprimé · rondelle de pamplemousse séchée · paille noire</p>
+        </div>
+      </div>
+
+      <!-- 09 -->
+      <div class="card">
+        <div class="card-number">N° 09</div>
+        <div class="card-name">Apple Green Spritz</div>
+        <div class="card-tagline">Pomme verte, citron & sirop green apple</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre à Vin Blanc</span>
+          <span class="badge badge-method">Verre à Mélange</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">90 ml</span> Jus de pommes</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de green apple</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Sprite ou eau gazeuse</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Dans le verre à mélange avec glace : jus de pommes, citron et sirops. Remuer 15 tours lentement. Filtrer dans le verre à vin sur glaçons. Allonger au Sprite versé délicatement sur le dos d'une cuillère à café.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Ventail de pomme verte · rondelle de citron · paille verte</p>
+        </div>
+      </div>
+
+      <!-- 10 -->
+      <div class="card">
+        <div class="card-number">N° 10</div>
+        <div class="card-name">Watermelon Fizz</div>
+        <div class="card-tagline">Fraise, sirop pastèque & lemonade pétillante</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Rocks</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons pilés</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">70 ml</span> Jus de fraises</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">25 ml</span> Sirop de watermelon</li>
+            <li><span class="qty">20 ml</span> Purée de fraise</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Lemonade</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker jus fraises, citron, sirop pastèque, purée fraise et sirop sucre avec glace 12 sec. Double-filtrer sur glaçons pilés. Allonger à la lemonade. Couleur rouge intense naturelle — aucun colorant. Servir immédiatement.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Fraise entière fendue sur le bord · sucre rouge sur le bord · paille noire</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CAT 3 — FLORAL ══ -->
+  <div class="category-wrap cat-floral">
+    <div class="category-label"><span class="category-name">🌸 Floral & Délicat</span></div>
+    <div class="cards-grid">
+
+      <!-- 11 -->
+      <div class="card">
+        <div class="card-number">N° 11</div>
+        <div class="card-name">Peach Blossom</div>
+        <div class="card-tagline">Pêche veloutée, abricot & sirop de cherry</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Coupe à Cocktail</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Servi frappé sans glace</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de pêche</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de peach</li>
+            <li><span class="qty">15 ml</span> Sirop d'abricot</li>
+            <li><span class="qty">20 ml</span> Purée de pêche</li>
+            <li><span class="qty">10 ml</span> Sirop de cherry</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker tous les ingrédients avec glaçons 12 sec. Double-filtrer dans la coupe préalablement réfrigérée au congélateur 5 min. Servir sans glace. La texture veloutée de la purée de pêche est la signature de ce mocktail.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche de pêche fraîche sur le bord · cerise cocktail · sucre doré sur le bord</p>
+        </div>
+      </div>
+
+      <!-- 12 -->
+      <div class="card">
+        <div class="card-number">N° 12</div>
+        <div class="card-name">Berry Blush</div>
+        <div class="card-tagline">Fraise, framboise & sirop de blueberry</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Rocks Large</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Grand glaçon carré</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">60 ml</span> Jus de fraises</li>
+            <li><span class="qty">40 ml</span> Jus de framboise</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de blueberry</li>
+            <li><span class="qty">15 ml</span> Sirop de strawberry</li>
+            <li><span class="qty">20 ml</span> Purée de fraise</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker tous les ingrédients avec glaçons 12 sec. Double-filtrer sur un grand glaçon carré dans le verre rocks. La dilution lente du grand glaçon préserve les arômes de fruits rouges. Couleur bordeaux profond naturelle.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Brochette fraise + framboise + myrtille · sucre violet sur demi-bord</p>
+        </div>
+      </div>
+
+      <!-- 13 -->
+      <div class="card">
+        <div class="card-number">N° 13</div>
+        <div class="card-name">Strawberry Fields</div>
+        <div class="card-tagline">Fraise fraîche, vanille & lemonade rosée</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons pilés</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de fraises</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de strawberry</li>
+            <li><span class="qty">15 ml</span> Sirop de vanille</li>
+            <li><span class="qty">20 ml</span> Purée de fraise</li>
+            <li><span class="qty">Top</span> Lemonade</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker jus fraises, citron, sirops et purée avec glace 12 sec. Filtrer sur glaçons pilés. Allonger à la lemonade versée délicatement. Passer le bord du verre dans du sucre rose avant service.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Fraise en éventail fendu sur le bord · sucre rose sur le bord · paille rose</p>
+        </div>
+      </div>
+
+      <!-- 14 -->
+      <div class="card">
+        <div class="card-number">N° 14</div>
+        <div class="card-name">Blackberry Breeze</div>
+        <div class="card-tagline">Raisins, sirop blackberry & tonic élégant</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre à Vin Rouge</span>
+          <span class="badge badge-method">Verre à Mélange</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">90 ml</span> Jus de raisins</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de blackberry</li>
+            <li><span class="qty">10 ml</span> Sirop de grenadine</li>
+            <li><span class="qty">Top</span> Tonic</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Verre à mélange avec glace : jus raisins, citron, sirop blackberry et grenadine. Remuer lentement 20 tours avec cuillère bar. Filtrer dans le verre à vin sur glaçons. Verser le tonic en filet sur le côté. Texture veloutée, couleur pourpre profond.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Petite grappe de raisins noirs · twist de citron · pique en bois doré</p>
+        </div>
+      </div>
+
+      <!-- 15 -->
+      <div class="card">
+        <div class="card-number">N° 15</div>
+        <div class="card-name">Kiwi Dream</div>
+        <div class="card-tagline">Pomme, purée kiwi & sirop de menthe</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Rocks</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de pommes</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">30 ml</span> Purée de kiwi</li>
+            <li><span class="qty">15 ml</span> Sirop de green apple</li>
+            <li><span class="qty">10 ml</span> Sirop de menthe</li>
+            <li><span class="qty">Top</span> Eau gazeuse</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker jus pommes, citron, purée kiwi et sirops avec glace 12 sec. La purée kiwi donne une belle couleur verte naturelle. Double-filtrer sur glaçons. Allonger à l'eau gazeuse. Servir immédiatement pour conserver la vivacité de la couleur.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche de kiwi frais sur le bord · feuille de menthe · rondelle de citron vert</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CAT 4 — DÉTOX ══ -->
+  <div class="category-wrap cat-detox">
+    <div class="category-label"><span class="category-name">🌿 Détox & Vitalité</span></div>
+    <div class="cards-grid">
+
+      <!-- 16 -->
+      <div class="card">
+        <div class="card-number">N° 16</div>
+        <div class="card-name">Citrus Boost</div>
+        <div class="card-tagline">Orange, pamplemousse & sirop de citron vif</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Collins</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">70 ml</span> Jus d'orange</li>
+            <li><span class="qty">60 ml</span> Jus de pamplemousse</li>
+            <li><span class="qty">25 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de citron</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Eau gazeuse</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker les trois jus avec sirops et glace 10 sec. Filtrer sur glaçons dans le Collins. Allonger à l'eau gazeuse. Exprimer un zeste d'orange sur la surface avant de servir. Couleur soleil naturelle.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Rondelle d'orange et de pamplemousse · paille noire · zeste d'orange torsadé</p>
+        </div>
+      </div>
+
+      <!-- 17 -->
+      <div class="card">
+        <div class="card-number">N° 17</div>
+        <div class="card-name">Apple Mint Refresh</div>
+        <div class="card-tagline">Pomme fraîche, menthe & citron vivifiant</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Rocks</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons pilés</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">90 ml</span> Jus de pommes</li>
+            <li><span class="qty">30 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de menthe</li>
+            <li><span class="qty">15 ml</span> Sirop de green apple</li>
+            <li><span class="qty">Top</span> Sprite</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker jus pommes, citron et sirops avec glace 10 sec. Filtrer sur glaçons pilés. Allonger au Sprite. La menthe et la pomme verte créent une fraîcheur instantanée. Servir très frais, idéal par temps chaud.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Bouquet de menthe fraîche · ventail de pomme verte · rondelle de citron</p>
+        </div>
+      </div>
+
+      <!-- 18 -->
+      <div class="card">
+        <div class="card-number">N° 18</div>
+        <div class="card-name">Passion Detox</div>
+        <div class="card-tagline">Ananas, passion fruit & citron pressé</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus d'ananas</li>
+            <li><span class="qty">30 ml</span> Jus de citron</li>
+            <li><span class="qty">30 ml</span> Purée de passion fruit</li>
+            <li><span class="qty">15 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Eau gazeuse</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker ananas, citron, purée passion et sirop sucre avec glace 12 sec. La purée de passion fruit donne acidité et corps naturels. Double-filtrer sur glaçons. Allonger à l'eau gazeuse froide. Couleur jaune dorée naturelle.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Demi-fruit de la passion posé sur le bord · rondelle d'ananas · paille transparente</p>
+        </div>
+      </div>
+
+      <!-- 19 -->
+      <div class="card">
+        <div class="card-number">N° 19</div>
+        <div class="card-name">Grape Revive</div>
+        <div class="card-tagline">Raisins, pomme & citron en harmonie</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre à Vin Blanc</span>
+          <span class="badge badge-method">Verre à Mélange</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de raisins</li>
+            <li><span class="qty">50 ml</span> Jus de pommes</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">15 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Tonic</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Verre à mélange avec glace : jus raisins, pommes, citron et sirop sucre. Remuer 20 tours lentement. Filtrer dans le verre à vin sur glaçons. Verser le tonic en filet sur le dos d'une cuillère. Servir avec élégance.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Petite grappe de raisins · tranche de pomme · twist de citron</p>
+        </div>
+      </div>
+
+      <!-- 20 -->
+      <div class="card">
+        <div class="card-number">N° 20</div>
+        <div class="card-name">Peach Glow</div>
+        <div class="card-tagline">Pêche, orange & sirop d'abricot doré</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Collins</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">70 ml</span> Jus de pêche</li>
+            <li><span class="qty">50 ml</span> Jus d'orange</li>
+            <li><span class="qty">15 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop d'abricot</li>
+            <li><span class="qty">20 ml</span> Purée de pêche</li>
+            <li><span class="qty">Top</span> Lemonade</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker pêche, orange, citron, sirop abricot et purée de pêche avec glace 12 sec. Double-filtrer sur glaçons dans le Collins. Allonger à la lemonade. Couleur pêche-dorée magnifique, naturelle et sans colorant.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche de pêche fraîche · zeste d'orange torsadé · paille noire</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CAT 5 — GOURMAND ══ -->
+  <div class="category-wrap cat-gourmand">
+    <div class="category-label"><span class="category-name">🍓 Indulgence Gourmande</span></div>
+    <div class="cards-grid">
+
+      <!-- 21 -->
+      <div class="card">
+        <div class="card-number">N° 21</div>
+        <div class="card-name">Vanilla Berry Shake</div>
+        <div class="card-tagline">Lait, fraise, framboise & sirop de vanille</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons pilés</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Lait entier froid</li>
+            <li><span class="qty">50 ml</span> Jus de fraises</li>
+            <li><span class="qty">20 ml</span> Jus de framboise</li>
+            <li><span class="qty">20 ml</span> Sirop de vanille</li>
+            <li><span class="qty">15 ml</span> Sirop de strawberry</li>
+            <li><span class="qty">15 ml</span> Purée de fraise</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker lait, jus fraises, framboise, sirops et purée avec glace 8 sec (ne pas sur-agiter le lait). Filtrer délicatement sur glaçons pilés. Le lait crée une belle texture crémeuse rosée. Servir avec une longue paille.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Fraises et framboises en brochette · sucre vanillé sur le bord · paille rayée</p>
+        </div>
+      </div>
+
+      <!-- 22 -->
+      <div class="card">
+        <div class="card-number">N° 22</div>
+        <div class="card-name">Mango Lassi Luxe</div>
+        <div class="card-tagline">Lait, mangue & purée coco onctueuse</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Collins</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de mangue</li>
+            <li><span class="qty">60 ml</span> Lait entier froid</li>
+            <li><span class="qty">25 ml</span> Purée de mangue</li>
+            <li><span class="qty">20 ml</span> Purée coco</li>
+            <li><span class="qty">15 ml</span> Sirop de vanille</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker mangue, lait, purées et sirops avec glaçons 10 sec. Filtrer sur glaçons dans le Collins. La purée coco et la purée mangue créent une texture soyeuse rappelant le lassi traditionnel. Saupoudrer légèrement la surface.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche de mangue · copeaux de noix de coco grillés · poudre de cannelle sur la mousse</p>
+        </div>
+      </div>
+
+      <!-- 23 -->
+      <div class="card">
+        <div class="card-number">N° 23</div>
+        <div class="card-name">Cherry Vanilla Dream</div>
+        <div class="card-tagline">Lait, raisins & sirops cherry-vanille</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Rocks Large</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">70 ml</span> Jus de raisins</li>
+            <li><span class="qty">60 ml</span> Lait entier froid</li>
+            <li><span class="qty">20 ml</span> Sirop de cherry</li>
+            <li><span class="qty">20 ml</span> Sirop de vanille</li>
+            <li><span class="qty">15 ml</span> Jus de citron</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker raisins, lait, sirops cherry et vanille avec citron et glace 8 sec. Le raisin et le cherry créent une couleur lie-de-vin profonde dans le lait. Filtrer sur glaçons. Ajouter le citron en dernier pour équilibrer la douceur.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Cerises cocktail sur pique · grappe de raisins noirs · paille noire dorée</p>
+        </div>
+      </div>
+
+      <!-- 24 -->
+      <div class="card">
+        <div class="card-number">N° 24</div>
+        <div class="card-name">Peach Milk Punch</div>
+        <div class="card-tagline">Lait onctueux, pêche & sirop abricot-vanille</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Coupe à Cocktail</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Servi frappé sans glace</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de pêche</li>
+            <li><span class="qty">60 ml</span> Lait entier froid</li>
+            <li><span class="qty">20 ml</span> Sirop d'abricot</li>
+            <li><span class="qty">15 ml</span> Sirop de vanille</li>
+            <li><span class="qty">20 ml</span> Purée de pêche</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker tous les ingrédients avec glaçons 10 sec. Double-filtrer dans la coupe réfrigérée. Servir sans glace. La purée de pêche émulsifiée avec le lait donne une texture mousseuse dorée. Présentation élégante pour événements de prestige.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche de pêche sur le bord · poudre de pistache sur la mousse · pique dorée</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CAT 6 — SIGNATURES ══ -->
+  <div class="category-wrap cat-signature">
+    <div class="category-label"><span class="category-name">⭐ Signatures Shake & Stir</span></div>
+    <div class="cards-grid">
+
+      <!-- 25 -->
+      <div class="card">
+        <div class="card-number">N° 25</div>
+        <div class="card-name">Marrakech Sunset</div>
+        <div class="card-tagline">Orange, grenadine & sirop cherry — notre icône</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker + Build</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">100 ml</span> Jus d'orange frais</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">15 ml</span> Sirop de cherry</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">15 ml</span> Sirop de grenadine</li>
+            <li><span class="qty">Top</span> Eau gazeuse</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker orange, citron, cherry et sirop sucre avec glace 10 sec. Verser sur glaçons. Eau gazeuse délicatement. Faire couler la grenadine lentement le long de la paroi du verre : elle tombe au fond, créant l'effet sunset rouge-orangé. Ne pas remuer. Servir tel quel.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Rondelle d'orange séchée · cerise cocktail sur pique dorée · paille noire</p>
+        </div>
+      </div>
+
+      <!-- 26 -->
+      <div class="card">
+        <div class="card-number">N° 26</div>
+        <div class="card-name">Blue Lagoon</div>
+        <div class="card-tagline">Ananas, citron & sirop blue curacao — couleur ocean</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Collins</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons pilés</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus d'ananas</li>
+            <li><span class="qty">30 ml</span> Jus de citron</li>
+            <li><span class="qty">25 ml</span> Sirop de blue curacao</li>
+            <li><span class="qty">15 ml</span> Sirop de sucre</li>
+            <li><span class="qty">20 ml</span> Purée ananas</li>
+            <li><span class="qty">Top</span> Lemonade</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker ananas, citron, blue curacao, sirop sucre et purée ananas avec glace 12 sec. Le blue curacao donne la couleur bleue-turquoise spectaculaire. Double-filtrer sur glaçons pilés. Allonger à la lemonade. Effet visuel garanti.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche d'ananas · rondelle de citron · paille transparente · sucre bleu sur le bord</p>
+        </div>
+      </div>
+
+      <!-- 27 -->
+      <div class="card">
+        <div class="card-number">N° 27</div>
+        <div class="card-name">Tropical Punch</div>
+        <div class="card-tagline">Ananas, orange, mangue & sirop watermelon</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">50 ml</span> Jus d'ananas</li>
+            <li><span class="qty">40 ml</span> Jus d'orange</li>
+            <li><span class="qty">30 ml</span> Jus de mangue</li>
+            <li><span class="qty">20 ml</span> Sirop de watermelon</li>
+            <li><span class="qty">15 ml</span> Jus de citron</li>
+            <li><span class="qty">15 ml</span> Purée passion fruit</li>
+            <li><span class="qty">Top</span> Sprite</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker ananas, orange, mangue, sirop watermelon, citron et purée passion avec glace 12 sec. Filtrer sur glaçons. Allonger au Sprite. Le mélange des trois jus et du sirop pastèque crée une palette de couleurs vibrante. Idéal pour les grandes tables.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Brochette ananas + orange + mangue · feuille de menthe · paille colorée</p>
+        </div>
+      </div>
+
+      <!-- 28 -->
+      <div class="card">
+        <div class="card-number">N° 28</div>
+        <div class="card-name">Riad Rose</div>
+        <div class="card-tagline">Fraise, framboise, grenadine & sirop raspberry</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Coupe à Cocktail</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Servi frappé sans glace</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">60 ml</span> Jus de fraises</li>
+            <li><span class="qty">40 ml</span> Jus de framboise</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de raspberry</li>
+            <li><span class="qty">15 ml</span> Sirop de grenadine</li>
+            <li><span class="qty">20 ml</span> Purée de fraise</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker tous les ingrédients avec glaçons vigoureusement 14 sec. Double-filtrer dans la coupe réfrigérée. Servir sans glace. La purée de fraise donne un corps soyeux. Couleur rouge rubis profond — présentation d'exception pour mariages et galas.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Framboise et fraise sur pique dorée · sucre rose sur le bord · pétale de fleur comestible</p>
+        </div>
+      </div>
+
+      <!-- 29 -->
+      <div class="card">
+        <div class="card-number">N° 29</div>
+        <div class="card-name">Casablanca Fizz</div>
+        <div class="card-tagline">Pamplemousse, sirop mint & tonic élégant</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Verre Highball</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Glaçons entiers</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">80 ml</span> Jus de pamplemousse</li>
+            <li><span class="qty">30 ml</span> Jus de citron</li>
+            <li><span class="qty">20 ml</span> Sirop de menthe</li>
+            <li><span class="qty">15 ml</span> Sirop de citron</li>
+            <li><span class="qty">10 ml</span> Sirop de sucre</li>
+            <li><span class="qty">Top</span> Tonic</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker pamplemousse, citron et sirops avec glace 12 sec. Filtrer sur glaçons frais dans le highball. Compléter au tonic versé délicatement. Passer le bord du verre dans du sel rose + zeste de pamplemousse avant service.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Bouquet de menthe fraîche · twist de pamplemousse · sel rose sur le bord</p>
+        </div>
+      </div>
+
+      <!-- 30 -->
+      <div class="card">
+        <div class="card-number">N° 30</div>
+        <div class="card-name">Golden Atlas</div>
+        <div class="card-tagline">Mangue, passion, ananas & sirop vanilla — notre chef-d'œuvre</div>
+        <div class="card-badges">
+          <span class="badge badge-glass">Coupe Nick & Nora</span>
+          <span class="badge badge-method">Shaker</span>
+          <span class="badge badge-ice">Servi frappé sans glace</span>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">Ingrédients</div>
+          <ul class="detail-list">
+            <li><span class="qty">60 ml</span> Jus de mangue</li>
+            <li><span class="qty">40 ml</span> Jus d'ananas</li>
+            <li><span class="qty">20 ml</span> Jus de citron</li>
+            <li><span class="qty">25 ml</span> Purée de mangue</li>
+            <li><span class="qty">20 ml</span> Purée de passion fruit</li>
+            <li><span class="qty">20 ml</span> Sirop de vanille</li>
+            <li><span class="qty">10 ml</span> Sirop d'ananas</li>
+          </ul>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Méthode</div>
+          <p class="method-text">Shaker tous les ingrédients avec glaçons vigoureusement 15 sec. Double-filtrer dans la coupe Nick & Nora réfrigérée 10 min au congélateur. Les deux purées créent une mousse dorée naturelle dense et soyeuse. Servir immédiatement sans glace ni paille. Notre création ultime.</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="detail-block">
+          <div class="detail-label">Garniture</div>
+          <p class="garnish-text">Tranche de mangue séchée sur le bord · poudre dorée alimentaire sur la mousse · aucune paille — à déguster en coupe</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<footer class="menu-footer">
+  <div class="footer-logo">SHAKE & STIR</div>
+  <p class="footer-tag">Mixologie Premium · Sans Alcool · Maroc</p>
+</footer>
+
+</body>
+</html>
