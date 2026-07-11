@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Credit</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --paper: #F2F4F6;
+    --ink: #14181D;
+    --ink-soft: #68707B;
+    --surface: #FFFFFF;
+    --line: #DEE3E8;
+    --blue: #2B4CE0;
+    --blue-deep: #1D38B0;
+    --green: #1E8E5A;
+    --green-bg: #E9F6EF;
+    --red: #D13B3B;
+    --red-bg: #FBEAEA;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  #app { min-height: 100vh; }
+  button, input { font-family: inherit; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .screen { animation: fadeIn .35s ease; }
+    .stamp-pulse { animation: stampPulse 2.2s ease-in-out infinite; }
+    .toast { animation: toastIn .25s ease; }
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes stampPulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- layout shells ---------- */
+  .center-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .stack { display: flex; flex-direction: column; }
+
+  /* ---------- ticket stub (client signature element) ---------- */
+  .ticket {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    background: var(--surface);
+    border-radius: 6px;
+    box-shadow: 0 10px 34px rgba(20,24,29,.10);
+    padding: 40px 28px 32px;
+    transform: rotate(-0.4deg);
+  }
+  .ticket::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 0; right: 0;
+    height: 16px;
+    background-image: radial-gradient(circle 6px, var(--paper) 6px, transparent 6.6px);
+    background-size: 26px 16px;
+    background-position: 13px 0;
+    background-repeat: repeat-x;
+  }
+  .ticket-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0 0 6px;
+  }
+  .ticket-figure {
+    font-family: var(--mono);
+    font-weight: 700;
+    text-align: center;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .ticket-divider {
+    border: none;
+    border-top: 2px dashed var(--line);
+    margin: 26px 0;
+  }
+  .ticket-help {
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+    line-height: 1.5;
+    margin: 14px 0 0;
+  }
+
+  /* ---------- stamps ---------- */
+  .stamp {
+    display: inline-block;
+    border: 3px solid currentColor;
+    border-radius: 8px;
+    padding: 5px 16px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 12px;
+    transform: rotate(-6deg);
+  }
+  .stamp-blue { color: var(--blue); }
+  .stamp-green { color: var(--green); }
+  .stamp-row { text-align: center; margin: 4px 0 0; }
+
+  /* ---------- headings / text ---------- */
+  h1.screen-title { font-size: 25px; font-weight: 700; margin: 0 0 8px; text-align: center; }
+  p.screen-sub { font-size: 15px; color: var(--ink-soft); text-align: center; margin: 0 0 26px; line-height: 1.5; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: none; border-radius: 10px; cursor: pointer;
+    font-weight: 650; transition: transform .08s ease, background .15s ease, opacity .15s ease;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-block { width: 100%; }
+  .btn-primary { background: var(--blue); color: #fff; font-size: 16px; padding: 15px 20px; }
+  .btn-primary:hover { background: var(--blue-deep); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-outline { background: #fff; border: 1.5px solid var(--line); color: var(--ink); }
+  .btn-sm { font-size: 13.5px; padding: 9px 12px; border-radius: 8px; }
+  .btn-text { background: none; border: none; color: var(--blue); font-weight: 650; font-size: 14px; cursor: pointer; padding: 8px; }
+  .btn-text-muted { background: none; border: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; padding: 6px; }
+  .btn-text-red { background: none; border: none; color: var(--red); font-weight: 650; font-size: 13px; cursor: pointer; padding: 6px; }
+  .btn-disabled, .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ---------- inputs ---------- */
+  .input {
+    width: 100%; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 10px;
+    font-size: 16px; background: #fff; color: var(--ink);
+  }
+  .input:focus { outline: none; border-color: var(--blue); }
+  .input-sm { padding: 8px 10px; font-size: 15px; border-radius: 8px; font-family: var(--mono); }
+  .field-label { font-size: 12px; font-weight: 700; letter-spacing: .6px; color: var(--ink-soft); text-transform: uppercase; margin: 0 0 6px; display: block; }
+  .error-text { color: var(--red); font-size: 13.5px; text-align: center; margin: 14px 0 0; }
+
+  /* ---------- admin shell ---------- */
+  .admin-header {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--paper); border-bottom: 1px solid var(--line);
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .admin-title { font-weight: 700; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+  .admin-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; background: var(--ink); color: #fff; padding: 3px 7px; border-radius: 5px; }
+  .admin-actions { display: flex; gap: 4px; align-items: center; }
+  .admin-body { max-width: 640px; margin: 0 auto; padding: 20px 20px 60px; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+  .tab-btn {
+    flex: 1; text-align: center; padding: 11px; border-radius: 10px; border: 1.5px solid var(--line);
+    background: #fff; color: var(--ink-soft); font-weight: 650; font-size: 14.5px; cursor: pointer;
+  }
+  .tab-btn.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  .row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 4px; border-bottom: 1px solid var(--line);
+  }
+  .row:last-child { border-bottom: none; }
+  .row-num { font-family: var(--mono); font-weight: 700; font-size: 18px; min-width: 46px; }
+  .row-meta { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+  .row-credit { font-family: var(--mono); font-weight: 700; font-size: 17px; color: var(--green); }
+  .row-left { display: flex; flex-direction: column; }
+  .row-right { display: flex; align-items: center; gap: 6px; }
+  .empty-state { text-align: center; color: var(--ink-soft); font-size: 14px; padding: 40px 10px; }
+
+  .search-wrap { margin-bottom: 14px; }
+
+  /* ---------- toasts ---------- */
+  #toast-container { position: fixed; top: 14px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 50; pointer-events: none; }
+  .toast { background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.18); max-width: 90vw; }
+  .toast-success { background: var(--green); }
+  .toast-error { background: var(--red); }
+  .toast-out { opacity: 0; transition: opacity .3s ease; }
+
+  /* ---------- QR modal ---------- */
+  #qr-modal {
+    display: none; position: fixed; inset: 0; background: rgba(20,24,29,.55);
+    align-items: center; justify-content: center; z-index: 40; padding: 20px;
+  }
+  .qr-card { background: #fff; border-radius: 14px; padding: 28px; max-width: 320px; width: 100%; text-align: center; position: relative; }
+  .qr-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 20px; color: var(--ink-soft); cursor: pointer; padding: 6px; }
+  #qr-code-container { display: flex; justify-content: center; margin: 16px 0; min-height: 220px; align-items: center; }
+  .qr-url { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); word-break: break-all; margin-bottom: 12px; }
+
+  .spinner { width: 26px; height: 26px; border: 3px solid var(--line); border-top-color: var(--blue); border-radius: 50%; margin: 0 auto; }
+  @media (prefers-reduced-motion: no-preference) { .spinner { animation: spin .8s linear infinite; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+  // ============ config ============
+  var APP_NAME = "Event Credit"; // change this to your event's name
+  var ADMIN_PIN = "1234"; // change this before your event
+  var CLIENTS_KEY = "event-clients";
+  var MY_ID_KEY = "my-client-id";
+  var IS_ADMIN_KEY = "is-admin";
+  var POLL_MS = 3000;
+
+  // ============ state ============
+  var app = document.getElementById('app');
+  var view = 'loading';
+  var myClientId = null;
+  var myClient = null;
+  var clientsData = {};
+  var adminTab = 'pending';
+  var knownPendingIds = new Set();
+  var pollTimer = null;
+  var audioCtx = null;
+  var pinError = false;
+  var resetConfirmPending = false;
+  var searchQuery = '';
+
+  // ============ storage helpers ============
+  async function getClientsData() {
+    try {
+      var result = await window.storage.get(CLIENTS_KEY, true);
+      if (!result || !result.value) return {};
+      return JSON.parse(result.value);
+    } catch (e) { return {}; }
+  }
+  async function saveClientsData(data) {
+    try { await window.storage.set(CLIENTS_KEY, JSON.stringify(data), true); return true; }
+    catch (e) { console.error('storage set failed', e); return false; }
+  }
+  async function getMyClientId() {
+    try { var r = await window.storage.get(MY_ID_KEY, false); return r ? r.value : null; }
+    catch (e) { return null; }
+  }
+  async function setMyClientId(id) {
+    try { await window.storage.set(MY_ID_KEY, id, false); } catch (e) {}
+  }
+  async function getIsAdmin() {
+    try { var r = await window.storage.get(IS_ADMIN_KEY, false); return !!r && r.value === 'true'; }
+    catch (e) { return false; }
+  }
+  async function setIsAdminFlag(val) {
+    try { await window.storage.set(IS_ADMIN_KEY, val ? 'true' : 'false', false); } catch (e) {}
+  }
+
+  // ============ utils ============
+  function generateId() { return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function nextNumber(data) {
+    var nums = Object.keys(data).map(function(k){ return data[k].number || 0; });
+    return nums.length ? Math.max.apply(null, nums) + 1 : 1;
+  }
+  function fmtMoney(n) { return '$' + (Number(n) || 0).toFixed(2); }
+  function timeAgo(ts) {
+    var s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'just now';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + ' min ago';
+    var h = Math.floor(m / 60);
+    return h + ' hr ago';
+  }
+
+  // ============ init ============
+  async function init() {
+    render();
+    var isAdmin = await getIsAdmin();
+    if (isAdmin) {
+      view = 'admin-dashboard';
+      await refreshAdminData(true);
+      render();
+      startAdminPolling();
+      return;
+    }
+    var id = await getMyClientId();
+    if (id) {
+      var data = await getClientsData();
+      if (data[id]) {
+        myClientId = id;
+        myClient = data[id];
+        clientsData = data;
+        view = myClient.status === 'confirmed' ? 'client-balance' : 'client-pending';
+        render();
+        startClientPolling();
+        return;
+      }
+    }
+    view = 'client-join';
+    render();
+  }
+
+  // ============ actions ============
+  async function handleJoin() {
+    var btn = document.getElementById('join-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Getting your number…'; }
+    var data = await getClientsData();
+    var id = generateId();
+    var number = nextNumber(data);
+    data[id] = { number: number, credit: 0, status: 'pending', joinedAt: Date.now() };
+    await saveClientsData(data);
+    await setMyClientId(id);
+    myClientId = id;
+    myClient = data[id];
+    clientsData = data;
+    view = 'client-pending';
+    render();
+    startClientPolling();
+  }
+
+  async function handleAdminSubmitPin() {
+    var input = document.getElementById('pin-input');
+    var val = input ? input.value : '';
+    ensureAudio();
+    if (val === ADMIN_PIN) {
+      await setIsAdminFlag(true);
+      pinError = false;
+      view = 'admin-dashboard';
+      await refreshAdminData(true);
+      render();
+      startAdminPolling();
+    } else {
+      pinError = true;
+      render();
+    }
+  }
+
+  async function handleLogout() {
+    clearInterval(pollTimer);
+    await setIsAdminFlag(false);
+    await init();
+  }
+
+  async function handleConfirmClient(id) {
+    var input = document.querySelector('[data-confirm-input="' + id + '"]');
+    var amount = parseFloat(input ? input.value : '');
+    if (isNaN(amount) || amount < 0) { showToast('Enter a credit amount of $0 or more', 'error'); return; }
+    var data = await getClientsData();
+    if (!data[id]) return;
+    data[id].status = 'confirmed';
+    data[id].credit = amount;
+    data[id].confirmedAt = Date.now();
+    await saveClientsData(data);
+    clientsData = data;
+    knownPendingIds.delete(id);
+    renderAdminLists();
+    showToast('Confirmed #' + data[id].number + ' with ' + fmtMoney(amount), 'success');
+  }
+
+  async function handleAdjustCredit(id, direction) {
+    var input = document.querySelector('[data-adjust-input="' + id + '"]');
+    var amount = parseFloat(input ? input.value : '');
+    if (isNaN(amount) || amount <= 0) { showToast('Enter an amount greater than $0', 'error'); return; }
+    var data = await getClientsData();
+    if (!data[id]) return;
+    var delta = direction === 'add' ? amount : -amount;
+    data[id].credit = Math.max(0, (Number(data[id].credit) || 0) + delta);
+    await saveClientsData(data);
+    clientsData = data;
+    if (input) input.value = '';
+    renderAdminLists();
+    showToast((direction === 'add' ? 'Added ' : 'Deducted ') + fmtMoney(amount) + (direction === 'add' ? ' to #' : ' from #') + data[id].number, 'success');
+  }
+
+  async function handleResetData() {
+    await saveClientsData({});
+    clientsData = {};
+    knownPendingIds = new Set();
+    renderAdminLists();
+    showToast('All data cleared', 'info');
+  }
+
+  // ============ polling ============
+  function startClientPolling() {
+    clearInterval(pollTimer);
+    pollTimer = setInterval(async function () {
+      var data = await getClientsData();
+      if (!myClientId || !data[myClientId]) return;
+      var updated = data[myClientId];
+      myClient = updated;
+      clientsData = data;
+      if (view === 'client-pending' && updated.status === 'confirmed') {
+        view = 'client-balance';
+      }
+      render();
+    }, POLL_MS);
+  }
+
+  function startAdminPolling() {
+    clearInterval(pollTimer);
+    pollTimer = setInterval(function () { refreshAdminData(false); }, POLL_MS);
+  }
+
+  async function refreshAdminData(isInitial) {
+    var data = await getClientsData();
+    var pendingIds = Object.keys(data).filter(function (id) { return data[id].status === 'pending'; });
+    if (!isInitial) {
+      var newOnes = pendingIds.filter(function (id) { return !knownPendingIds.has(id); });
+      if (newOnes.length) {
+        newOnes.forEach(function (id) { showToast('New client #' + data[id].number + ' is waiting', 'info'); });
+        playBeep();
+      }
+    }
+    knownPendingIds = new Set(pendingIds);
+    clientsData = data;
+    var active = document.activeElement;
+    var withinLists = active && active.closest && active.closest('#lists-container');
+    if (!withinLists) renderAdminLists();
+    else updateTabCounts();
+  }
+
+  // ============ audio + toast ============
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    } else if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+  }
+  function playBeep() {
+    if (!audioCtx) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine'; osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+    } catch (e) {}
+  }
+  function showToast(msg, kind) {
+    var container = document.getElementById('toast-container');
+    if (!container) return;
+    var toast = document.createElement('div');
+    toast.className = 'toast toast-' + (kind || 'info');
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(function () {
+      toast.classList.add('toast-out');
+      setTimeout(function () { toast.remove(); }, 300);
+    }, 3000);
+  }
+
+  // ============ QR ============
+  function toggleQrModal(show) {
+    var modal = document.getElementById('qr-modal');
+    if (!modal) return;
+    modal.style.display = show ? 'flex' : 'none';
+    if (show) {
+      var input = document.getElementById('qr-url-input');
+      if (input && !input.value) input.value = window.location.href;
+      renderQrCode(input ? input.value : window.location.href);
+    }
+  }
+  function renderQrCode(url) {
+    var container = document.getElementById('qr-code-container');
+    if (!container) return;
+    container.innerHTML = '';
+    try {
+      if (window.QRCode) {
+        new QRCode(container, { text: url, width: 208, height: 208, correctLevel: QRCode.CorrectLevel.M });
+      } else {
+        container.innerHTML = '<p style="font-size:13px;color:var(--ink-soft)">QR library didn\'t load — share the link below directly.</p>';
+      }
+    } catch (e) {
+      container.innerHTML = '<p style="font-size:13px;color:var(--ink-soft)">Couldn\'t generate a QR code — share the link below directly.</p>';
+    }
+  }
+
+  // ============ render: dispatch ============
+  function render() {
+    if (view === 'loading') { app.innerHTML = loadingHtml(); return; }
+    if (view === 'client-join') { app.innerHTML = joinHtml(); return; }
+    if (view === 'client-pending') { app.innerHTML = pendingHtml(); return; }
+    if (view === 'client-balance') { app.innerHTML = balanceHtml(); return; }
+    if (view === 'admin-pin') { app.innerHTML = adminPinHtml(); var pi = document.getElementById('pin-input'); if (pi) pi.focus(); return; }
+    if (view === 'admin-dashboard') {
+      app.innerHTML = adminDashboardHtml();
+      renderAdminLists();
+      renderResetSection();
+      return;
+    }
+  }
+
+  // ============ render: templates ============
+  function loadingHtml() {
+    return '<div class="center-screen"><div class="spinner"></div></div>';
+  }
+
+  function joinHtml() {
+    return '' +
+      '<div class="center-screen">' +
+        '<div class="screen" style="width:100%;display:flex;justify-content:center;">' +
+          '<div class="ticket">' +
+            '<h1 class="screen-title">Get your number</h1>' +
+            '<p class="screen-sub">Tap below to get your number. An admin will add your starting credit in a moment.</p>' +
+            '<button id="join-btn" class="btn btn-primary btn-block" data-action="join">Get my number</button>' +
+            '<p class="ticket-help" style="margin-top:20px;">' + APP_NAME + '</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="position:fixed;bottom:18px;left:0;right:0;text-align:center;">' +
+        '<button class="btn-text-muted" data-action="show-admin-login">Admin login</button>' +
+      '</div>';
+  }
+
+  function pendingHtml() {
+    return '' +
+      '<div class="center-screen">' +
+        '<div class="screen" style="width:100%;display:flex;justify-content:center;">' +
+          '<div class="ticket">' +
+            '<p class="ticket-eyebrow">Your number</p>' +
+            '<div class="ticket-figure" style="font-size:68px;">#' + myClient.number + '</div>' +
+            '<div class="stamp-row"><span class="stamp stamp-blue stamp-pulse">Pending</span></div>' +
+            '<hr class="ticket-divider">' +
+            '<p class="ticket-help">An admin is confirming your credit.<br>This updates automatically — no need to refresh.</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="position:fixed;bottom:18px;left:0;right:0;text-align:center;">' +
+        '<button class="btn-text-muted" data-action="show-admin-login">Admin login</button>' +
+      '</div>';
+  }
+
+  function balanceHtml() {
+    return '' +
+      '<div class="center-screen">' +
+        '<div class="screen" style="width:100%;display:flex;justify-content:center;">' +
+          '<div class="ticket">' +
+            '<p class="ticket-eyebrow">Your number</p>' +
+            '<div class="ticket-figure" style="font-size:30px;">#' + myClient.number + '</div>' +
+            '<hr class="ticket-divider">' +
+            '<p class="ticket-eyebrow">Available credit</p>' +
+            '<div class="ticket-figure" style="font-size:56px;color:var(--green);">' + fmtMoney(myClient.credit) + '</div>' +
+            '<p class="ticket-help">Updates automatically when your balance changes.</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="position:fixed;bottom:18px;left:0;right:0;text-align:center;">' +
+        '<button class="btn-text-muted" data-action="show-admin-login">Admin login</button>' +
+      '</div>';
+  }
+
+  function adminPinHtml() {
+    return '' +
+      '<div class="center-screen">' +
+        '<div class="screen" style="width:100%;max-width:340px;">' +
+          '<h1 class="screen-title">Admin</h1>' +
+          '<p class="screen-sub">Enter your PIN to manage credit.</p>' +
+          '<input id="pin-input" class="input" type="password" inputmode="numeric" placeholder="PIN" data-enter-action="submit-pin" style="text-align:center;letter-spacing:4px;font-family:var(--mono);">' +
+          (pinError ? '<p class="error-text">That PIN didn\'t match. Try again.</p>' : '') +
+          '<button class="btn btn-primary btn-block" style="margin-top:14px;" data-action="submit-pin">Enter</button>' +
+          '<div style="text-align:center;margin-top:16px;"><button class="btn-text-muted" data-action="back-to-join">← Back</button></div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function adminDashboardHtml() {
+    return '' +
+      '<div id="toast-container"></div>' +
+      '<div class="admin-header">' +
+        '<div class="admin-title">' + APP_NAME + ' <span class="admin-tag">ADMIN</span></div>' +
+        '<div class="admin-actions">' +
+          '<button class="btn-text" data-action="show-qr">QR code</button>' +
+          '<button class="btn-text-muted" data-action="logout">Log out</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-body screen">' +
+        '<div class="tabs">' +
+          '<button class="tab-btn' + (adminTab === 'pending' ? ' active' : '') + '" id="tab-pending-btn" data-action="tab-pending">Pending</button>' +
+          '<button class="tab-btn' + (adminTab === 'confirmed' ? ' active' : '') + '" id="tab-confirmed-btn" data-action="tab-confirmed">Confirmed</button>' +
+        '</div>' +
+        '<div id="lists-container">' +
+          '<div id="pending-list"></div>' +
+          '<div id="confirmed-list"></div>' +
+        '</div>' +
+        '<div style="text-align:center;margin-top:28px;" id="reset-section"></div>' +
+      '</div>' +
+      '<div id="qr-modal">' +
+        '<div class="qr-card">' +
+          '<button class="qr-close" data-action="close-qr">✕</button>' +
+          '<h1 class="screen-title" style="font-size:19px;">Scan to join</h1>' +
+          '<div id="qr-code-container"></div>' +
+          '<div class="qr-url" id="qr-url-display"></div>' +
+          '<span class="field-label" style="text-align:left;">Link</span>' +
+          '<input id="qr-url-input" class="input input-sm" style="font-family:var(--mono);font-size:12px;">' +
+        '</div>' +
+      '</div>';
+  }
+
+  function clientRowPending(id, c) {
+    return '' +
+      '<div class="row">' +
+        '<div class="row-left">' +
+          '<span class="row-num">#' + c.number + '</span>' +
+          '<span class="row-meta">joined ' + timeAgo(c.joinedAt) + '</span>' +
+        '</div>' +
+        '<div class="row-right">' +
+          '<input class="input input-sm" style="width:90px;" placeholder="0.00" inputmode="decimal" data-confirm-input="' + id + '" data-enter-action="confirm-client" data-id="' + id + '">' +
+          '<button class="btn btn-green btn-sm" data-action="confirm-client" data-id="' + id + '">Confirm</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function clientRowConfirmed(id, c) {
+    return '' +
+      '<div class="row">' +
+        '<div class="row-left">' +
+          '<span class="row-num">#' + c.number + '</span>' +
+          '<span class="row-credit">' + fmtMoney(c.credit) + '</span>' +
+        '</div>' +
+        '<div class="row-right">' +
+          '<input class="input input-sm" style="width:76px;" placeholder="Amount" inputmode="decimal" data-adjust-input="' + id + '">' +
+          '<button class="btn btn-outline btn-sm" data-action="sub-credit" data-id="' + id + '">− Deduct</button>' +
+          '<button class="btn btn-green btn-sm" data-action="add-credit" data-id="' + id + '">+ Add</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderAdminLists() {
+    var pendingEl = document.getElementById('pending-list');
+    var confirmedEl = document.getElementById('confirmed-list');
+    if (!pendingEl || !confirmedEl) return;
+
+    var ids = Object.keys(clientsData);
+    var pending = ids.filter(function (id) { return clientsData[id].status === 'pending'; })
+      .sort(function (a, b) { return clientsData[a].joinedAt - clientsData[b].joinedAt; });
+    var confirmed = ids.filter(function (id) { return clientsData[id].status === 'confirmed'; });
+    if (searchQuery.trim()) {
+      var q = searchQuery.trim();
+      confirmed = confirmed.filter(function (id) { return String(clientsData[id].number).indexOf(q) !== -1; });
+    }
+    confirmed.sort(function (a, b) { return clientsData[a].number - clientsData[b].number; });
+
+    pendingEl.style.display = adminTab === 'pending' ? 'block' : 'none';
+    confirmedEl.style.display = adminTab === 'confirmed' ? 'block' : 'none';
+
+    pendingEl.innerHTML = pending.length
+      ? pending.map(function (id) { return clientRowPending(id, clientsData[id]); }).join('')
+      : '<div class="empty-state">No one\'s waiting. New scans show up here.</div>';
+
+    confirmedEl.innerHTML = '' +
+      '<div class="search-wrap"><input class="input input-sm" style="font-family:var(--sans);" placeholder="Find by number" id="search-input" value="' + searchQuery.replace(/"/g, '&quot;') + '"></div>' +
+      (confirmed.length
+        ? confirmed.map(function (id) { return clientRowConfirmed(id, clientsData[id]); }).join('')
+        : '<div class="empty-state">' + (searchQuery.trim() ? 'No matches.' : 'No confirmed clients yet.') + '</div>');
+
+    updateTabCounts();
+  }
+
+  function updateTabCounts() {
+    var ids = Object.keys(clientsData);
+    var pendingCount = ids.filter(function (id) { return clientsData[id].status === 'pending'; }).length;
+    var confirmedCount = ids.filter(function (id) { return clientsData[id].status === 'confirmed'; }).length;
+    var pBtn = document.getElementById('tab-pending-btn');
+    var cBtn = document.getElementById('tab-confirmed-btn');
+    if (pBtn) pBtn.textContent = 'Pending (' + pendingCount + ')';
+    if (cBtn) cBtn.textContent = 'Confirmed (' + confirmedCount + ')';
+  }
+
+  function renderResetSection() {
+    var el = document.getElementById('reset-section');
+    if (!el) return;
+    el.innerHTML = resetConfirmPending
+      ? '<span style="font-size:13px;color:var(--ink-soft);">Clear all client data? This can\'t be undone.</span><br><br>' +
+        '<button class="btn-text-red" data-action="reset-confirm">Yes, clear it</button> &nbsp; ' +
+        '<button class="btn-text-muted" data-action="reset-cancel">Cancel</button>'
+      : '<button class="btn-text-muted" data-action="reset-ask">Reset all data</button>';
+  }
+
+  // ============ event delegation ============
+  app.addEventListener('click', async function (e) {
+    if (e.target && e.target.id === 'qr-modal') { toggleQrModal(false); return; }
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var action = el.dataset.action;
+    var id = el.dataset.id;
+    if (action === 'join') return handleJoin();
+    if (action === 'show-admin-login') { view = 'admin-pin'; pinError = false; render(); return; }
+    if (action === 'back-to-join') { view = 'client-join'; render(); return; }
+    if (action === 'submit-pin') return handleAdminSubmitPin();
+    if (action === 'show-qr') { toggleQrModal(true); return; }
+    if (action === 'close-qr') { toggleQrModal(false); return; }
+    if (action === 'logout') return handleLogout();
+    if (action === 'tab-pending') { adminTab = 'pending'; renderAdminLists(); return; }
+    if (action === 'tab-confirmed') { adminTab = 'confirmed'; renderAdminLists(); return; }
+    if (action === 'confirm-client') return handleConfirmClient(id);
+    if (action === 'add-credit') return handleAdjustCredit(id, 'add');
+    if (action === 'sub-credit') return handleAdjustCredit(id, 'sub');
+    if (action === 'reset-ask') { resetConfirmPending = true; renderResetSection(); return; }
+    if (action === 'reset-cancel') { resetConfirmPending = false; renderResetSection(); return; }
+    if (action === 'reset-confirm') { resetConfirmPending = false; await handleResetData(); renderResetSection(); return; }
+  });
+
+  app.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var el = e.target.closest('[data-enter-action]');
+    if (!el) return;
+    e.preventDefault();
+    var action = el.dataset.enterAction;
+    var id = el.dataset.id;
+    var selector = '[data-action="' + action + '"]' + (id ? '[data-id="' + id + '"]' : '');
+    var btn = document.querySelector(selector);
+    if (btn) btn.click();
+  });
+
+  app.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'qr-url-input') {
+      renderQrCode(e.target.value);
+      var disp = document.getElementById('qr-url-display');
+      if (disp) disp.textContent = e.target.value;
+    }
+    if (e.target && e.target.id === 'search-input') {
+      searchQuery = e.target.value;
+      renderAdminLists();
+      var si = document.getElementById('search-input');
+      if (si) { si.focus(); si.setSelectionRange(si.value.length, si.value.length); }
+    }
+  });
+
+  // ============ go ============
+  init();
+</script>
+</body>
+</html>
