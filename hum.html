@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f7">
+  <meta name="description" content="A simple personal gym level and workout tracker.">
+  <title>Level Up — Gym Tracker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f5f7;
+      --card: rgba(255,255,255,.82);
+      --text: #1d1d1f;
+      --muted: #77777d;
+      --line: rgba(29,29,31,.09);
+      --accent: #e56b45;
+      --accent-dark: #c8512f;
+      --accent-soft: #fff0e9;
+      --green: #27865b;
+      --shadow: 0 12px 36px rgba(22,22,28,.055);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, select, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      width: min(100% - 32px, 760px);
+      margin: 0 auto;
+      padding: 30px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 5px 0 0;
+      font-size: clamp(28px, 6vw, 38px);
+      letter-spacing: -.055em;
+      line-height: 1.05;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 26px;
+      border-radius: 30px;
+      color: #fff;
+      background: linear-gradient(135deg, #242427 0%, #3b3433 58%, #704637 100%);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .hero:after {
+      content: "";
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 50%;
+      right: -72px;
+      top: -92px;
+      box-shadow: 0 0 0 28px rgba(255,255,255,.025),
+                  0 0 0 58px rgba(255,255,255,.02);
+      pointer-events: none;
+    }
+
+    .hero-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .level-label {
+      color: rgba(255,255,255,.65);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-weight: 700;
+    }
+
+    .level-number {
+      font-size: clamp(58px, 13vw, 82px);
+      line-height: .98;
+      letter-spacing: -.075em;
+      font-weight: 750;
+      margin: 8px 0 10px;
+    }
+
+    .rank {
+      color: #f5c2a8;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .level-chip {
+      position: relative;
+      z-index: 1;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.11);
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .xp-area {
+      position: relative;
+      z-index: 1;
+      margin-top: 27px;
+    }
+
+    .xp-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,.73);
+      margin-bottom: 9px;
+    }
+
+    .xp-track {
+      height: 8px;
+      background: rgba(255,255,255,.16);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .xp-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #f0a17e, #ffd4b9);
+      transition: width .35s ease;
+    }
+
+    .hero-foot {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 19px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pill {
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 999px;
+      padding: 8px 11px;
+      color: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.07);
+      font-size: 12px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      padding: 18px;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 730;
+      letter-spacing: -.055em;
+      white-space: nowrap;
+    }
+
+    .stat-sub {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 5px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 19px;
+      letter-spacing: -.035em;
+    }
+
+    .subtext {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      margin-bottom: 8px;
+    }
+
+    select, input {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 13px;
+      color: var(--text);
+      background: #f5f5f7;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(229,107,69,.12);
+    }
+
+    .primary {
+      width: 100%;
+      margin-top: 14px;
+      min-height: 52px;
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 7px 18px rgba(229,107,69,.2);
+      transition: transform .15s, background .15s;
+    }
+
+    .primary:hover { background: var(--accent-dark); }
+    .primary:active { transform: scale(.99); }
+
+    .hint {
+      margin-top: 11px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .history {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .session {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255,255,255,.62);
+    }
+
+    .session-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border-radius: 14px;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .session-info { min-width: 0; flex: 1; }
+
+    .session-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .session-date {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .session-xp {
+      text-align: right;
+      font-weight: 750;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .session-xp small {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 500;
+      margin-top: 3px;
+    }
+
+    .delete-session {
+      border: 0;
+      background: transparent;
+      color: #a1a1a6;
+      padding: 8px;
+      font-size: 19px;
+      border-radius: 10px;
+    }
+
+    .delete-session:hover {
+      background: #f4e7e3;
+      color: var(--accent-dark);
+    }
+
+    .empty {
+      padding: 24px 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+    }
+
+    .footer {
+      text-align: center;
+      color: #99999f;
+      font-size: 11px;
+      padding: 12px 0;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 12px 17px;
+      background: #242427;
+      color: white;
+      border-radius: 999px;
+      font-size: 13px;
+      box-shadow: var(--shadow);
+      transition: .25s;
+      z-index: 5;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      padding: 5px;
+      background: rgba(255,255,255,.68);
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      margin: 0 0 16px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 10px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .nav-btn.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 2px 9px rgba(20,20,25,.07);
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .group-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .group-option { position: relative; }
+
+    .group-option input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+    }
+
+    .group-option label {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 0;
+      padding: 15px;
+      min-height: 68px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #f8f8fa;
+      color: var(--text);
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .group-option label .group-mark {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: #e9e9ed;
+      color: #55555b;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .group-option label .group-name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .group-option input:checked + label {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 2px rgba(229,107,69,.10);
+    }
+
+    .group-option input:checked + label .group-mark {
+      background: var(--accent);
+      color: white;
+    }
+
+    .group-option input:focus-visible + label {
+      outline: 3px solid rgba(229,107,69,.3);
+      outline-offset: 2px;
+    }
+
+    .weight-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .secondary {
+      min-height: 48px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .weight-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .weight-entry:last-child { border-bottom: 0; }
+    .weight-number { font-weight: 750; font-size: 16px; }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .settings-grid .full { grid-column: 1 / -1; }
+
+    .settings-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .settings-actions button { flex: 1; }
+
+    @media (max-width: 420px) {
+      .settings-grid { grid-template-columns: 1fr; }
+      .settings-grid .full { grid-column: auto; }
+      .group-options { gap: 8px; }
+      .group-option label { padding: 12px; }
+    }
+
+    @media (max-width: 540px) {
+      .app {
+        width: min(100% - 22px, 760px);
+        padding-top: 22px;
+      }
+
+      .hero { padding: 22px; border-radius: 25px; }
+      .stats { gap: 8px; }
+      .stat { padding: 14px 12px; border-radius: 19px; }
+      .stat-label { font-size: 11px; }
+      .panel { padding: 18px; border-radius: 21px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Your training journey</div>
+        <h1>Level Up<span style="color:var(--accent)">.</span></h1>
+      </div>
+    </header>
+
+    <nav class="nav" aria-label="Main navigation">
+      <button class="nav-btn active" type="button" data-page="trackerPage">Overview</button>
+      <button class="nav-btn" type="button" data-page="settingsPage">Settings</button>
+    </nav>
+
+    <div class="page active" id="trackerPage">
+      <section class="hero" aria-labelledby="levelHeading">
+        <div class="hero-top">
+          <div>
+            <div class="level-label" id="levelHeading">Current level</div>
+            <div class="level-number">LV.<span id="level">10</span></div>
+            <div class="rank" id="rank">The Foundation</div>
+          </div>
+          <div class="level-chip" id="journeyDay">DAY 83</div>
+        </div>
+
+        <div class="xp-area">
+          <div class="xp-caption">
+            <span id="xpProgressLabel">Level progress</span>
+            <span id="xpNumbers">0 / 1,050 XP</span>
+          </div>
+          <div class="xp-track" role="progressbar"
+               aria-label="Progress to next level"
+               aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+               id="xpBar">
+            <div class="xp-fill" id="xpFill"></div>
+          </div>
+        </div>
+
+        <div class="hero-foot">
+          <span class="pill" id="visitPill">30 lifetime visits</span>
+          <span class="pill">Your journey, your pace</span>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Your statistics">
+        <article class="stat">
+          <div class="stat-label">Gym visits</div>
+          <div class="stat-value" id="visits">30</div>
+          <div class="stat-sub">Lifetime total</div>
+        </article>
+
+        <article class="stat">
+          <div class="stat-label">Weight change</div>
+          <div class="stat-value" id="weightChange">+9 kg</div>
+          <div class="stat-sub">Since Level 0</div>
+        </article>
+
+        <article class="stat">
+          <div class="stat-label">Current weight</div>
+          <div class="stat-value" id="currentWeight">—</div>
+          <div class="stat-sub">Latest log</div>
+        </article>
+      </section>
+
+      <section class="panel" aria-labelledby="logHeading">
+        <div class="section-head">
+          <div>
+            <h2 id="logHeading">Log a session</h2>
+            <div class="subtext" style="margin-top:5px">
+              Choose your focus and earn XP.
+            </div>
+          </div>
+        </div>
+
+        <form id="sessionForm">
+          <label>Training focus</label>
+
+          <div class="group-options">
+            <div class="group-option">
+              <input type="radio" id="groupChest" name="muscleGroup"
+                     value="Chest" checked>
+              <label for="groupChest">
+                <span class="group-mark">CH</span>
+                <span class="group-name">Chest</span>
+              </label>
+            </div>
+
+            <div class="group-option">
+              <input type="radio" id="groupShoulders" name="muscleGroup"
+                     value="Shoulders">
+              <label for="groupShoulders">
+                <span class="group-mark">SH</span>
+                <span class="group-name">Shoulders</span>
+              </label>
+            </div>
+
+            <div class="group-option">
+              <input type="radio" id="groupBack" name="muscleGroup"
+                     value="Back">
+              <label for="groupBack">
+                <span class="group-mark">BK</span>
+                <span class="group-name">Back</span>
+              </label>
+            </div>
+
+            <div class="group-option">
+              <input type="radio" id="groupLegs" name="muscleGroup"
+                     value="Legs">
+              <label for="groupLegs">
+                <span class="group-mark">LG</span>
+                <span class="group-name">Legs</span>
+              </label>
+            </div>
+          </div>
+
+          <button class="primary" type="submit">＋ Log workout · earn XP</button>
+          <div class="hint">No weekly session limit. Every logged session counts.</div>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="weightHeading">
+        <div class="section-head">
+          <div>
+            <h2 id="weightHeading">Weight log</h2>
+            <div class="subtext" style="margin-top:5px">
+              Track your body weight over time.
+            </div>
+          </div>
+        </div>
+
+        <form id="weightForm" class="weight-form">
+          <div>
+            <label for="weightInput">Weight (kg)</label>
+            <input id="weightInput" type="number" inputmode="decimal"
+                   min="1" max="500" step="0.1"
+                   placeholder="e.g. 66.0" required>
+          </div>
+          <button class="secondary" type="submit">Save weight</button>
+        </form>
+
+        <div class="hint">
+          A weight log records the value and today's date.
+          It does not award workout XP.
+        </div>
+        <div id="weightHistory" style="margin-top:12px"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="historyHeading">
+        <div class="section-head">
+          <div>
+            <h2 id="historyHeading">Recent sessions</h2>
+            <div class="subtext" style="margin-top:5px">
+              Your logged workouts, newest first.
+            </div>
+          </div>
+        </div>
+        <div class="history" id="history"></div>
+      </section>
+    </div>
+
+    <div class="page" id="settingsPage">
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2>Journey settings</h2>
+            <div class="subtext" style="margin-top:5px">
+              Edit your starting stats and progression rules.
+            </div>
+          </div>
+        </div>
+
+        <form id="settingsForm">
+          <div class="settings-grid">
+            <div>
+              <label for="settingLevel">Starting level</label>
+              <input id="settingLevel" type="number"
+                     min="1" max="9999" step="1" required>
+            </div>
+
+            <div>
+              <label for="settingVisits">Historical gym visits</label>
+              <input id="settingVisits" type="number"
+                     min="0" max="100000" step="1" required>
+            </div>
+
+            <div>
+              <label for="settingDays">Elapsed days</label>
+              <input id="settingDays" type="number"
+                     min="0" max="100000" step="1" required>
+            </div>
+
+            <div>
+              <label for="settingWeightChange">Weight change (kg)</label>
+              <input id="settingWeightChange" type="number"
+                     min="-300" max="300" step="0.1" required>
+            </div>
+
+            <div>
+              <label for="settingBaselineXP">Starting XP baseline</label>
+              <input id="settingBaselineXP" type="number"
+                     min="0" max="1000000000" step="1" required>
+            </div>
+
+            <div>
+              <label for="settingSessionXP">XP per session</label>
+              <input id="settingSessionXP" type="number"
+                     min="1" max="1000000" step="1" required>
+            </div>
+          </div>
+
+          <div class="hint">
+            Starting XP is a baseline for your current level, not XP earned
+            from historical workouts. Changing it recalculates your current level.
+          </div>
+
+          <div class="settings-actions">
+            <button class="primary" type="submit" style="margin-top:0">
+              Save settings
+            </button>
+            <button class="secondary" id="restoreBtn" type="button">
+              Restore defaults
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Local data</h2>
+        <p class="subtext">
+          Your sessions and weight logs are saved in this browser using local
+          storage. Clearing website data may remove them.
+        </p>
+        <button class="secondary" id="exportBtn" type="button"
+                style="width:100%">
+          Export backup (JSON)
+        </button>
+      </section>
+    </div>
+
+    <div class="footer">Built for consistency. One session at a time.</div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "levelUpGymTracker.v2";
+
+      const DEFAULTS = {
+        level: 10,
+        xp: 1000,
+        visits: 30,
+        elapsedDays: 83,
+        weightChangeKg: 9,
+        sessionXP: 100
+      };
+
+      const LEVEL_THRESHOLD = level => 50 * level * level;
+      const $ = id => document.getElementById(id);
+      const formatNumber = n => new Intl.NumberFormat().format(n);
+
+      const defaultState = () => ({
+        version: 2,
+        baseline: { ...DEFAULTS },
+        sessions: [],
+        weights: []
+      });
+
+      let state = loadState();
+
+      function loadState() {
+        try {
+          const raw =
+            localStorage.getItem(STORAGE_KEY) ||
+            localStorage.getItem("levelUpGymTracker.v1");
+
+          if (!raw) return defaultState();
+
+          const data = JSON.parse(raw);
+          const baseline = { ...DEFAULTS, ...(data.baseline || {}) };
+
+          const sessions = Array.isArray(data.sessions)
+            ? data.sessions.filter(s =>
+                s &&
+                typeof s.id === "string" &&
+                ["Chest", "Shoulders", "Back", "Legs"].includes(s.group) &&
+                typeof s.date === "string" &&
+                Number.isFinite(s.xp)
+              )
+            : [];
+
+          const weights = Array.isArray(data.weights)
+            ? data.weights.filter(w =>
+                w &&
+                typeof w.id === "string" &&
+                Number.isFinite(w.kg) &&
+                typeof w.date === "string"
+              )
+            : [];
+
+          return { version: 2, baseline, sessions, weights };
+        } catch (error) {
+          console.error("Could not load saved data:", error);
+          return defaultState();
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          return true;
+        } catch (error) {
+          console.error(error);
+          showToast("Could not save. Check browser storage.");
+          return false;
+        }
+      }
+
+      function getProgress() {
+        const totalVisits =
+          Number(state.baseline.visits) + state.sessions.length;
+
+        const totalXP =
+          Number(state.baseline.xp) +
+          state.sessions.reduce((sum, s) => sum + s.xp, 0);
+
+        let level = Math.max(1, Number(state.baseline.level) || 1);
+
+        while (totalXP >= LEVEL_THRESHOLD(level + 1)) level++;
+        while (level > 1 && totalXP < LEVEL_THRESHOLD(level)) level--;
+
+        const currentThreshold = LEVEL_THRESHOLD(level);
+        const nextThreshold = LEVEL_THRESHOLD(level + 1);
+
+        return {
+          totalVisits,
+          totalXP,
+          level,
+          progressXP: totalXP - currentThreshold,
+          neededXP: nextThreshold - currentThreshold,
+          percent: Math.max(
+            0,
+            Math.min(
+              100,
+              ((totalXP - currentThreshold) /
+                (nextThreshold - currentThreshold)) * 100
+            )
+          )
+        };
+      }
+
+      function rankForLevel(level) {
+        if (level >= 100) return "Beyond Limits";
+        if (level >= 75) return "Elite";
+        if (level >= 50) return "Advanced";
+        if (level >= 25) return "Developing";
+        if (level >= 10) return "The Foundation";
+        return "Beginner";
+      }
+
+      function localToday() {
+        const d = new Date();
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 10);
+      }
+
+      function dateLabel(date) {
+        return new Date(`${date}T12:00:00`).toLocaleDateString(
+          undefined,
+          { year: "numeric", month: "short", day: "numeric" }
+        );
+      }
+
+      function showToast(message) {
+        const toast = $("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+
+        clearTimeout(showToast.timer);
+
+        showToast.timer = setTimeout(
+          () => toast.classList.remove("show"),
+          2400
+        );
+      }
+
+      function render() {
+        const p = getProgress();
+        const b = state.baseline;
+
+        $("level").textContent = p.level;
+        $("rank").textContent = rankForLevel(p.level);
+        $("journeyDay").textContent = `DAY ${b.elapsedDays}`;
+        $("visits").textContent = formatNumber(p.totalVisits);
+        $("visitPill").textContent =
+          `${formatNumber(p.totalVisits)} lifetime visits`;
+
+        $("weightChange").textContent =
+          `${Number(b.weightChangeKg) > 0 ? "+" : ""}${b.weightChangeKg} kg`;
+
+        const latestWeight = [...state.weights].sort(
+          (a, b) =>
+            b.date.localeCompare(a.date) || b.createdAt - a.createdAt
+        )[0];
+
+        $("currentWeight").textContent =
+          latestWeight ? `${latestWeight.kg} kg` : "—";
+
+        $("xpProgressLabel").textContent = `Level ${p.level} → ${p.level + 1}`;
+        $("xpNumbers").textContent =
+          `${formatNumber(p.progressXP)} / ${formatNumber(p.neededXP)} XP`;
+
+        $("xpFill").style.width = `${p.percent}%`;
+        $("xpBar").setAttribute(
+          "aria-valuenow",
+          String(Math.round(p.percent))
+        );
+
+        renderSessions();
+        renderWeights();
+        populateSettings();
+      }
+
+      function renderSessions() {
+        const history = $("history");
+        history.replaceChildren();
+
+        const sessions = [...state.sessions].sort(
+          (a, b) => b.createdAt - a.createdAt
+        );
+
+        if (!sessions.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent =
+            "No new sessions yet. Log your next workout to start building your history.";
+          history.appendChild(empty);
+          return;
+        }
+
+        sessions.slice(0, 50).forEach(session => {
+          const row = document.createElement("div");
+          row.className = "session";
+
+          const icon = document.createElement("div");
+          icon.className = "session-icon";
+          icon.textContent = session.group.slice(0, 2).toUpperCase();
+
+          const info = document.createElement("div");
+          info.className = "session-info";
+
+          const title = document.createElement("div");
+          title.className = "session-title";
+          title.textContent = session.group;
+
+          const date = document.createElement("div");
+          date.className = "session-date";
+          date.textContent = dateLabel(session.date);
+
+          info.append(title, date);
+
+          const xp = document.createElement("div");
+          xp.className = "session-xp";
+          xp.textContent = `+${session.xp} XP`;
+
+          const small = document.createElement("small");
+          small.textContent = "Workout";
+          xp.appendChild(small);
+
+          const remove = document.createElement("button");
+          remove.className = "delete-session";
+          remove.type = "button";
+          remove.setAttribute(
+            "aria-label",
+            `Delete ${session.group} session`
+          );
+          remove.title = "Delete session";
+          remove.textContent = "×";
+          remove.addEventListener("click", () => deleteSession(session.id));
+
+          row.append(icon, info, xp, remove);
+          history.appendChild(row);
+        });
+      }
+
+      function renderWeights() {
+        const list = $("weightHistory");
+        list.replaceChildren();
+
+        const weights = [...state.weights].sort(
+          (a, b) =>
+            b.date.localeCompare(a.date) || b.createdAt - a.createdAt
+        );
+
+        if (!weights.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent =
+            "No weight logs yet. Add your first weigh-in above.";
+          list.appendChild(empty);
+          return;
+        }
+
+        weights.slice(0, 12).forEach(entry => {
+          const row = document.createElement("div");
+          row.className = "weight-entry";
+
+          const info = document.createElement("div");
+
+          const value = document.createElement("div");
+          value.className = "weight-number";
+          value.textContent = `${entry.kg} kg`;
+
+          const date = document.createElement("div");
+          date.className = "session-date";
+          date.textContent = dateLabel(entry.date);
+
+          info.append(value, date);
+
+          const remove = document.createElement("button");
+          remove.className = "delete-session";
+          remove.type = "button";
+          remove.textContent = "×";
+          remove.setAttribute(
+            "aria-label",
+            `Delete ${entry.kg} kilogram weight log`
+          );
+          remove.addEventListener("click", () => deleteWeight(entry.id));
+
+          row.append(info, remove);
+          list.appendChild(row);
+        });
+      }
+
+      function logSession(group) {
+        const previousLevel = getProgress().level;
+
+        const session = {
+          id: makeId(),
+          group,
+          date: localToday(),
+          xp: Number(state.baseline.sessionXP) || 100,
+          createdAt: Date.now()
+        };
+
+        state.sessions.push(session);
+
+        if (!saveState()) {
+          state.sessions = state.sessions.filter(s => s.id !== session.id);
+          return;
+        }
+
+        render();
+
+        const nextLevel = getProgress().level;
+
+        showToast(
+          nextLevel > previousLevel
+            ? `Level up! You reached Level ${nextLevel} 🎉`
+            : `Workout logged · +${session.xp} XP`
+        );
+      }
+
+      function deleteSession(id) {
+        const session = state.sessions.find(s => s.id === id);
+        if (!session) return;
+
+        if (!confirm(
+          `Delete this ${session.group} session? Its XP and visit will be removed.`
+        )) return;
+
+        const previous = state.sessions;
+        state.sessions = state.sessions.filter(s => s.id !== id);
+
+        if (!saveState()) {
+          state.sessions = previous;
+          return;
+        }
+
+        render();
+        showToast("Session deleted");
+      }
+
+      function deleteWeight(id) {
+        if (!confirm("Delete this weight log?")) return;
+
+        const previous = state.weights;
+        state.weights = state.weights.filter(w => w.id !== id);
+
+        if (!saveState()) {
+          state.weights = previous;
+          return;
+        }
+
+        render();
+        showToast("Weight log deleted");
+      }
+
+      function makeId() {
+        return (
+          crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+        );
+      }
+
+      function populateSettings() {
+        const b = state.baseline;
+
+        $("settingLevel").value = b.level;
+        $("settingVisits").value = b.visits;
+        $("settingDays").value = b.elapsedDays;
+        $("settingWeightChange").value = b.weightChangeKg;
+        $("settingBaselineXP").value = b.xp;
+        $("settingSessionXP").value = b.sessionXP;
+      }
+
+      function setPage(pageId) {
+        document.querySelectorAll(".page").forEach(page =>
+          page.classList.toggle("active", page.id === pageId)
+        );
+
+        document.querySelectorAll(".nav-btn").forEach(btn =>
+          btn.classList.toggle("active", btn.dataset.page === pageId)
+        );
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      document.querySelectorAll(".nav-btn").forEach(btn =>
+        btn.addEventListener("click", () => setPage(btn.dataset.page))
+      );
+
+      $("sessionForm").addEventListener("submit", event => {
+        event.preventDefault();
+
+        const selected = document.querySelector(
+          'input[name="muscleGroup"]:checked'
+        );
+
+        if (!selected) {
+          showToast("Choose a training focus.");
+          return;
+        }
+
+        logSession(selected.value);
+      });
+
+      $("weightForm").addEventListener("submit", event => {
+        event.preventDefault();
+
+        const kg = Number($("weightInput").value);
+
+        if (!Number.isFinite(kg) || kg < 1 || kg > 500) {
+          showToast("Enter a valid weight in kg.");
+          return;
+        }
+
+        const entry = {
+          id: makeId(),
+          kg: Math.round(kg * 10) / 10,
+          date: localToday(),
+          createdAt: Date.now()
+        };
+
+        state.weights.push(entry);
+
+        if (!saveState()) {
+          state.weights = state.weights.filter(w => w.id !== entry.id);
+          return;
+        }
+
+        $("weightInput").value = "";
+        render();
+        showToast(`Weight saved · ${entry.kg} kg`);
+      });
+
+      $("settingsForm").addEventListener("submit", event => {
+        event.preventDefault();
+
+        const next = {
+          level: Number($("settingLevel").value),
+          visits: Number($("settingVisits").value),
+          elapsedDays: Number($("settingDays").value),
+          weightChangeKg: Number($("settingWeightChange").value),
+          xp: Number($("settingBaselineXP").value),
+          sessionXP: Number($("settingSessionXP").value)
+        };
+
+        if (
+          !Number.isInteger(next.level) ||
+          next.level < 1 ||
+          next.level > 9999 ||
+          !Number.isInteger(next.visits) ||
+          next.visits < 0 ||
+          !Number.isInteger(next.elapsedDays) ||
+          next.elapsedDays < 0 ||
+          !Number.isFinite(next.weightChangeKg) ||
+          !Number.isInteger(next.xp) ||
+          next.xp < 0 ||
+          !Number.isInteger(next.sessionXP) ||
+          next.sessionXP < 1
+        ) {
+          showToast("Check your settings values.");
+          return;
+        }
+
+        const old = state.baseline;
+        state.baseline = { ...old, ...next };
+
+        if (!saveState()) {
+          state.baseline = old;
+          return;
+        }
+
+        render();
+        showToast("Settings saved");
+      });
+
+      $("restoreBtn").addEventListener("click", () => {
+        if (!confirm(
+          "Restore the original starting stats? Your logged sessions and weight logs will be kept."
+        )) return;
+
+        const old = state.baseline;
+        state.baseline = { ...DEFAULTS };
+
+        if (!saveState()) {
+          state.baseline = old;
+          return;
+        }
+
+        render();
+        showToast("Starting stats restored");
+      });
+
+      $("exportBtn").addEventListener("click", () => {
+        const blob = new Blob(
+          [JSON.stringify(state, null, 2)],
+          { type: "application/json" }
+        );
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = "level-up-backup.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        showToast("Backup exported");
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
