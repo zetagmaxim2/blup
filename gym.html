@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LEVEL UP — Anime Fitness Progression</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: { 400: '#fbbf24', 500: '#f59e0b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #000; color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen pb-24 selection:bg-amber-500/30 selection:text-amber-200">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-30 bg-black/80 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div id="header-lvl" class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center font-bold text-black text-xs shadow-lg shadow-amber-500/20">
+                10
+            </div>
+            <div>
+                <h1 class="text-sm font-semibold tracking-tight text-white">Shadow Monarch</h1>
+                <p id="header-subtitle" class="text-[11px] text-slate-400 font-medium">Day 83 • Level 10</p>
+            </div>
+        </div>
+
+        <button onclick="openModal('quickLogModal')" class="bg-white/10 hover:bg-white/15 text-amber-400 border border-white/10 active:scale-95 transition-all text-xs font-semibold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+            + Log Workout
+        </button>
+    </header>
+
+    <!-- Main App Content Container -->
+    <main class="max-w-md mx-auto px-5 pt-5">
+        
+        <!-- VIEW: HOME -->
+        <section id="view-home" class="space-y-6 view-section">
+            <!-- Hero Card -->
+            <div class="relative overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-900 to-black rounded-3xl p-6 border border-white/10 shadow-2xl">
+                <div class="absolute top-0 right-0 -mt-8 -mr-8 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span id="tier-badge" class="text-[11px] font-semibold tracking-wider text-amber-400 uppercase bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/20">
+                            Adept Tier
+                        </span>
+                        <h2 id="tier-title" class="text-2xl font-bold text-white tracking-tight mt-2">Foundation</h2>
+                    </div>
+                    <div class="text-right">
+                        <div id="hero-lvl-text" class="text-3xl font-extrabold text-white tracking-tight">Lvl 10</div>
+                    </div>
+                </div>
+
+                <!-- Anime Avatar Silhouette -->
+                <div class="my-6 relative flex justify-center items-center py-2">
+                    <div class="w-32 h-32 rounded-full bg-neutral-800/80 border-2 border-white/10 flex items-center justify-center relative shadow-inner overflow-hidden">
+                        <svg viewBox="0 0 100 100" class="w-24 h-24 text-slate-300 drop-shadow-xl" fill="currentColor">
+                            <path d="M50 15 C38 15 32 25 32 35 C32 45 40 50 50 50 C60 50 68 45 68 35 C68 25 62 15 50 15 Z" />
+                            <path d="M25 85 C25 65 35 55 50 55 C65 55 75 65 75 85 Z" opacity="0.9" />
+                            <circle cx="50" cy="35" r="4" fill="#f59e0b" />
+                        </svg>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="space-y-2 mt-4">
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span id="xp-current" class="text-slate-400">0 XP</span>
+                        <span id="xp-needed" class="text-slate-200">Next Lvl: 1,050 XP</span>
+                    </div>
+                    <div class="w-full bg-neutral-800 rounded-full h-3 p-0.5 overflow-hidden border border-white/5">
+                        <div id="xp-bar" class="bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full transition-all duration-700 ease-out shadow-lg shadow-amber-500/50" style="width: 0%;"></div>
+                    </div>
+                    <p id="tier-quote" class="text-[11px] text-slate-400 italic text-center pt-2">
+                        "Iron Sharpens Iron. The body begins to adapt."
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-3.5">
+                <div class="bg-neutral-900/90 rounded-2xl p-4 border border-white/5 shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-medium">Gym Visits</span>
+                        <span class="text-amber-400 font-bold">⚡</span>
+                    </div>
+                    <div>
+                        <div id="stat-visits" class="text-2xl font-bold text-white">30</div>
+                        <div class="text-[11px] text-slate-400 font-medium">30 imported + 0 new</div>
+                    </div>
+                </div>
+
+                <div class="bg-neutral-900/90 rounded-2xl p-4 border border-white/5 shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-medium">Net Weight Change</span>
+                        <span class="text-emerald-400 font-bold">⚖️</span>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-emerald-400">+9 kg</div>
+                        <div class="text-[11px] text-slate-400 font-medium">Level 0 → 10 Baseline</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action -->
+            <div class="bg-neutral-900/50 border border-white/10 rounded-2xl p-5 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-white">Log Today's Training</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Quick single-tap logging (+100 XP)</p>
+                </div>
+                <button onclick="openModal('quickLogModal')" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-semibold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 transition-all">
+                    Start
+                </button>
+            </div>
+
+            <!-- Recent Sessions Feed -->
+            <div class="space-y-3">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">Recent Sessions</h3>
+                <div id="recent-workouts-list" class="space-y-2">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: WORKOUTS -->
+        <section id="view-workouts" class="space-y-5 view-section hidden">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-bold text-white">Workout Log</h2>
+                    <p class="text-xs text-slate-400">Unlimited session logging enabled</p>
+                </div>
+                <button onclick="openModal('quickLogModal')" class="bg-amber-500 text-black text-xs font-semibold px-3 py-2 rounded-xl">
+                    + Quick Log
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="quickLogFromButton('Chest')" class="bg-neutral-900 hover:bg-neutral-800 border border-white/5 rounded-2xl p-4 text-left transition-all">
+                    <span class="text-xs font-semibold text-slate-300">Chest</span>
+                    <p class="text-[11px] text-slate-400 mt-1">Log session</p>
+                </button>
+                <button onclick="quickLogFromButton('Shoulders')" class="bg-neutral-900 hover:bg-neutral-800 border border-white/5 rounded-2xl p-4 text-left transition-all">
+                    <span class="text-xs font-semibold text-slate-300">Shoulders</span>
+                    <p class="text-[11px] text-slate-400 mt-1">Log session</p>
+                </button>
+                <button onclick="quickLogFromButton('Back')" class="bg-neutral-900 hover:bg-neutral-800 border border-white/5 rounded-2xl p-4 text-left transition-all">
+                    <span class="text-xs font-semibold text-slate-300">Back</span>
+                    <p class="text-[11px] text-slate-400 mt-1">Log session</p>
+                </button>
+                <button onclick="quickLogFromButton('Legs')" class="bg-neutral-900 hover:bg-neutral-800 border border-white/5 rounded-2xl p-4 text-left transition-all">
+                    <span class="text-xs font-semibold text-slate-300">Legs</span>
+                    <p class="text-[11px] text-slate-400 mt-1">Log session</p>
+                </button>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <h3 id="workout-history-title" class="text-xs font-semibold uppercase tracking-wider text-slate-400">History</h3>
+                <div class="bg-neutral-900/60 rounded-xl p-3.5 border border-white/5 flex items-start gap-3">
+                    <span class="text-amber-400">ℹ️</span>
+                    <p class="text-xs text-slate-300">
+                        <strong class="text-white">30 Historical Visits:</strong> Imported from Level 0 → Level 10 progression baseline.
+                    </p>
+                </div>
+                <div id="full-workouts-list" class="space-y-2"></div>
+            </div>
+        </section>
+
+        <!-- VIEW: PROGRESS -->
+        <section id="view-progress" class="space-y-5 view-section hidden">
+            <div>
+                <h2 class="text-lg font-bold text-white">Metrics & Transformation</h2>
+                <p class="text-xs text-slate-400">Track body weight and check-ins</p>
+            </div>
+
+            <div class="bg-neutral-900 rounded-2xl p-5 border border-white/5 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400">Current Body Weight</span>
+                        <div id="current-weight-display" class="text-2xl font-extrabold text-white mt-0.5">Not Set</div>
+                    </div>
+                    <button onclick="openModal('weightModal')" class="bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold px-3 py-2 rounded-xl border border-white/10">
+                        Check In
+                    </button>
+                </div>
+
+                <div class="pt-3 border-t border-white/5 grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-[11px] text-slate-400">Starting Weight</span>
+                        <p id="starting-weight-display" class="text-sm font-semibold text-slate-200">Unspecified</p>
+                    </div>
+                    <div>
+                        <span class="text-[11px] text-slate-400">Total Recorded Change</span>
+                        <p class="text-sm font-bold text-emerald-400">+9 kg</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">Check-in Logs</h3>
+                <div id="weight-logs-list" class="space-y-2">
+                    <div class="bg-neutral-900/40 rounded-2xl p-5 text-center border border-white/5 text-xs text-slate-400">
+                        No weight check-ins logged yet.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: PROFILE -->
+        <section id="view-profile" class="space-y-5 view-section hidden">
+            <div>
+                <h2 class="text-lg font-bold text-white">Profile & Configuration</h2>
+                <p class="text-xs text-slate-400">System settings and progression baseline</p>
+            </div>
+
+            <div class="bg-neutral-900 rounded-2xl p-5 border border-white/5 space-y-3">
+                <div class="flex justify-between text-xs">
+                    <span class="text-slate-400">Display Name</span>
+                    <span class="font-semibold text-white">Shadow Monarch</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                    <span class="text-slate-400">Elapsed Journey</span>
+                    <span class="font-semibold text-white">83 Days</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                    <span class="text-slate-400">Starting Level</span>
+                    <span class="font-semibold text-amber-400">Level 10 Baseline</span>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="resetData()" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold py-3 rounded-xl transition-all">
+                    Reset Activity Logs
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- QUICK LOG MODAL -->
+    <div id="quickLogModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-end sm:items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-3xl p-6 space-y-5">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-white">Log Session</h3>
+                <button onclick="closeModal('quickLogModal')" class="text-slate-400 text-xs font-semibold">Cancel</button>
+            </div>
+
+            <div>
+                <label class="text-xs font-medium text-slate-400 block mb-2">Select Target Muscle Group</label>
+                <div class="grid grid-cols-2 gap-2" id="muscle-buttons">
+                    <button type="button" onclick="selectMuscle('Chest')" class="muscle-btn py-2.5 rounded-xl text-xs font-semibold border bg-amber-500 text-black border-amber-400" data-muscle="Chest">Chest</button>
+                    <button type="button" onclick="selectMuscle('Shoulders')" class="muscle-btn py-2.5 rounded-xl text-xs font-semibold border bg-neutral-800 text-slate-300 border-white/5" data-muscle="Shoulders">Shoulders</button>
+                    <button type="button" onclick="selectMuscle('Back')" class="muscle-btn py-2.5 rounded-xl text-xs font-semibold border bg-neutral-800 text-slate-300 border-white/5" data-muscle="Back">Back</button>
+                    <button type="button" onclick="selectMuscle('Legs')" class="muscle-btn py-2.5 rounded-xl text-xs font-semibold border bg-neutral-800 text-slate-300 border-white/5" data-muscle="Legs">Legs</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-medium text-slate-400 block mb-1">Optional Notes</label>
+                <input type="text" id="workoutNotesInput" placeholder="e.g. Heavy bench press PR" class="w-full bg-neutral-800 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+            </div>
+
+            <button onclick="submitWorkout()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs py-3 rounded-xl shadow-lg shadow-amber-500/20 transition-all">
+                Log Workout (+100 XP)
+            </button>
+        </div>
+    </div>
+
+    <!-- WEIGHT MODAL -->
+    <div id="weightModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-end sm:items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-3xl p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-white">Check In Weight</h3>
+                <button onclick="closeModal('weightModal')" class="text-slate-400 text-xs">Cancel</button>
+            </div>
+            <input type="number" step="0.1" id="weightInput" placeholder="Weight in kg (e.g. 78.5)" class="w-full bg-neutral-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400" />
+            <button onclick="submitWeight()" class="w-full bg-amber-500 text-black font-bold text-xs py-3 rounded-xl shadow-lg shadow-amber-500/20">
+                Save Check-in (+20 XP)
+            </button>
+        </div>
+    </div>
+
+    <!-- LEVEL UP CELEBRATION MODAL -->
+    <div id="levelUpModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl hidden items-center justify-center p-6 text-center">
+        <div class="space-y-5">
+            <div class="w-20 h-20 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-amber-500/50">
+                ✨
+            </div>
+            <div>
+                <span class="text-xs font-bold tracking-widest text-amber-400 uppercase">Level Up Reached!</span>
+                <h2 id="modalNewLevelText" class="text-4xl font-extrabold text-white mt-1">LEVEL 11</h2>
+            </div>
+            <p class="text-xs text-slate-300 max-w-xs mx-auto">You have broken through past limits. Your new tier details are unlocked.</p>
+            <button onclick="closeModal('levelUpModal')" class="bg-amber-500 text-black font-bold text-xs px-8 py-3 rounded-full shadow-lg shadow-amber-500/30">
+                Claim Progress
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 z-30 bg-black/80 backdrop-blur-xl border-t border-white/5 py-2.5 px-6">
+        <div class="max-w-md mx-auto flex justify-around items-center">
+            <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 text-amber-400" data-tab="home">
+                <span class="text-lg">⚡</span>
+                <span class="text-[10px] font-semibold">Home</span>
+            </button>
+            <button onclick="switchTab('workouts')" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300" data-tab="workouts">
+                <span class="text-lg">🏋️‍♂️</span>
+                <span class="text-[10px] font-semibold">Workouts</span>
+            </button>
+            <button onclick="switchTab('progress')" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300" data-tab="progress">
+                <span class="text-lg">📈</span>
+                <span class="text-[10px] font-semibold">Progress</span>
+            </button>
+            <button onclick="switchTab('profile')" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300" data-tab="profile">
+                <span class="text-lg">👤</span>
+                <span class="text-[10px] font-semibold">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Application Script -->
+    <script>
+        const LEVEL_TITLES = {
+            1: { title: "Beginner", tier: "Novice", quote: "The journey of a thousand miles begins with a single rep." },
+            10: { title: "Foundation", tier: "Adept", quote: "Iron Sharpens Iron. The body begins to adapt." },
+            25: { title: "Developing", tier: "Challenger", quote: "Strength is no longer an option; it is your baseline." },
+            50: { title: "Advanced", tier: "Master", quote: "Limits are merely temporary benchmarks." },
+            75: { title: "Elite", tier: "Grandmaster", quote: "A rare breed. Discipline is your atmosphere." },
+            100: { title: "Apex", tier: "Legend", quote: "Unstoppable force meets unwavering focus." },
+            101: { title: "Beyond Limits", tier: "Transcendent", quote: "Breaking past mortal thresholds." }
+        };
+
+        // State Management
+        let workouts = JSON.parse(localStorage.getItem('levelup_workouts') || '[]');
+        let weightLogs = JSON.parse(localStorage.getItem('levelup_weight') || '[]');
+        let profile = JSON.parse(localStorage.getItem('levelup_profile') || JSON.stringify({
+            baselineGymVisits: 30,
+            cumulativeXPBaseline: 1000,
+            currentWeightKg: null,
+            startingWeightKg: null,
+            netWeightChangeKg: 9.0
+        }));
+
+        let selectedMuscleGroup = 'Chest';
+
+        function calculateXPForLevel(level) {
+            return 50 * Math.pow(level, 2);
+        }
+
+        function getLevelFromXP(cumulativeXP) {
+            let level = 0;
+            while (calculateXPForLevel(level + 1) <= cumulativeXP) {
+                level++;
+            }
+            return Math.max(1, level);
+        }
+
+        function updateUI() {
+            const totalVisits = profile.baselineGymVisits + workouts.length;
+            const totalSessionXP = workouts.reduce((acc, w) => acc + w.xpEarned, 0);
+            const totalWeightXP = weightLogs.length * 20;
+            const totalCumulativeXP = profile.cumulativeXPBaseline + totalSessionXP + totalWeightXP;
+
+            const currentLevel = getLevelFromXP(totalCumulativeXP);
+            const currentLevelXP = calculateXPForLevel(currentLevel);
+            const nextLevelXP = calculateXPForLevel(currentLevel + 1);
+            const xpInLevel = totalCumulativeXP - currentLevelXP;
+            const xpNeeded = nextLevelXP - currentLevelXP;
+            const progressPercent = Math.min(100, Math.max(0, (xpInLevel / xpNeeded) * 100));
+
+            // Milestone lookup
+            const currentMilestone = Object.keys(LEVEL_TITLES).map(Number).sort((a,b)=>b-a).find(m => currentLevel >= m) || 1;
+            const info = LEVEL_TITLES[currentMilestone];
+
+            // Render Header & Hero
+            document.getElementById('header-lvl').innerText = currentLevel;
+            document.getElementById('header-subtitle').innerText = `Day 83 • Level ${currentLevel}`;
+            document.getElementById('hero-lvl-text').innerText = `Lvl ${currentLevel}`;
+            document.getElementById('tier-badge').innerText = `${info.tier} Tier`;
+            document.getElementById('tier-title').innerText = info.title;
+            document.getElementById('tier-quote').innerText = `"${info.quote}"`;
+
+            // XP Bar
+            document.getElementById('xp-current').innerText = `${xpInLevel.toLocaleString()} XP`;
+            document.getElementById('xp-needed').innerText = `Next Lvl: ${(xpNeeded - xpInLevel).toLocaleString()} XP`;
+            document.getElementById('xp-bar').style.width = `${progressPercent}%`;
+
+            // Stats
+            document.getElementById('stat-visits').innerText = totalVisits;
+
+            // Render Recent Workouts
+            const recentContainer = document.getElementById('recent-workouts-list');
+            const fullContainer = document.getElementById('full-workouts-list');
+            
+            if (workouts.length === 0) {
+                recentContainer.innerHTML = `<div class="bg-neutral-900/40 rounded-2xl p-6 text-center border border-white/5 text-xs text-slate-400">No workout sessions logged yet.</div>`;
+                fullContainer.innerHTML = `<div class="bg-neutral-900/40 rounded-2xl p-5 text-center border border-white/5 text-xs text-slate-400">No sessions logged.</div>`;
+            } else {
+                recentContainer.innerHTML = workouts.slice(0, 3).map(w => renderWorkoutCard(w)).join('');
+                fullContainer.innerHTML = workouts.map(w => renderWorkoutCard(w)).join('');
+            }
+
+            document.getElementById('workout-history-title').innerText = `History (${totalVisits} Total Visits)`;
+
+            // Weight Display
+            document.getElementById('current-weight-display').innerText = profile.currentWeightKg ? `${profile.currentWeightKg} kg` : 'Not Set';
+            document.getElementById('starting-weight-display').innerText = profile.startingWeightKg ? `${profile.startingWeightKg} kg` : 'Unspecified';
+
+            const weightListContainer = document.getElementById('weight-logs-list');
+            if (weightLogs.length === 0) {
+                weightListContainer.innerHTML = `<div class="bg-neutral-900/40 rounded-2xl p-5 text-center border border-white/5 text-xs text-slate-400">No weight check-ins logged yet.</div>`;
+            } else {
+                weightListContainer.innerHTML = weightLogs.map(l => `
+                    <div class="bg-neutral-900 rounded-xl p-3.5 border border-white/5 flex justify-between items-center text-xs">
+                        <span class="text-slate-300">${new Date(l.date).toLocaleDateString()}</span>
+                        <span class="font-bold text-white">${l.weightKg} kg</span>
+                    </div>
+                `).join('');
+            }
+
+            // Save to localStorage
+            localStorage.setItem('levelup_workouts', JSON.stringify(workouts));
+            localStorage.setItem('levelup_weight', JSON.stringify(weightLogs));
+            localStorage.setItem('levelup_profile', JSON.stringify(profile));
+        }
+
+        function renderWorkoutCard(w) {
+            return `
+                <div class="bg-neutral-900 rounded-xl p-3.5 border border-white/5 flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
+                            ${w.category.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-semibold text-white">${w.category} Session</h4>
+                            <p class="text-[10px] text-slate-400">${new Date(w.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                            ${w.notes ? `<p class="text-[11px] text-slate-400 italic mt-0.5">"${w.notes}"</p>` : ''}
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full">+${w.xpEarned} XP</span>
+                </div>
+            `;
+        }
+
+        // Navigation Tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.tab === tabId) {
+                    btn.classList.remove('text-slate-500');
+                    btn.classList.add('text-amber-400');
+                } else {
+                    btn.classList.add('text-slate-500');
+                    btn.classList.remove('text-amber-400');
+                }
+            });
+            window.scrollTo(0, 0);
+        }
+
+        // Modals
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+        function selectMuscle(muscle) {
+            selectedMuscleGroup = muscle;
+            document.querySelectorAll('.muscle-btn').forEach(btn => {
+                if (btn.dataset.muscle === muscle) {
+                    btn.className = "muscle-btn py-2.5 rounded-xl text-xs font-semibold border bg-amber-500 text-black border-amber-400 shadow-md";
+                } else {
+                    btn.className = "muscle-btn py-2.5 rounded-xl text-xs font-semibold border bg-neutral-800 text-slate-300 border-white/5";
+                }
+            });
+        }
+
+        function quickLogFromButton(muscle) {
+            selectedMuscleGroup = muscle;
+            submitWorkout();
+        }
+
+        function submitWorkout() {
+            const notes = document.getElementById('workoutNotesInput').value;
+            const prevXP = profile.cumulativeXPBaseline + workouts.reduce((a,b)=>a+b.xpEarned,0) + (weightLogs.length*20);
+            const prevLvl = getLevelFromXP(prevXP);
+
+            const newWorkout = {
+                id: 'w_' + Date.now(),
+                date: new Date().toISOString(),
+                category: selectedMuscleGroup,
+                notes: notes || `${selectedMuscleGroup} Focus Session`,
+                xpEarned: 100
+            };
+
+            workouts.unshift(newWorkout);
+            document.getElementById('workoutNotesInput').value = '';
+            closeModal('quickLogModal');
+            updateUI();
+
+            const newXP = profile.cumulativeXPBaseline + workouts.reduce((a,b)=>a+b.xpEarned,0) + (weightLogs.length*20);
+            const newLvl = getLevelFromXP(newXP);
+            if (newLvl > prevLvl) {
+                document.getElementById('modalNewLevelText').innerText = `LEVEL ${newLvl}`;
+                openModal('levelUpModal');
+            }
+        }
+
+        function submitWeight() {
+            const val = parseFloat(document.getElementById('weightInput').value);
+            if (!val) return;
+
+            weightLogs.unshift({ id: 'weight_' + Date.now(), date: new Date().toISOString(), weightKg: val });
+            profile.currentWeightKg = val;
+            if (!profile.startingWeightKg) profile.startingWeightKg = val - profile.netWeightChangeKg;
+
+            document.getElementById('weightInput').value = '';
+            closeModal('weightModal');
+            updateUI();
+        }
+
+        function resetData() {
+            if (confirm("Reset local activity logs? Baseline Level 10 stats will be preserved.")) {
+                workouts = [];
+                weightLogs = [];
+                profile.currentWeightKg = null;
+                profile.startingWeightKg = null;
+                localStorage.clear();
+                updateUI();
+            }
+        }
+
+        // Initial paint
+        updateUI();
+    </script>
+</body>
+</html>
