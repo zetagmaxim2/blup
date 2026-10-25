@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171615">
+<title>Gym Level Tracker</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%23171615'/%3E%3Cg stroke='%23ff8b42' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M18 24v16M25 19v26M39 19v26M46 24v16M25 32h14'/%3E%3C/g%3E%3Cpath d='M48 10l2.5 5.5L56 18l-5.5 2.5L48 26l-2.5-5.5L40 18l5.5-2.5z' fill='%23f5e9d5'/%3E%3C/svg%3E">
+<style>
+:root{color-scheme:dark;--bg:#171615;--panel:#201f1d;--panel2:#292724;--line:#625d55;--cream:#f4ead8;--muted:#aaa49a;--orange:#ff8b42;--orange2:#c95c27;--green:#75d7b3;--red:#ff7770;--radius:16px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:var(--bg);color:var(--cream);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:650;letter-spacing:-.025em}button,input,select{font:inherit}button{cursor:pointer;color:inherit;touch-action:manipulation;user-select:none;-webkit-user-select:none}button:disabled{opacity:.3;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+svg.lucide{width:1em;height:1em;stroke-width:2.2;flex:none;vertical-align:-.12em}
+.app{max-width:760px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom))}.topbar{display:flex;align-items:center;gap:8px;margin-bottom:22px}.pill{display:flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #4c4842;border-radius:11px;background:#22211f;font-size:14px;min-width:78px}.pill.hot{background:#69371f;border-color:#9a532c;color:#fff0dc}.pill .ico{font-size:17px;display:flex}.spacer{flex:1}.icon-btn{width:44px;height:44px;border:1px solid #504b44;background:#22211f;border-radius:12px;font-size:20px;display:grid;place-items:center}.day-row{display:flex;align-items:flex-end;gap:8px;margin:0 0 20px}.day-title{font-size:clamp(42px,10vw,66px);font-weight:1000;line-height:.92;letter-spacing:-.075em;text-transform:uppercase}.day-title span{color:var(--muted);font-size:.38em;letter-spacing:-.03em}.arrows{display:flex;gap:8px;margin-left:auto}.arrow{width:46px;height:46px;border:2px solid #4d4943;background:transparent;font-size:24px;display:grid;place-items:center}
+.day-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:-8px 0 16px;color:var(--muted);font-size:13px;letter-spacing:0}.ds{display:inline-flex;align-items:center;gap:7px}.day-sub button{border:0;background:none;color:var(--orange);font-size:13px;font-weight:850;padding:4px 0;text-decoration:underline}
+.hero{position:relative;overflow:hidden;border:1.5px solid #7a7368;border-radius:5px;background:linear-gradient(120deg,#1c1b19,#111110 72%);padding:22px 20px 18px;margin-bottom:16px;box-shadow:inset 0 0 0 1px #282623}.hero:after{content:"";position:absolute;right:-70px;top:-100px;width:250px;height:250px;border:30px solid #2d5f50;border-radius:50%;opacity:.25;pointer-events:none}.eyebrow{color:var(--orange);font-size:16px;letter-spacing:.12em;text-transform:uppercase;font-weight:900;display:flex;align-items:center;gap:5px;white-space:nowrap}.hero-name{font-size:clamp(30px,7vw,46px);font-weight:1000;line-height:1;margin-bottom:18px}.level-label{font-size:28px;color:var(--orange);font-weight:1000;text-transform:uppercase;line-height:1}.level-number{font-size:clamp(96px,24vw,150px);line-height:.86;letter-spacing:-.095em;font-weight:1000;color:var(--cream);text-shadow:4px 4px 0 var(--orange2);margin:6px 0 14px}.xp-ticks{display:flex;gap:3px;max-width:390px;margin:0 0 8px}.tick{height:8px;flex:1;background:#4b4842;transform:skew(-18deg)}.tick.on{background:var(--orange)}.xp-copy{font-size:14px;color:#d7d0c4;letter-spacing:0}.stats-line{display:flex;flex-wrap:wrap;gap:10px 15px;margin-top:16px;color:#d4cec3;font-size:12px;letter-spacing:.06em;text-transform:uppercase}.stats-line b{color:var(--cream);font-size:14px}.rank-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:12px;text-transform:uppercase;letter-spacing:.05em}.rank-badge{background:var(--orange);color:#1b1714;padding:5px 11px;font-weight:1000;display:flex;align-items:center;gap:5px}.rank-mark{padding:4px 8px;border:1px solid #5a554e}
+.panel{border:1px solid #4e4942;border-radius:var(--radius);background:var(--panel);padding:18px;margin:14px 0}.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 16px;margin-bottom:16px}.head-text{flex:1 1 240px;min-width:0}.panel h2{font-size:20px;margin:0;letter-spacing:-.04em}.panel-head .sub{margin-top:6px;font-size:13px;line-height:1.5}.sub{color:var(--muted);font-size:12px;letter-spacing:0;line-height:1.5}.btn{border:1px solid #6a6258;background:#302d29;border-radius:11px;padding:11px 14px;font-size:13px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn.primary{background:var(--orange);color:#211711;border-color:var(--orange)}.btn.danger{color:#ff9c92;border-color:#7d4540}.btn.sm{padding:6px 8px}.btn.big{width:100%;padding:15px;font-size:15px;border-radius:13px}.btn:active{transform:scale(.97)}
+.field-label{display:block;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:16px 0 8px}
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.option{display:flex;align-items:center;gap:9px;border:1px solid #514c45;background:#191816;border-radius:11px;padding:12px;min-height:52px;font-size:14px;text-align:left}.option.on{border-color:var(--orange);background:#34251d}.option .ico{display:flex;font-size:18px;color:var(--orange)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}.tagbtn{display:inline-flex;align-items:center;gap:7px;border:1px solid #514c45;background:#191816;border-radius:999px;padding:10px 14px;font-size:13px}.tagbtn.on{border-color:var(--orange);background:#34251d;color:#ffd9bd}
+.step{background:#191816;border:1px solid #45413b;border-radius:13px;padding:14px}.step-val{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:12px}.step-val strong{font-size:44px;line-height:1;font-weight:1000;letter-spacing:-.07em}.step-val span{color:var(--muted);font-size:14px}.step-btns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.step-btn{padding:13px 4px;font-size:15px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.log-list{display:flex;flex-direction:column;gap:8px}.log-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #45413b;border-radius:11px;background:#191816}.log-item.sel{border-color:var(--orange)}.log-main{min-width:0}.log-title{font-size:14px;display:flex;align-items:center;gap:7px}.log-meta{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:0}.log-value{font-size:15px;color:var(--orange);white-space:nowrap;display:flex;align-items:center;gap:8px}.empty{font-size:13px;color:var(--muted);padding:10px 0}.hidden{display:none!important}.footer{color:#777168;font-size:11px;text-align:center;margin:22px 0 0;letter-spacing:.04em}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini-stat{background:#191816;border:1px solid #45413b;border-radius:12px;padding:12px}.mini-stat strong{display:block;font-size:24px;letter-spacing:-.06em}.mini-stat span{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.chip{display:flex;align-items:center;gap:6px;border:1px solid #45413b;background:#191816;border-radius:999px;padding:6px 11px;font-size:12px}.chip b{color:var(--orange)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;background:var(--orange);color:#211711;padding:12px 18px;border-radius:12px;font-weight:900;display:flex;align-items:center;gap:8px;transition:.25s;pointer-events:none;z-index:9}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:600px){.app{padding-left:22px;padding-right:22px}.options{grid-template-columns:repeat(4,minmax(0,1fr))}.hero{padding:26px}.panel{padding:22px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="pill hot" title="Day streak"><span class="ico"><i data-lucide="flame"></i></span><strong id="streakPill">0</strong></div>
+    <div class="pill" title="Total gym visits"><span class="ico"><i data-lucide="trophy"></i></span><strong id="visitsPill">0</strong></div>
+    <div class="pill" title="Total XP"><span class="ico"><i data-lucide="sparkles"></i></span><strong id="xpPill">0</strong></div>
+    <div class="spacer"></div><button class="icon-btn" id="settingsToggle" aria-label="Settings"><i data-lucide="settings"></i></button>
+  </header>
+  <div class="day-row"><div class="day-title" id="dayTitle">DAY 1</div><div class="arrows"><button class="arrow" id="prevDay" aria-label="Previous day"><i data-lucide="chevron-left"></i></button><button class="arrow" id="nextDay" aria-label="Next day"><i data-lucide="chevron-right"></i></button></div></div>
+  <div class="day-sub"><span class="ds"><i data-lucide="calendar-days"></i><span id="viewDateLabel"></span></span><span class="ds" id="leftWrap"><i data-lucide="clock"></i><span id="dayLeft"></span></span><button id="goToday" class="hidden">Back to today</button></div>
+  <section class="hero">
+    <div class="hero-name" id="heroName">YOUR JOURNEY</div>
+    <div class="level-label">LV</div>
+    <div class="level-number" id="levelNumber">10</div>
+    <div class="xp-ticks" id="xpTicks" aria-label="Level progress"></div>
+    <div class="xp-copy" id="xpCopy"></div>
+    <div class="stats-line"><span>VISITS <b id="statVisits">0</b></span><span>DAYS <b id="statDays">1</b></span><span>THIS WEEK <b id="statWeek">0</b></span><span>KG <b id="statWeight">—</b></span></div>
+    <div class="rank-row"><span class="rank-badge"><i data-lucide="award"></i><span id="rankBadge">BRONZE</span></span><span class="rank-mark" id="rankMark">I</span><span class="sub" id="rankNext"></span><span class="spacer"></span><span id="weightChange">+0 kg</span></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="head-text"><h2>Log a session</h2><div class="sub" id="logFor">Logging for today. Every session earns XP.</div></div>
+      <span class="eyebrow"><i data-lucide="zap"></i><span id="xpBadge">+100 XP</span></span>
+    </div>
+    <label class="field-label" style="margin-top:0">Training focus</label>
+    <div class="options">
+      <button type="button" class="option on" data-focus="Chest"><span class="ico"><i data-lucide="dumbbell"></i></span>Chest</button>
+      <button type="button" class="option" data-focus="Shoulders"><span class="ico"><i data-lucide="biceps-flexed"></i></span>Shoulders</button>
+      <button type="button" class="option" data-focus="Back"><span class="ico"><i data-lucide="feather"></i></span>Back</button>
+      <button type="button" class="option" data-focus="Legs"><span class="ico"><i data-lucide="footprints"></i></span>Legs</button>
+    </div>
+    <label class="field-label">How did it go? (optional)</label>
+    <div class="tags">
+      <button type="button" class="tagbtn" data-tag="New PR"><i data-lucide="trophy"></i>New PR</button>
+      <button type="button" class="tagbtn" data-tag="High energy"><i data-lucide="zap"></i>High energy</button>
+      <button type="button" class="tagbtn" data-tag="Heavy day"><i data-lucide="dumbbell"></i>Heavy day</button>
+      <button type="button" class="tagbtn" data-tag="Light day"><i data-lucide="feather"></i>Light day</button>
+      <button type="button" class="tagbtn" data-tag="Short session"><i data-lucide="clock"></i>Short session</button>
+    </div>
+    <div class="actions"><button type="button" class="btn primary big" id="addSession"><i data-lucide="plus"></i> Log workout</button></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="head-text"><h2>Bodyweight</h2><div class="sub" id="weightFor">Saved to today.</div></div>
+      <span class="eyebrow" id="gainBadge">+0 KG</span>
+    </div>
+    <div class="two-col"><div class="mini-stat"><strong id="currentWeight">—</strong><span>Current weight</span></div><div class="mini-stat"><strong id="gainValue">+0 kg</strong><span>Change since start</span></div></div>
+    <label class="field-label">Set today's weight</label>
+    <div id="weightStepper"></div>
+    <div class="actions"><button type="button" class="btn primary big" id="addWeight"><i data-lucide="scale"></i> Save weight</button></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Recent sessions</h2><span class="sub" id="sessionCount">0 logged</span></div>
+    <div class="chips" id="focusChips"></div>
+    <div class="log-list" id="sessionList"></div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>Weight history</h2><span class="sub" id="weightCount">0 entries</span></div><div class="log-list" id="weightList"></div>
+  </section>
+
+  <section class="panel hidden" id="settingsPanel">
+    <div class="panel-head"><div class="head-text"><h2>Settings</h2><div class="sub">Tap to set your starting baseline. Hold a button to go faster.</div></div><button type="button" class="btn" id="closeSettings"><i data-lucide="check"></i> Done</button></div>
+    <label class="field-label" style="margin-top:0">Title</label>
+    <div class="options" id="nameOptions"></div>
+    <div id="settingsSteppers"></div>
+    <div class="actions"><button type="button" class="btn primary" id="saveSettings"><i data-lucide="save"></i> Save settings</button><button type="button" class="btn" id="exportData"><i data-lucide="download"></i> Export JSON</button><label class="btn" for="importFile"><i data-lucide="upload"></i> Import JSON</label><input id="importFile" type="file" accept="application/json,.json" class="hidden"><button type="button" class="btn danger" id="resetData"><i data-lucide="trash-2"></i> Reset logged entries</button></div>
+    <div class="sub" style="margin-top:14px">Your data stays in this browser unless you export it. Importing replaces the current tracker data.</div>
+  </section>
+  <p class="footer">BUILT ONE SESSION AT A TIME · KEEP SHOWING UP</p>
+</main>
+<div class="toast" id="toast"><i data-lucide="trending-up"></i><span id="toastText"></span></div>
+<script>
+(()=> {
+'use strict';
+const LUCIDE={"flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/>", "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\"/><path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\"/><path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\"/><path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\"/>", "sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\"/><path d=\"M20 3v4\"/><path d=\"M22 5h-4\"/><path d=\"M4 17v2\"/><path d=\"M5 18H3\"/>", "settings": "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>", "chevron-left": "<path d=\"m15 18-6-6 6-6\"/>", "chevron-right": "<path d=\"m9 18 6-6-6-6\"/>", "calendar-days": "<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/><path d=\"M8 14h.01\"/><path d=\"M12 14h.01\"/><path d=\"M16 14h.01\"/><path d=\"M8 18h.01\"/><path d=\"M12 18h.01\"/><path d=\"M16 18h.01\"/>", "award": "<path d=\"m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526\"/><circle cx=\"12\" cy=\"8\" r=\"6\"/>", "zap": "<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>", "dumbbell": "<path d=\"M14.4 14.4 9.6 9.6\"/><path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\"/><path d=\"m21.5 21.5-1.4-1.4\"/><path d=\"M3.9 3.9 2.5 2.5\"/><path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\"/>", "biceps-flexed": "<path d=\"M12.409 13.017A5 5 0 0 1 22 15c0 3.866-4 7-9 7-4.077 0-8.153-.82-10.371-2.462-.426-.316-.631-.832-.62-1.362C2.118 12.723 2.627 2 10 2a3 3 0 0 1 3 3 2 2 0 0 1-2 2c-1.105 0-1.64-.444-2-1\"/><path d=\"M15 14a5 5 0 0 0-7.584 2\"/><path d=\"M9.964 6.825C8.019 7.977 9.5 13 8 15\"/>", "feather": "<path d=\"M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z\"/><path d=\"M16 8 2 22\"/><path d=\"M17.5 15H9\"/>", "footprints": "<path d=\"M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z\"/><path d=\"M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z\"/><path d=\"M16 17h4\"/><path d=\"M4 13h4\"/>", "plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "scale": "<path d=\"m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\"/><path d=\"m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\"/><path d=\"M7 21h10\"/><path d=\"M12 3v18\"/><path d=\"M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2\"/>", "check": "<path d=\"M20 6 9 17l-5-5\"/>", "save": "<path d=\"M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\"/><path d=\"M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7\"/><path d=\"M7 3v4a1 1 0 0 0 1 1h7\"/>", "download": "<path d=\"M12 15V3\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><path d=\"m7 10 5 5 5-5\"/>", "upload": "<path d=\"M12 3v12\"/><path d=\"m17 8-5-5-5 5\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/>", "trash-2": "<path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\"/><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\"/>", "x": "<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>", "trending-up": "<path d=\"M16 7h6v6\"/><path d=\"m22 7-8.5 8.5-5-5L2 17\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>"};
+const KEY='gym-level-tracker-v3';
+const defaults={name:'YOUR JOURNEY',level:10,visits:30,elapsedDays:83,initialWeightKg:57,sessionXP:100,sessions:[],weights:[],createdAt:new Date().toISOString()};
+const ICONS={Chest:'dumbbell',Shoulders:'biceps-flexed',Back:'feather',Legs:'footprints'};
+const RANKS=[{n:'BRONZE',min:1,size:4},{n:'SILVER',min:20,size:2},{n:'GOLD',min:30,size:4},{n:'DIAMOND',min:50,size:10}];
+const ROMAN=['I','II','III','IV','V'];
+const NAMES=['YOUR JOURNEY','IRON ERA','BEAST MODE','GRIND MODE','LEGEND ARC','NO DAYS OFF'];
+// stepper configs: d = button deltas, dec = decimals
+const CFG={
+ weight:{label:"Today's weight",unit:'kg',d:[-1,-0.1,0.1,1],min:1,max:400,dec:1},
+ level:{label:'Starting level',unit:'',d:[-5,-1,1,5],min:1,max:999,dec:0},
+ visits:{label:'Past gym visits',unit:'',d:[-10,-1,1,10],min:0,max:100000,dec:0},
+ days:{label:'Day number today',unit:'',d:[-10,-1,1,10],min:1,max:100000,dec:0},
+ startWeight:{label:'Initial weight',unit:'kg',d:[-1,-0.1,0.1,1],min:1,max:400,dec:1},
+ xp:{label:'XP per workout',unit:'XP',d:[-50,-10,10,50],min:1,max:10000,dec:0}
+};
+const SETTING_KEYS=['level','visits','days','startWeight','xp'];
+let state,offset=0,focus='Chest';
+let draft={weight:57,name:'',level:10,visits:0,days:1,startWeight:57,xp:100,tags:[]};
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const p=JSON.parse(raw);return {...defaults,...p,sessions:Array.isArray(p.sessions)?p.sessions:[],weights:Array.isArray(p.weights)?p.weights:[]}}}catch(e){}return {...defaults}}
+state=load();
+const $=id=>document.getElementById(id);
+const icons=()=>{document.querySelectorAll('i[data-lucide]').forEach(el=>{const b=LUCIDE[el.dataset.lucide];if(!b)return;el.outerHTML='<svg class="lucide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+b+'</svg>'})};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){alert('Could not save locally. Export your data as a backup.')}render()}
+const dateKey=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
+const fmtDate=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+const fmtLong=d=>new Date(d).toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
+const uid=()=>crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random());
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const xpEach=()=>Number(state.sessionXP||100);
+const totalXP=()=>state.sessions.length*xpEach();
+const currentLevel=()=>Number(state.level||10)+Math.floor(totalXP()/(xpEach()*10));
+const xpIntoLevel=()=>totalXP()%(xpEach()*10);
+const sortedWeights=()=>[...state.weights].sort((a,b)=>new Date(a.date)-new Date(b.date));
+const latestWeight=()=>{const w=sortedWeights();return w.length?Number(w[w.length-1].kg):Number(state.initialWeightKg||57)};
+const changeWeight=()=>latestWeight()-Number(state.initialWeightKg||57);
+const viewDate=()=>{const d=new Date();d.setDate(d.getDate()-offset);return d};
+// Day number is driven by the calendar: it moves up by one every midnight on its own.
+const daysSinceCreated=()=>Math.max(0,Math.round((new Date(dateKey(new Date())+'T00:00')-new Date(dateKey(state.createdAt)+'T00:00'))/86400000));
+const todayDayNum=()=>Number(state.elapsedDays||1)+daysSinceCreated();
+function streak(){const days=new Set(state.sessions.map(s=>dateKey(s.date)));let n=0;const d=new Date();for(let i=0;i<4000;i++){if(days.has(dateKey(d))){n++;d.setDate(d.getDate()-1)}else if(i===0){d.setDate(d.getDate()-1)}else break}return n}
+function weekCount(){const c=Date.now()-7*86400000;return state.sessions.filter(s=>new Date(s.date).getTime()>c).length}
+function rankInfo(l){let r=RANKS[0];for(const x of RANKS)if(l>=x.min)r=x;const t=Math.min(4,Math.floor((l-r.min)/r.size));const nx=RANKS[RANKS.indexOf(r)+1];return {name:r.n,mark:ROMAN[t],next:nx?`LV ${nx.min} → ${nx.n}`:'MAX RANK'}}
+function toast(t){$('toastText').textContent=t;const el=$('toast');el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+function logDate(){if(offset===0)return new Date().toISOString();const d=viewDate();d.setHours(12,0,0,0);return d.toISOString()}
+
+/* ---------- steppers (no typing, just taps) ---------- */
+const fmtVal=(v,c)=>c.dec?Number(v).toFixed(c.dec):String(Math.round(v));
+function stepHTML(k){const c=CFG[k];return `<div class="step"><div class="step-val"><strong id="val-${k}">${fmtVal(draft[k],c)}</strong><span>${c.unit}</span></div><div class="step-btns">${c.d.map(d=>`<button type="button" class="btn step-btn" data-adj="${k}" data-d="${d}" aria-label="${d<0?'Decrease':'Increase'} ${c.label} by ${Math.abs(d)}">${d<0?'−':'+'}${Math.abs(d)}</button>`).join('')}</div></div>`}
+function adj(k,d){const c=CFG[k];let v=Math.round((Number(draft[k])+d)*10)/10;v=Math.min(c.max,Math.max(c.min,v));draft[k]=v;const el=$('val-'+k);if(el)el.textContent=fmtVal(v,c)}
+function syncChoices(){
+ document.querySelectorAll('[data-focus]').forEach(b=>b.classList.toggle('on',b.dataset.focus===focus));
+ document.querySelectorAll('[data-tag]').forEach(b=>{const on=draft.tags.includes(b.dataset.tag);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+ document.querySelectorAll('[data-name]').forEach(b=>b.classList.toggle('on',b.dataset.name===draft.name));
+}
+let holdT,holdI;const stopHold=()=>{clearTimeout(holdT);clearInterval(holdI)};
+document.addEventListener('pointerdown',e=>{const a=e.target.closest('[data-adj]');if(!a)return;const k=a.dataset.adj,d=Number(a.dataset.d);adj(k,d);stopHold();holdT=setTimeout(()=>{holdI=setInterval(()=>adj(k,d),80)},420)});
+['pointerup','pointercancel','blur','contextmenu'].forEach(ev=>window.addEventListener(ev,stopHold));
+
+/* ---------- render ---------- */
+function dayLeftText(){const n=new Date(),e=new Date(n);e.setHours(24,0,0,0);const m=Math.max(0,Math.ceil((e-n)/60000));return `${Math.floor(m/60)}h ${m%60}m until next day`}
+function render(){
+ const level=currentLevel(),xp=xpIntoLevel(),cap=xpEach()*10,weight=latestWeight(),gain=changeWeight(),r=rankInfo(level),sign=gain>=0?'+':'';
+ const visits=Number(state.visits||0)+state.sessions.length,vk=dateKey(viewDate());
+ $('streakPill').textContent=streak();$('visitsPill').textContent=visits;$('xpPill').textContent=totalXP().toLocaleString();
+ const dn=todayDayNum()-offset;
+ $('dayTitle').innerHTML=`DAY ${dn} <span>/ ${todayDayNum()}</span>`;
+ $('prevDay').disabled=dn<=1;$('nextDay').disabled=offset===0;$('goToday').classList.toggle('hidden',offset===0);
+ $('leftWrap').classList.toggle('hidden',offset!==0);$('dayLeft').textContent=dayLeftText();
+ $('viewDateLabel').textContent=offset===0?`Today · ${fmtLong(new Date())}`:fmtLong(viewDate());
+ $('logFor').textContent=offset===0?'Logging for today. Every session earns XP.':`Logging for ${fmtLong(viewDate())}.`;
+ $('weightFor').textContent=offset===0?'Saved to today.':`Saved to ${fmtLong(viewDate())}.`;
+ $('xpBadge').textContent=`+${xpEach()} XP`;
+ $('heroName').textContent=state.name||'YOUR JOURNEY';$('levelNumber').textContent=level;
+ $('xpCopy').textContent=`${xp.toLocaleString()} / ${cap.toLocaleString()} XP · ${(cap-xp).toLocaleString()} to LV ${level+1}`;
+ const tc=30,on=Math.round(xp/cap*tc);$('xpTicks').innerHTML=Array.from({length:tc},(_,i)=>`<span class="tick ${i<on?'on':''}"></span>`).join('');
+ $('statVisits').textContent=visits;$('statDays').textContent=todayDayNum();$('statWeek').textContent=weekCount();$('statWeight').textContent=weight.toFixed(1);
+ $('rankBadge').textContent=r.name;$('rankMark').textContent=r.mark;$('rankNext').textContent=r.next;
+ $('currentWeight').textContent=`${weight.toFixed(1)} kg`;$('gainValue').textContent=`${sign}${gain.toFixed(1)} kg`;$('gainBadge').textContent=`${sign}${gain.toFixed(1)} KG`;$('weightChange').textContent=`${sign}${gain.toFixed(1)} kg`;
+ $('sessionCount').textContent=`${state.sessions.length} logged`;$('weightCount').textContent=`${state.weights.length} entries`;
+ const counts={};state.sessions.forEach(s=>counts[s.focus]=(counts[s.focus]||0)+1);
+ $('focusChips').innerHTML=Object.keys(ICONS).map(f=>`<span class="chip"><i data-lucide="${ICONS[f]}"></i>${f} <b>${counts[f]||0}</b></span>`).join('');
+ const sess=[...state.sessions].sort((a,b)=>new Date(b.date)-new Date(a.date));
+ $('sessionList').innerHTML=sess.length?sess.slice(0,10).map(s=>`<div class="log-item ${dateKey(s.date)===vk?'sel':''}"><div class="log-main"><div class="log-title"><i data-lucide="${ICONS[s.focus]||'dumbbell'}"></i>${safe(s.focus)} workout</div><div class="log-meta">${fmtDate(s.date)}${s.note?' · '+safe(s.note):''}</div></div><div class="log-value">+${xpEach()} XP <button type="button" class="btn danger sm" data-delete-session="${safe(s.id)}" aria-label="Delete session"><i data-lucide="x"></i></button></div></div>`).join(''):'<div class="empty">No workouts logged yet. Your next session starts the streak.</div>';
+ const ws=sortedWeights().reverse();
+ $('weightList').innerHTML=ws.length?ws.slice(0,10).map(w=>`<div class="log-item ${dateKey(w.date)===vk?'sel':''}"><div class="log-main"><div class="log-title"><i data-lucide="scale"></i>${Number(w.kg).toFixed(1)} kg</div><div class="log-meta">${fmtDate(w.date)}</div></div><button type="button" class="btn danger sm" data-delete-weight="${safe(w.id)}" aria-label="Delete weight"><i data-lucide="trash-2"></i></button></div>`).join(''):'<div class="empty">Your weight entries will show up here.</div>';
+ icons();
+}
+
+/* ---------- actions ---------- */
+$('addSession').addEventListener('click',()=>{
+ const before=currentLevel();
+ state.sessions.push({id:uid(),focus,note:draft.tags.join(' · '),date:logDate()});
+ draft.tags=[];syncChoices();save();
+ const after=currentLevel();toast(after>before?`LEVEL UP! LV ${after}`:`+${xpEach()} XP`)});
+$('addWeight').addEventListener('click',()=>{state.weights.push({id:uid(),kg:Number(draft.weight),date:logDate()});save();toast('Weight saved')});
+document.addEventListener('click',e=>{
+ const t=e.target;
+ let el;
+ if(el=t.closest('[data-focus]')){focus=el.dataset.focus;syncChoices();return}
+ if(el=t.closest('[data-tag]')){const v=el.dataset.tag;draft.tags=draft.tags.includes(v)?draft.tags.filter(x=>x!==v):[...draft.tags,v];syncChoices();return}
+ if(el=t.closest('[data-name]')){draft.name=el.dataset.name;syncChoices();return}
+ if(el=t.closest('[data-adj]')){if(e.detail===0)adj(el.dataset.adj,Number(el.dataset.d));return} // keyboard activation
+ const s=t.closest('[data-delete-session]'),w=t.closest('[data-delete-weight]');
+ if(s&&confirm('Delete this workout entry?')){state.sessions=state.sessions.filter(x=>x.id!==s.dataset.deleteSession);save()}
+ if(w&&confirm('Delete this weight entry?')){state.weights=state.weights.filter(x=>x.id!==w.dataset.deleteWeight);save()}
+});
+
+/* ---------- settings ---------- */
+function buildSettings(){
+ $('nameOptions').innerHTML=NAMES.map(n=>`<button type="button" class="option" data-name="${safe(n)}">${safe(n)}</button>`).join('');
+ $('settingsSteppers').innerHTML=SETTING_KEYS.map(k=>`<label class="field-label">${CFG[k].label}</label>${stepHTML(k)}`).join('');
+ syncChoices();
+}
+function openSettings(){
+ const p=$('settingsPanel'),opening=p.classList.contains('hidden');
+ p.classList.toggle('hidden');
+ if(opening){draft.name=NAMES.includes(state.name)?state.name:(state.name||'YOUR JOURNEY');draft.level=Number(state.level);draft.visits=Number(state.visits);draft.days=todayDayNum();draft.startWeight=Number(state.initialWeightKg);draft.xp=Number(state.sessionXP);
+  if(!NAMES.includes(draft.name))NAMES.unshift(draft.name);
+  buildSettings();p.scrollIntoView({behavior:'smooth'})}
+}
+$('settingsToggle').addEventListener('click',openSettings);$('closeSettings').addEventListener('click',()=>$('settingsPanel').classList.add('hidden'));
+$('saveSettings').addEventListener('click',()=>{
+ state.name=draft.name||'YOUR JOURNEY';state.level=draft.level;state.visits=draft.visits;
+ state.elapsedDays=Math.max(1,draft.days-daysSinceCreated());state.initialWeightKg=draft.startWeight;state.sessionXP=draft.xp;
+ offset=0;save();$('settingsPanel').classList.add('hidden');toast('Settings saved')});
+$('exportData').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gym-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)});
+$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());if(!p||!Array.isArray(p.sessions)||!Array.isArray(p.weights))throw new Error('Invalid backup');state={...defaults,...p};draft.weight=latestWeight();$('weightStepper').innerHTML=stepHTML('weight');save();toast('Backup imported')}catch(err){alert('Could not import that JSON backup.')}e.target.value=''});
+$('resetData').addEventListener('click',()=>{if(confirm('Delete all logged workouts and weight entries? Your starting settings will remain.')){state.sessions=[];state.weights=[];save()}});
+
+/* ---------- days ---------- */
+$('prevDay').addEventListener('click',()=>{if(todayDayNum()-offset>1){offset++;render()}});
+$('nextDay').addEventListener('click',()=>{if(offset>0){offset--;render()}});
+$('goToday').addEventListener('click',()=>{offset=0;render()});
+// Auto-advance: when midnight passes (or the app wakes up on a new day) the day counter rolls over by itself.
+let lastKey=dateKey(new Date());
+function checkDay(){
+ const k=dateKey(new Date());
+ if(k!==lastKey){lastKey=k;if(offset>0)offset++;render();toast(`New day! DAY ${todayDayNum()}`);return}
+ $('dayLeft').textContent=dayLeftText();
+}
+setInterval(checkDay,20000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDay()});
+window.addEventListener('focus',checkDay);
+
+/* ---------- init ---------- */
+draft.weight=latestWeight();$('weightStepper').innerHTML=stepHTML('weight');
+render();syncChoices();
+})();
+</script>
+</body>
+</html>
